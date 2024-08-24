@@ -1,0 +1,150 @@
+body {
+  background-color: #333138;
+}
+
+/* @media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+} */
+
+.svgLinks {
+  display: flex;
+  gap: 2vw;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.svgLinks svg {
+  width: 8vw; /* Same width for all logos */
+  height: auto; /* Maintain aspect ratio */
+  max-height: 10vh;
+}
+
+.svgLinks path {
+  fill: #fffffa !important; /* Default color */
+  transition: color 0.5s ease;
+}
+
+.github-icon,
+.icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.github-icon:hover path {
+  transition: fill 0.3s; /* Add a transition effect on hover */
+  fill: #e09891 !important; /* Hover color */
+}
+
+.page {
+  width: 100vw;
+  height: 100vh;
+  color: #212121;
+  font-family: "Open Sans", sans-serif;
+  display: grid;
+  place-items: center;
+}
+.mainBody {
+  width: 75vw;
+  height: 75vh;
+  color: #fffffa;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  margin: 7px;
+  border: 2px solid #515052;
+  border-radius: 25px;
+  background: #515052;
+}
+
+.mainBody p {
+  margin: 7px;
+  border: 2px solid #749c75;
+  background-color: #749c75;
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 16px;
+}
+
+.headerSection h1 {
+  font-size: 2.5rem;
+  margin-bottom: -20px;
+}
+
+.headerSection h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.button-container {
+  display: flex; /* Use Flexbox to lay out buttons horizontally */
+  justify-content: center; /* Center the buttons horizontally */
+  align-items: center; /* Center the buttons vertically */
+  gap: 10px; /* Optional: Add space between buttons */
+  margin: 20px 0; /* Optional: Add some margin above and below the button container */
+}
+
+.arrow {
+  border: solid #fffffa;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+}
+
+.right {
+  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+
+.left {
+  -webkit-transform: rotate(135deg);
+  transform: rotate(135deg);
+}
+
+button {
+  padding: 10px 20px; /* Add padding to buttons for better appearance */
+  font-size: 16px; /* Increase font size for readability */
+  cursor: pointer; /* Change cursor to pointer on hover */
+  border: none;
+  background-color: transparent; /* Remove default background color */
+  color: #fffffa; /* Button text color */
+  border-radius: 15px; /* Optional: Add rounded corners */
+  transition: background-color 0.3s; /* Add a transition effect on hover */
+}
+
+button:hover {
+  background-color: #333138; /* Change background color on hover */
+}
+
+.projectImg {
+  overflow: hidden; /* Ensures no overflow of content */
+}
+
+.projectImg img {
+  width: 75%; /* Make the image take up the full width of the container */
+  height: 75%; /* Make the image take up the full height of the container */
+  object-fit: cover; /* Scales the image to cover the entire container, cropping if necessary */
+  transition: opacity 0.3s; /* Add a transition effect on hover */
+}
+
+.projectImg:hover {
+  opacity: 80%;
+}
+/* .App-header {
+  width: 1440px;
+  height: 3779px;
+  flex-shrink: 0;
+  background: #13293d;
+} */
+
+/* @keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+} */
