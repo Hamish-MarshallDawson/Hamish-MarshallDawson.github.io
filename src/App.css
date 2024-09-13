@@ -48,8 +48,8 @@ body {
   place-items: center;
 }
 .mainBody {
-  width: 75vw;
-  height: 75vh;
+  min-width: 75vw;
+  min-height: 75vh;
   color: #fffffa;
   display: flex;
   flex-direction: column;
@@ -124,8 +124,8 @@ button:hover {
 }
 
 .projectImg img {
-  width: 75%; /* Make the image take up the full width of the container */
-  height: 75%; /* Make the image take up the full height of the container */
+  width: 1000px; /* Make the image take up the full width of the container */
+  height: 400px; /* Make the image take up the full height of the container */
   object-fit: cover; /* Scales the image to cover the entire container, cropping if necessary */
   transition: opacity 0.3s; /* Add a transition effect on hover */
 }
