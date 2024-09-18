@@ -1,23 +1,37 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from "react";
+import "./App.css";
+import Header from "./components/Header";
+import { Carousel } from "./components/carousel"; // Fixed import
+import ProjectShowcase from "./components/projects";
+
+function Title() {
+  useEffect(() => {
+    const favicon = document.querySelector("link[rel~='icon']");
+
+    if (favicon) {
+      favicon.href = "/src/assets/favicon.ico"; // Ensure this path is correct relative to the public directory
+    }
+    document.title = "Hamish Marshall Dawson";
+  }, []);
+
+  return null; // Ensure it returns something
+}
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="page">
+      <div className="mainBody">
+        <div className="headerSection">
+          <Title />
+          <div className="textColourAnimation">
+            <h1>Hamish</h1>
+            <h2>Marshall Dawson</h2>
+          </div>
+          <Header />
+        </div>
+        {/* <Carousel /> The Carousel component will render the slides */}
+        <ProjectShowcase />
+      </div>
     </div>
   );
 }
