@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/static/css/main.21f8fd6f.css",
+    "main.js": "/static/js/main.ac61b903.js",
+    "static/js/453.51438130.chunk.js": "/static/js/453.51438130.chunk.js",
+    "static/media/ToDoApp.jpg": "/static/media/ToDoApp.0050ef8a31d268ea66d2.jpg",
+    "static/media/TypingSpeed.jpg": "/static/media/TypingSpeed.5d3542f999b606fd0592.jpg",
+    "static/media/textEditor.jpg": "/static/media/textEditor.3e4190b3880f7b51ea53.jpg",
+    "static/media/tic-tac-toe.jpg": "/static/media/tic-tac-toe.dcdb658580bfa4457929.jpg",
+    "static/media/Quiz.jpg": "/static/media/Quiz.1b1242a8a11baf70b907.jpg",
+    "static/media/chatapp.jpg": "/static/media/chatapp.1ee80989bec4fb1cec82.jpg",
+    "static/media/discordLogo.jpg": "/static/media/discordLogo.8d2498ebb8e527c690c6.jpg",
+    "static/media/Linkedin.svg": "/static/media/Linkedin.4cc9a39d6bb4e75e8de1a416c5d52b95.svg",
+    "static/media/Github.svg": "/static/media/Github.7c2b51fede5398d05f9968b32342522c.svg",
+    "static/media/mail.svg": "/static/media/mail.a20617e736b3f1a779da3f199c55c665.svg",
+    "index.html": "/index.html",
+    "main.21f8fd6f.css.map": "/static/css/main.21f8fd6f.css.map",
+    "main.ac61b903.js.map": "/static/js/main.ac61b903.js.map",
+    "453.51438130.chunk.js.map": "/static/js/453.51438130.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.21f8fd6f.css",
+    "static/js/main.ac61b903.js"
+  ]
+}
