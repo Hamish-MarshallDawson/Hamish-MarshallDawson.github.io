@@ -1,12 +1,8 @@
+/* Base body of page/ "header section" */
+
 body {
   background-color: #333138;
 }
-
-/* @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-} */
 
 .svgLinks {
   display: flex;
@@ -24,7 +20,8 @@ body {
 
 .svgLinks path {
   fill: #fffffa !important; /* Default color */
-  transition: color 0.5s ease;
+  transition: fill 0.3s; /* Add a transition effect on hover */
+  transition: 0.5s ease;
 }
 
 .github-icon,
@@ -35,7 +32,6 @@ body {
 }
 
 .github-icon:hover path {
-  transition: fill 0.3s; /* Add a transition effect on hover */
   fill: #e09891 !important; /* Hover color */
 }
 
@@ -43,21 +39,27 @@ body {
   width: 100vw;
   height: 100vh;
   color: #212121;
-  font-family: "Open Sans", sans-serif;
   display: grid;
   place-items: center;
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
 }
 .mainBody {
-  min-width: 75vw;
-  min-height: 75vh;
+  width: 75vw;
+  height: 75vh;
   color: #fffffa;
   display: flex;
   flex-direction: column;
+  align-items: center; /* Centers horizontally */
+  justify-content: center; /* Centers vertically */
   text-align: center;
   margin: 7px;
   border: 2px solid #515052;
   border-radius: 25px;
   background: #515052;
+  padding-bottom: 50px;
 }
 
 .mainBody p {
@@ -79,6 +81,148 @@ body {
   margin-bottom: 0.5rem;
 }
 
+/* For slider section */
+
+.pageCarouselPage {
+  font-size: 14px;
+  color: #010101;
+  margin: 0;
+  padding: 0;
+  padding-bottom: 25px;
+  height: 50vh;
+  width: 60vw;
+  display: flex;
+  justify-content: center;
+}
+
+.swiper-slide {
+  background-position: center;
+  background-size: cover;
+  border-radius: 15px;
+  filter: saturate(1.2);
+  /* -webkit-box-reflect: below 2px
+    linear-gradient(transparent, transparent, #0006); */
+}
+
+.swiperSlideContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 90%;
+  padding: 20px;
+}
+.swiperSlideContent h3 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  font-style: italic;
+  color: #fffffa;
+  text-shadow: #333138;
+}
+
+.swiperSlideContent p {
+  color: #fffffa;
+  font-size: 16px;
+}
+
+.swiperSlideContent a {
+  text-decoration: none; /* no underline */
+}
+/* Style for the next arrow (right) */
+.swiper-button-next {
+  background-color: none; /* Semi-transparent white */
+  border-radius: 100%; /* Make the arrow circular */
+  padding: 20px; /* Add padding around the arrow */
+  width: 40px; /* Adjust size */
+  height: 40px;
+  transition: background-color 0.5s ease;
+}
+
+/* Style for the previous arrow (left) */
+.swiper-button-prev {
+  background-color: none;
+  border-radius: 50%;
+  padding: 20px;
+  width: 40px;
+  height: 40px;
+  transition: background-color 0.5s ease;
+}
+
+/* Change the arrow icon color (the actual arrow is a pseudo-element) */
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  color: #333138; /* Change the arrow icon color */
+  font-size: 20px; /* Adjust the size of the arrow */
+  font-weight: bold;
+  transition: 0.5s ease;
+}
+
+.swiper-button-next:hover::after,
+.swiper-button-prev:hover::after {
+  color: #fffffa; /* Change the arrow icon color on hover */
+  transform: scale(1.2);
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Styling the pagination bullets */
+/* Target the default pagination bullets */
+.swiper-pagination-bullet {
+  background-color: rgba(81, 80, 82, 0.8) !important; /* Red default color */
+  width: 25px; /* Custom size */
+  height: 25px;
+  opacity: 1; /* Ensure the bullets are fully visible */
+  transition: background-color 0.5s ease;
+}
+
+/* Active pagination bullet */
+.swiper-pagination-bullet-active {
+  background-color: #fffffa !important; /* Green color for the active dot */
+  transform: scale(1.5);
+  transition: 0.5s ease;
+}
+
+/* Hover effect on pagination bullets */
+.swiper-pagination-bullet:hover {
+  background-color: rgba(255, 255, 250, 0.8) !important; /* Blue on hover */
+  transform: scale(1.2); /* Enlarge on hover */
+  transition: 0.5s ease;
+}
+
+/* animation section */
+
+.textColourAnimation {
+  /*adding colour animation to text*/
+
+  color: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    to right,
+    rgb(255, 255, 250),
+    /* rgb(81, 80, 82), */ rgb(224, 152, 145),
+    /* rgb(51, 49, 56), */ rgb(116, 156, 117)
+  );
+  background-size: 400%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: sTransition 10s linear infinite;
+}
+
+/*keyframe section */
+@keyframes sTransition {
+  0% {
+    background-position: 0%;
+  }
+
+  100% {
+    background-position: 400%;
+  }
+}
+
+/* Unused dead css*/
+
 .button-container {
   display: flex; /* Use Flexbox to lay out buttons horizontally */
   justify-content: center; /* Center the buttons horizontally */
@@ -87,22 +231,22 @@ body {
   margin: 20px 0; /* Optional: Add some margin above and below the button container */
 }
 
-.arrow {
+/* .arrow {
   border: solid #fffffa;
   border-width: 0 3px 3px 0;
   display: inline-block;
   padding: 3px;
-}
+} */
 
-.right {
+/* .right {
   -webkit-transform: rotate(-45deg);
   transform: rotate(-45deg);
-}
+} */
 
-.left {
+/* .left {
   -webkit-transform: rotate(135deg);
   transform: rotate(135deg);
-}
+} */
 
 button {
   padding: 10px 20px; /* Add padding to buttons for better appearance */
@@ -115,36 +259,21 @@ button {
   transition: background-color 0.3s; /* Add a transition effect on hover */
 }
 
-button:hover {
-  background-color: #333138; /* Change background color on hover */
+/* button:hover {
+  background-color: #333138;
 }
 
 .projectImg {
-  overflow: hidden; /* Ensures no overflow of content */
-}
-
-.projectImg img {
-  width: 1000px; /* Make the image take up the full width of the container */
-  height: 400px; /* Make the image take up the full height of the container */
-  object-fit: cover; /* Scales the image to cover the entire container, cropping if necessary */
-  transition: opacity 0.3s; /* Add a transition effect on hover */
+  overflow: hidden;
 }
 
 .projectImg:hover {
   opacity: 80%;
 }
-/* .App-header {
-  width: 1440px;
-  height: 3779px;
-  flex-shrink: 0;
-  background: #13293d;
-} */
 
-/* @keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.projectImg img {
+  width: 75%;
+  height: 75%;
+  object-fit: cover;
+  transition: opacity 0.3s;
 } */
