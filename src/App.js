@@ -2,36 +2,131 @@ import React, { useEffect } from "react";
 import "./App.css";
 import Header from "./components/Header";
 import { Carousel } from "./components/carousel";
+import ProjectCard from "./components/ProjectCard";
+import { projectList, projectSections } from "./components/projectdata";
 
 function Title() {
   useEffect(() => {
     const favicon = document.querySelector("link[rel~='icon']");
 
     if (favicon) {
-      favicon.href = "/src/assets/favicon.ico"; // Ensure this path is correct relative to the public directory
+      favicon.href = "/src/assets/favicon.ico";
     }
     document.title = "Hamish Marshall Dawson";
   }, []);
 
-  return null; // Ensure it returns something
+  return null;
 }
 
-function App() {
+function Home() {
+  const featuredProjects = projectList.filter((project) => project.featured);
+
   return (
     <div className="page">
       <div className="mainBody">
         <div className="headerSection">
           <Title />
+          <span className="section-eyebrow">AI engineering portfolio</span>
           <div className="textColourAnimation">
-            <h1>Hamish</h1>
-            <h2>Marshall Dawson</h2>
+            <h1>Hamish Marshall Dawson</h1>
           </div>
+          <p className="hero-intro">
+            Robotics, HRI, and local AI systems built with a research mindset.
+          </p>
           <Header />
         </div>
-        <Carousel />
+        <section className="portfolio-section">
+          <div className="stacked-intro">
+            <span className="section-eyebrow">Selected work</span>
+            <h2 className="section-title">Research-led projects with real engineering depth.</h2>
+            <p className="section-copy">
+              The focus here is on projects that show experimentation, ownership,
+              and technical judgement: embodied AI, robotics research, and
+              practical deployment under resource constraints.
+            </p>
+          </div>
+          <div className="project-grid">
+            {featuredProjects.map((project) => (
+              <div key={project.name} className="project-card">
+                <div
+                  className="project-card-thumb"
+                  style={{
+                    backgroundImage: project.img ? `url(${project.img})` : undefined,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                />
+                <div className="project-card-body">
+                  {project.category && <span className="project-card-eyebrow">{project.category}</span>}
+                  <h3>{project.name}</h3>
+                  <p>{project.shortDescription || project.description}</p>
+                  <div className="project-card-meta">
+                    {project.timeline && <span>{project.timeline}</span>}
+                    {project.language && <span>{project.language}</span>}
+                    {project.stars !== undefined && <span>⭐ {project.stars}</span>}
+                  </div>
+                  <div className="project-card-cta">
+                    {project.url && (
+                      <a href={project.url} target="_blank" rel="noopener noreferrer">
+                        View on GitHub
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="portfolio-section portfolio-split">
+          <div>
+            <span className="section-eyebrow">Context</span>
+            <h2 className="section-title">What this work says about me.</h2>
+          </div>
+          <div className="stacked-notes">
+            {projectSections.map((section) => (
+              <article key={section.label} className="note-card">
+                <span className="project-card-eyebrow">{section.label}</span>
+                <h3>{section.title}</h3>
+                <p>{section.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="portfolio-section">
+          <div className="experience-callout">
+            <span className="section-eyebrow">Placement</span>
+            <h2 className="section-title">STMicroelectronics</h2>
+            <p className="section-copy">
+              2.5 months into a placement focused on local AI pipelines for fault
+              detection, exploring VLMs with LoRA, CLIP clustering, and VRAM-constrained
+              experimentation.
+            </p>
+            <a href="#experience" className="detail-link">
+              Read the placement summary
+            </a>
+          </div>
+        </section>
+
+        <section className="portfolio-section">
+          <div className="stacked-intro">
+            <span className="section-eyebrow">Archive</span>
+            <h2 className="section-title">Earlier projects and experiments.</h2>
+            <p className="section-copy">
+              The carousel below shows my earlier work. While these projects are solid,
+              the featured section above better represents my current direction.
+            </p>
+          </div>
+          <Carousel />
+        </section>
       </div>
     </div>
   );
+}
+
+function App() {
+  return <Home />;
 }
 
 export default App;

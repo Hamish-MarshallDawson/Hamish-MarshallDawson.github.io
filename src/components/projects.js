@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { projectList } from "./projectdata";
+import ProjectCard from "./ProjectCard";
 
 export default function ProjectShowcase() {
   const [index, setIndex] = useState(0);
@@ -39,12 +40,10 @@ export default function ProjectShowcase() {
       </h3>
 
       <div className="projectImg">
-        <a href={project.githubLink} target="_blank" rel="noopener noreferrer">
-          <img src={project.img} alt={project.alt} />
-        </a>
+        <ProjectCard project={project} />
       </div>
 
-      <div classname="button-containter">
+      <div className="button-containter">
         <button onClick={handleBackClick}>
           <div className="left">
             <i className="arrow"></i>
