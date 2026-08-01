@@ -1,7 +1,22 @@
 /* Base body of page/ "header section" */
 
 body {
-  background-color: #333138;
+  background:
+    radial-gradient(circle at top left, rgba(224, 152, 145, 0.16), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(116, 156, 117, 0.12), transparent 28%),
+    linear-gradient(180deg, #111114 0%, #1a1b20 100%);
+  color: #f4f1ea;
+}
+
+:root {
+  --bg: #111114;
+  --panel: rgba(24, 25, 31, 0.88);
+  --panel-strong: #1e2027;
+  --line: rgba(255, 255, 255, 0.12);
+  --text: #f4f1ea;
+  --muted: rgba(244, 241, 234, 0.72);
+  --accent: #e09891;
+  --accent-2: #749c75;
 }
 
 .svgLinks {
@@ -36,61 +51,66 @@ body {
 }
 
 .page {
-  width: 100vw;
-  height: 100vh;
-  color: #212121;
-  display: grid;
-  place-items: center;
+  width: 100%;
+  min-height: 100vh;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
   font-family: "Montserrat", sans-serif;
   font-optical-sizing: auto;
   font-weight: 500;
   font-style: normal;
 }
 .mainBody {
-  width: 75vw;
-  height: 75vh;
-  color: #fffffa;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  color: var(--text);
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centers horizontally */
-  justify-content: center; /* Centers vertically */
+  align-items: stretch;
   text-align: center;
-  margin: 7px;
-  border: 2px solid #515052;
-  border-radius: 25px;
-  background: #515052;
-  padding-bottom: 50px;
+  padding: 36px 28px 44px;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 32px;
+  background: linear-gradient(180deg, rgba(25, 27, 33, 0.96), rgba(18, 19, 24, 0.96));
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(18px);
 }
 
 .mainBody p {
   margin: 7px;
-  border: 2px solid #749c75;
-  background-color: #749c75;
-  border-radius: 5px;
-  padding: 5px;
+  border: 1px solid var(--line);
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 10px 14px;
   font-size: 16px;
+  color: var(--muted);
 }
 
 .headerSection h1 {
-  font-size: 2.5rem;
-  margin-bottom: -20px;
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  margin: 0;
+  line-height: 0.95;
 }
 
-.headerSection h2 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+.hero-intro {
+  color: var(--muted);
+  margin: 12px 0 18px;
+  max-width: 760px;
 }
 
 /* For slider section */
 
 .pageCarouselPage {
   font-size: 14px;
-  color: #010101;
+  color: var(--text);
   margin: 0;
   padding: 0;
   padding-bottom: 25px;
-  height: 50vh;
-  width: 60vw;
+  min-height: 50vh;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -107,7 +127,7 @@ body {
 }
 
 .filter-label {
-  color: #fffffa;
+  color: var(--muted);
   font-size: 1rem;
   font-weight: 500;
 }
@@ -116,18 +136,18 @@ body {
   padding: 10px 20px;
   font-size: 16px;
   font-family: "Montserrat", sans-serif;
-  border: 2px solid #515052;
-  border-radius: 20px;
-  background-color: #515052;
-  color: #fffffa;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text);
   cursor: pointer;
   transition: all 0.3s ease;
   outline: none;
 }
 
 .project-filter-dropdown:hover {
-  background-color: #749c75;
-  border-color: #749c75;
+  background-color: rgba(116, 156, 117, 0.22);
+  border-color: rgba(116, 156, 117, 0.55);
 }
 
 .project-filter-dropdown:focus {
@@ -136,8 +156,8 @@ body {
 }
 
 .project-filter-dropdown option {
-  background-color: #515052;
-  color: #fffffa;
+  background-color: #1e2027;
+  color: var(--text);
   padding: 10px;
 }
 
@@ -149,7 +169,7 @@ body {
   justify-content: center;
   gap: 20px;
   height: 100%;
-  color: #fffffa;
+  color: var(--text);
 }
 
 .carousel-loading p {
@@ -163,10 +183,11 @@ body {
 .swiper-slide {
   background-position: center;
   background-size: cover;
-  border-radius: 15px;
-  filter: saturate(1.2);
-  /* -webkit-box-reflect: below 2px
-    linear-gradient(transparent, transparent, #0006); */
+  border-radius: 22px;
+  filter: saturate(1.08);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
 }
 
 .swiperSlideContent {
@@ -174,12 +195,13 @@ body {
   flex-direction: column;
   justify-content: space-between;
   height: 90%;
-  padding: 20px;
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(10, 10, 12, 0.08), rgba(10, 10, 12, 0.68));
 }
 .swiperSlideContent h3 {
   font-size: 2rem;
   margin-bottom: 0.5rem;
-  font-style: italic;
+  font-style: normal;
   color: #fffffa;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   display: flex;
@@ -203,6 +225,12 @@ body {
   color: #fffffa;
   font-size: 16px;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.swiperSlideContent h3 a,
+.swiperSlideContent p a {
+  color: inherit;
+  text-decoration: none;
 }
 
 .project-language {
@@ -267,7 +295,7 @@ body {
 /* Styling the pagination bullets */
 /* Target the default pagination bullets */
 .swiper-pagination-bullet {
-  background-color: rgba(81, 80, 82, 0.8) !important; /* Red default color */
+  background-color: rgba(255, 255, 255, 0.35) !important;
   width: 25px; /* Custom size */
   height: 25px;
   opacity: 1; /* Ensure the bullets are fully visible */
@@ -283,7 +311,7 @@ body {
 
 /* Hover effect on pagination bullets */
 .swiper-pagination-bullet:hover {
-  background-color: rgba(255, 255, 250, 0.8) !important; /* Blue on hover */
+  background-color: rgba(255, 255, 250, 0.8) !important;
   transform: scale(1.2); /* Enlarge on hover */
   transition: 0.5s ease;
 }
@@ -345,14 +373,14 @@ body {
 } */
 
 button {
-  padding: 10px 20px; /* Add padding to buttons for better appearance */
-  font-size: 16px; /* Increase font size for readability */
+  padding: 10px 20px;
+  font-size: 16px;
   cursor: pointer; /* Change cursor to pointer on hover */
   border: none;
-  background-color: transparent; /* Remove default background color */
-  color: #fffffa; /* Button text color */
-  border-radius: 15px; /* Optional: Add rounded corners */
-  transition: background-color 0.3s; /* Add a transition effect on hover */
+  background-color: transparent;
+  color: #fffffa;
+  border-radius: 15px;
+  transition: background-color 0.3s;
 }
 
 /* button:hover {
@@ -386,6 +414,255 @@ button {
   margin-bottom: 30px;
   font-size: 2.5rem;
   color: #fffffa;
+}
+
+/* Editorial portfolio sections */
+.portfolio-section {
+  width: 100%;
+  margin: 0 0 28px;
+  padding: 20px 0 10px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.headerSection {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.section-eyebrow {
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  line-height: 0.95;
+  margin: 0 0 12px;
+  color: var(--text);
+}
+
+.section-copy {
+  max-width: 720px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.stacked-intro,
+.experience-callout {
+  margin-bottom: 18px;
+  width: 100%;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+  width: 100%;
+}
+
+.project-grid > * {
+  grid-column: span 4;
+}
+
+.project-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(12px);
+}
+
+.project-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.project-card-thumb {
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(135deg, rgba(224, 152, 145, 0.32), rgba(116, 156, 117, 0.24));
+}
+
+.project-card-body {
+  padding: 18px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.project-card-eyebrow,
+.project-detail-eyebrow {
+  display: inline-flex;
+  align-self: flex-start;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.project-card-body h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.1;
+}
+
+.project-card-body p,
+.project-detail-copy,
+.project-detail-summary {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.project-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
+.project-card-meta span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.project-card-cta a {
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.portfolio-split {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.stacked-notes {
+  display: grid;
+  gap: 18px;
+}
+
+.note-card,
+.experience-item {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 20px;
+  text-align: left;
+}
+
+.note-card h3,
+.experience-item h3 {
+  margin: 10px 0 8px;
+}
+
+.detail-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 2px;
+}
+
+.project-detail-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.project-detail-hero h2 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 0.95;
+  margin: 0;
+}
+
+.project-detail-imageWrap {
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+
+.project-detail-image {
+  width: 100%;
+  display: block;
+}
+
+.project-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.project-detail-grid > div {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 18px;
+  text-align: left;
+}
+
+.project-detail-grid h4 {
+  margin-top: 0;
+}
+
+.project-detail-grid ul,
+.experience-item ul,
+.project-stack-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 980px) {
+  .project-grid > * {
+    grid-column: span 6;
+  }
+
+  .portfolio-split,
+  .project-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: 14px;
+  }
+
+  .mainBody {
+    width: 100%;
+    min-height: auto;
+    padding: 24px 16px 32px;
+    border-radius: 24px;
+  }
+
+  .project-grid > * {
+    grid-column: 1 / -1;
+  }
+
+  .swiperSlideContent h3 {
+    font-size: 1.4rem;
+  }
 }
 
 /* Loading Spinner */

@@ -99,38 +99,59 @@ export const Carousel = () => {
         modules={[EffectCoverflow, Navigation, Pagination]}
       >
         <div className="swiperWrapper">
-          {filteredRepos.map((project) => (
-            <SwiperSlide
-              key={project.id}
-              style={{
-                backgroundImage: project.img
-                  ? `url(${project.img})`
-                  : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              }}
-            >
-              <div className="swiperSlideContent">
-                <h3>
-                  {project.name}
-                  {project.isFork && (
-                    <span className="fork-badge-carousel">Fork</span>
+          {filteredRepos.map((project) => {
+            const slug = project.name
+              ? project.name
+                  .toString()
+                  .toLowerCase()
+                  .trim()
+                  .replace(/[^a-z0-9]+/g, "-")
+                  .replace(/(^-|-$)+/g, "")
+              : project.id;
+
+            return (
+              <SwiperSlide
+                key={project.id}
+                style={{
+                  backgroundImage: project.img
+                    ? `url(${project.img})`
+                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                }}
+              >
+                <div className="swiperSlideContent">
+                  <h3>
+                    {project.name}
+                    {project.isFork && (
+                      <span className="fork-badge-carousel">Fork</span>
+                    )}
+                  </h3>
+                  <div>
+                    <p>{project.description}</p>
+                  </div>
+                  {project.language && (
+                    <p className="project-language">
+                      <span className="language-dot"></span>
+                      {project.language}
+                    </p>
                   )}
-                </h3>
-                <a href={project.url} target="_blank" rel="noopener noreferrer">
-                  <p>{project.description}</p>
-                </a>
-                {project.language && (
-                  <p className="project-language">
-                    <span className="language-dot"></span>
-                    {project.language}
-                  </p>
-                )}
-                <div className="project-stats">
-                  <span>⭐ {project.stars}</span>
-                  <span>🔱 {project.forks}</span>
+                  <div className="project-stats">
+                    <span>⭐ {project.stars}</span>
+                    <span>🔱 {project.forks}</span>
+                    {project.url && (
+                      <a
+                        href={project.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ marginLeft: 12, color: "#fffffa" }}
+                      >
+                        View
+                      </a>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </SwiperSlide>
-          ))}
+              </SwiperSlide>
+            );
+          })}
         </div>
       </Swiper>
     </section>
