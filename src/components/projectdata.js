@@ -118,6 +118,30 @@ export const experience = [
   },
 ];
 
+export const personal = [
+  {
+    title: "The gym",
+    meta: "5x a week",
+    description:
+      "Five sessions a week since I started university, and the habit has never really broken. Most of the people I know now I met through it. The confidence it built ended up mattering more outside the gym than in it — these days I get more out of helping friends hit their goals than my own.",
+    image: img("GymLife.jpg"),
+  },
+  {
+    title: "Building PCs",
+    meta: "5+ builds",
+    description:
+      "Five-plus builds over the last few years, the most recent one my own and finally finished. Picking the parts is half the fun; the other half is what happens after. Right now that means falling back into Destiny 2 harder than I'd like to admit.",
+    image: img("NewPc.jpg"),
+  },
+  {
+    title: "Photography and film",
+    meta: "Sony A7C II",
+    description:
+      "Recently picked up a Sony A7C II and have barely put it down since. Mostly Edinburgh — the city itself, and the people I end up wandering around it with.",
+    image: img("EdinTown.jpg"),
+  },
+];
+
 export const extracurricular = [
   {
     role: "Student Representative",
