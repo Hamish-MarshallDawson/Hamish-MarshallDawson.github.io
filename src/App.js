@@ -32,7 +32,7 @@ function Home() {
 
         <section className="portfolio-section">
           <div className="stacked-intro">
-            <span className="section-eyebrow">Work</span>
+            <span className="section-eyebrow">Projects I'm proud of and</span>
             <h2 className="section-title">Things I've built.</h2>
           </div>
           <Carousel />
@@ -65,8 +65,8 @@ function Home() {
 
         <section className="portfolio-section">
           <div className="stacked-intro">
-            <span className="section-eyebrow">Outside the code</span>
-            <h2 className="section-title">The rest of it.</h2>
+            <span className="section-eyebrow">Life without code</span>
+            <h2 className="section-title">The social work.</h2>
           </div>
           <div className="extra-grid">
             {extracurricular.map((item) => (
@@ -91,7 +91,7 @@ function Home() {
         <section className="portfolio-section">
           <div className="stacked-intro">
             <span className="section-eyebrow">Off the clock</span>
-            <h2 className="section-title">When I'm not at a keyboard.</h2>
+            <h2 className="section-title">In my spare time I am...</h2>
           </div>
           <div className="personal-grid">
             {personal.map((item) => (
