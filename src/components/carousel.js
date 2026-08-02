@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { fetchUserRepos, formatRepoData } from "../services/githubAPI";
 import { carouselProjects } from "./projectdata";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -11,6 +11,21 @@ import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
 export const Carousel = () => {
   const [projects, setProjects] = useState(carouselProjects);
   const [loading, setLoading] = useState(true);
+  const swiperRef = useRef(null);
+
+  // Swiper picks up the new breakpoint on resize but does not always re-lay out
+  // the slides, leaving them at the previous width. Force it.
+  useEffect(() => {
+    const onResize = () => {
+      if (swiperRef.current) swiperRef.current.update();
+    };
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -26,13 +41,8 @@ export const Carousel = () => {
         const merged = carouselProjects.map((project) => {
           const live = project.repo && byName.get(project.repo.toLowerCase());
           if (!live) return project;
-          return {
-            ...project,
-            url: project.url || live.url,
-            language: project.language || live.language,
-            stars: live.stars,
-            forks: live.forks,
-          };
+          // Tags and copy are curated; GitHub only supplies the repo link.
+          return { ...project, url: project.url || live.url };
         });
 
         if (!cancelled) setProjects(merged);
@@ -64,10 +74,15 @@ export const Carousel = () => {
     <div className="pageCarouselPage">
       <Swiper
         className="projectSwiper"
+        onSwiper={(swiper) => {
+          swiperRef.current = swiper;
+        }}
         modules={[EffectCoverflow, Navigation, Pagination]}
         effect="coverflow"
         grabCursor={true}
         centeredSlides={true}
+        observer={true}
+        observeParents={true}
         slidesPerView={1.1}
         spaceBetween={16}
         navigation={true}
@@ -99,8 +114,9 @@ export const Carousel = () => {
               <h3>{project.name}</h3>
               <p>{project.description}</p>
               <div className="project-card-meta">
-                {project.language && <span>{project.language}</span>}
-                {project.stars > 0 && <span>★ {project.stars}</span>}
+                {(project.tags || []).map((tag) => (
+                  <span key={tag}>{tag}</span>
+                ))}
               </div>
               <div className="slide-links">
                 {project.url && (
@@ -111,16 +127,6 @@ export const Carousel = () => {
                     rel="noopener noreferrer"
                   >
                     {project.url.includes("github.com") ? "GitHub" : "Visit"}
-                  </a>
-                )}
-                {project.secondaryUrl && (
-                  <a
-                    className="detail-link"
-                    href={project.secondaryUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {project.secondaryLabel}
                   </a>
                 )}
               </div>
