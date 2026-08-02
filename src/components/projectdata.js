@@ -1,6 +1,7 @@
 // Images live in /public/projects so a missing file degrades to the gradient
-// behind it instead of breaking the build.
-const img = (file) => `${process.env.PUBLIC_URL}/projects/${file}`;
+// behind it instead of breaking the build. The site serves the resized copies
+// in optimized/; the full-resolution originals sit alongside them untouched.
+const img = (file) => `${process.env.PUBLIC_URL}/projects/optimized/${file}`;
 
 // The carousel is the main work section. Order is deliberate: dissertation and
 // the HRI study first, then current builds, then coursework.
