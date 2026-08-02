@@ -1,222 +1,117 @@
-import discordLogo from "./projectsImages/discordLogo.jpg";
-import quizImage from "./projectsImages/Quiz.jpg";
-import textEditorImage from "./projectsImages/textEditor.jpg";
-import ticTacToeImage from "./projectsImages/tic-tac-toe.jpg";
-import toDoAppImage from "./projectsImages/ToDoApp.jpg";
-import typingSpeedImage from "./projectsImages/TypingSpeed.jpg";
-import chatAppImage from "./projectsImages/chatapp.jpg";
+// Images live in /public/projects so a missing file degrades to the gradient
+// behind it instead of breaking the build.
+const img = (file) => `${process.env.PUBLIC_URL}/projects/${file}`;
 
-// Placeholder images reused for new professional entries (replace with
-// curated screenshots when available)
-const dissertationImg = textEditorImage;
-const hriImg = quizImage;
-const busTrackerImg = chatAppImage;
-
-// The carousel shows a curated set rather than every public repo. Each entry is
-// matched against the GitHub API by `repo`; live stats are merged in when the
-// repo is public. TensorRoom is private, so it renders from the values here.
+// The carousel is the main work section. Order is deliberate: dissertation and
+// the HRI study first, then current builds, then coursework.
 export const carouselProjects = [
   {
+    id: "dissertation",
     repo: "Language-Commands-for-a-Robotic-arm-using-Object-Recognition-",
-    name: "Language Commands for a Robotic Arm",
-    category: "Dissertation",
+    name: "Robotic Arm Object Swapping",
+    category: "Dissertation · 89/100",
     description:
-      "Speech-controlled robotic arm translating language commands into actions with a VLA model, Whisper, and a local LLM under 4GB of VRAM.",
+      "A robotic arm that takes a spoken instruction and carries it out. OpenCV handles perception, a visual-action model drives manipulation, and an LLM with speech recognition sits on top. The whole pipeline runs locally, under 4GB of VRAM.",
+    image: img("dissertation.jpg"),
     accent: "linear-gradient(135deg, #e09891 0%, #8a5f8f 100%)",
   },
   {
+    id: "hri",
+    name: "Trust in Teleoperation",
+    category: "HRI research · Summer 2025",
+    description:
+      "Research internship measuring how input latency changes an operator's trust in a teleoperated robot. I built the Linux simulation environment, ran the study, and presented at the EPSRC Executive Showcase, which helped secure the next phase of funding.",
+    image: img("hri.jpg"),
+    accent: "linear-gradient(135deg, #5b7cc4 0%, #3c3f7a 100%)",
+  },
+  {
+    id: "tensoroom",
     repo: "TensorRoom",
-    name: "TensorRoom",
+    name: "TensoRoom",
     category: "In progress",
     description:
-      "Local AI workspace bringing diffusion, segmentation, and a RAG/LLM pipeline together behind a single interface.",
+      "Redesign a real room by describing it. Diffusion, segmentation, and language models wired into one pipeline that edits the space you point it at, in real time.",
     url: "https://github.com/Hamish-MarshallDawson/TensorRoom",
     language: "Python",
+    image: img("tensoroom.jpg"),
     accent: "linear-gradient(135deg, #749c75 0%, #2f6f6f 100%)",
   },
   {
+    id: "bus",
     repo: "Lothian-Api-Bus-Display",
     name: "Lothian Bus Display",
-    category: "Hardware",
+    category: "Open source",
     description:
-      "Live Edinburgh bus times on an e-ink display driven by a Raspberry Pi 5, built around the Lothian Buses API.",
+      "Live Edinburgh bus times on an e-ink panel, driven by a Raspberry Pi 5. Written in C++ and tuned so the rendering stays smooth on low-power hardware. It hangs on my wall and tells me when to leave.",
+    image: img("bus.jpg"),
     accent: "linear-gradient(135deg, #c9884f 0%, #7a4b3a 100%)",
   },
   {
+    id: "iteration-inc",
     repo: "iteration-inc",
     name: "Iteration Inc",
-    category: "Team project",
+    category: "Team lead · 2024–2025",
     description:
-      "Group software engineering project delivered collaboratively across a full development cycle.",
-    accent: "linear-gradient(135deg, #5b7cc4 0%, #3c3f7a 100%)",
+      "A serverless smart care-home platform. I led the team and owned authentication, device settings, and the energy-saving recommendations, with accessibility driving most of the interface decisions.",
+    url: "https://iteration-inc.vercel.app/",
+    image: img("iteration-inc.jpg"),
+    accent: "linear-gradient(135deg, #4f9c9c 0%, #2f5f7a 100%)",
+  },
+  {
+    id: "bonin-loot",
+    name: "Bonin' Loot",
+    category: "Games programming coursework",
+    description:
+      "A game built for the Games Programming coursework, playable in the browser on itch.io.",
+    url: "https://hamishmad.itch.io/bonin-loot",
+    secondaryUrl: "https://github.com/CordlessGnu/F21caGames2",
+    secondaryLabel: "Source",
+    image: img("bonin-loot.jpg"),
+    accent: "linear-gradient(135deg, #b0577f 0%, #5c3470 100%)",
   },
 ];
 
-export const projectSections = [
+export const experience = [
   {
-    label: "Featured research",
-    title: "AI systems built around human interaction, speech, and local inference",
-    description:
-      "These projects show the shift from general web apps into research-driven work across robotics, perception, and constrained on-device AI deployment.",
+    role: "AI and Machine Learning Engineer Intern",
+    org: "STMicroelectronics",
+    period: "May 2026 – December 2026",
+    location: "Edinburgh",
+    points: [
+      "Built a VLM-based fault detection pipeline from scratch, clustering and naming unknown faults and sorting known ones into existing classifications — adapting current research into a working agentic system.",
+      "Established a standardised testing methodology for a pipeline that had none, validated with Bayesian optimisation and structured train/test splitting.",
+      "Ran two weekly progress updates and a wider team review, explaining LoRA, context windows, VRAM constraints, quantisation and RAG to engineers outside the AI team.",
+      "Co-presented GitHub Copilot's strengths, weaknesses and best practices, including AGENT.md and SKILLS.md, to speed up adoption across non-software teams.",
+    ],
   },
   {
-    label: "Industrial placement",
-    title: "Applied AI work at STMicroelectronics",
-    description:
-      "A short summary of the placement sits alongside the featured work so recruiters can immediately see your industry exposure and technical focus.",
+    role: "Research Intern — Human-Robot Interaction",
+    org: "Heriot-Watt University",
+    period: "Summer 2025",
+    location: "Trust in Teleoperation Robotics",
+    points: [
+      "Quantified how input latency affects teleoperated system performance across multiple participants, shaping the project's next research direction.",
+      "Engineered a Linux-based simulation environment to test reliability under variable conditions before real-world deployment.",
+      "Presented findings at the EPSRC Executive Showcase, contributing to funding for the next phase.",
+    ],
   },
 ];
 
-export const projectList = [
+export const extracurricular = [
   {
-    name: "Dissertation: Visual-Language Action (VLA) + Whisper",
-    shortDescription:
-      "Speech-controlled robotic arm using a Visual Language Action model, Whisper, and a local LLM under a strict VRAM budget.",
+    role: "Student Representative",
+    org: "Heriot-Watt University",
+    period: "Sept 2023 – present",
     description:
-      "A dissertation project focused on building a speech-controlled robotic arm that could translate language commands into actions using a Visual Language Action model, OpenAI Whisper for speech recognition, and a locally run LLM. The full training dataset for the VLA system was gathered and prepared by me, and the final system ran on less than 4GB of VRAM. The work was showcased at HRI 2026 in the National Robotarium.",
-    highlights: [
-      "Local speech-to-action pipeline",
-      "Custom training dataset collected and prepared by me",
-      "Ran under 4GB VRAM",
-      "Showcased at HRI 2026",
-    ],
-    outcomes: [
-      "Demonstrated end-to-end embodied AI on constrained hardware",
-      "Used local models to avoid cloud dependence",
-      "Presented at an academic event environment",
-    ],
-    githubLink: "",
-    img: dissertationImg,
-    alt: "Robotic arm demonstration",
-    featured: true,
-    category: "Dissertation",
-    timeline: "2026",
-    stack: ["VLA", "Whisper", "LLM", "local inference", "robotics"],
+      "Won Class Rep of the Month and Class Rep of the Year. Redesigned how course feedback reaches academic staff and set up new channels so problems get raised while there is still time to fix them.",
+    image: img("class-rep.jpg"),
   },
   {
-    name: "HRI Study: Delay Impact on Trust in Teleoperation",
-    shortDescription:
-      "Human-robot interaction study examining how teleoperation delay affected operator trust.",
+    role: "Branding and Media Manager",
+    org: "Heriot-Watt Racing — Formula Student",
+    period: "Sept 2023 – Sept 2025",
     description:
-      "A human-robot interaction study into the impact of delays on trust in teleoperation. I had to learn and develop in ROS1 to support the experimental setup, then led the experimental process, managed data collection, and helped produce presentation and paper material that was submitted to multiple events. The project also led to presenting the work at several events.",
-    highlights: [
-      "Learned and worked in ROS1",
-      "Led the experimental process",
-      "Presented the work at multiple events",
-      "Paper and submissions prepared for several venues",
-    ],
-    outcomes: [
-      "Built a research workflow around teleoperation trust",
-      "Balanced experimentation, write-up, and presentation work",
-      "Strengthened robotics and HRI communication skills",
-    ],
-    githubLink: "",
-    img: hriImg,
-    alt: "Teleoperation / HRI study visual",
-    featured: true,
-    category: "HRI Study",
-    timeline: "2025-2026",
-    stack: ["ROS1", "teleoperation", "HRI", "experimentation", "research"],
-  },
-  {
-    name: "Raspberry Pi Bus Tracker (In progress)",
-    shortDescription:
-      "A wall-mounted Raspberry Pi bus tracker with a touchscreen interface and local transit data integration.",
-    description:
-      "An in-progress hardware and interface project exploring the design of a Raspberry Pi-based bus tracker for a wall-mounted display. I researched the physical components, developed the touchscreen interface, and integrated the Edinburgh Lothian Buses API so it can show local stop and service information in a practical domestic form factor.",
-    highlights: [
-      "Hardware and UI research",
-      "Touchscreen interface for Raspberry Pi",
-      "Edinburgh Lothian Buses API integration",
-      "Designed for a wall-mounted display",
-    ],
-    outcomes: [
-      "Combines embedded hardware thinking with product UI design",
-      "Shows practical API integration for a real-world use case",
-    ],
-    githubLink: "",
-    img: busTrackerImg,
-    alt: "Raspberry Pi touchscreen UI",
-    featured: true,
-    category: "In progress",
-    timeline: "2026",
-    stack: ["Raspberry Pi", "touchscreen UI", "API integration", "hardware"],
-  },
-  {
-    name: "Discord Bot",
-    shortDescription: "A basic Discord bot built with JavaScript and Discord.js.",
-    description:
-      "A small Discord bot built with JavaScript and Discord.js, kept as an earlier project in the archive section.",
-    githubLink: "https://github.com/Hamish-MarshallDawson/DiscordBot",
-    img: discordLogo,
-    alt: "Discord Logo",
-    featured: false,
-    category: "Archive",
-  },
-  {
-    name: "Quiz App",
-    shortDescription: "A React quiz app with multiple game states.",
-    description:
-      "A React quiz app with multiple game states, included as an older project rather than a featured case study.",
-    githubLink: "https://github.com/Hamish-MarshallDawson/react-quiz-app",
-    img: quizImage,
-    alt: "A Multi choice quiz with pencil",
-    featured: false,
-    category: "Archive",
-  },
-  {
-    name: "Text Editor",
-    shortDescription: "A simple Python GUI text editor.",
-    description:
-      "A Python GUI text editor with basic file operations such as create, open, save, and save as.",
-    githubLink: "https://github.com/Hamish-MarshallDawson/PythonTextEditor",
-    img: textEditorImage,
-    alt: "A sub menu for a text editor with a few save options",
-    featured: false,
-    category: "Archive",
-  },
-  {
-    name: "Tic Tac Toe",
-    shortDescription: "A simple two-player Tic Tac Toe game in React.",
-    description:
-      "A two-player Tic Tac Toe game built in React, retained as an archive project.",
-    githubLink: "https://github.com/Hamish-MarshallDawson/Tic-tac-toe-react",
-    img: ticTacToeImage,
-    alt: "A game of tic tac toe",
-    featured: false,
-    category: "Archive",
-  },
-  {
-    name: "To Do List",
-    shortDescription: "A React to-do list with task ordering and removal.",
-    description:
-      "A React to-do list application that supports adding tasks, reordering them, and removing them when complete.",
-    githubLink: "https://github.com/Hamish-MarshallDawson/react-to-do-list",
-    img: toDoAppImage,
-    alt: "A to do list on pen and paper",
-    featured: false,
-    category: "Archive",
-  },
-  {
-    name: "Words per minute calculator",
-    shortDescription: "A typing speed app with difficulty selection.",
-    description:
-      "A typing speed calculator with multiple difficulty options and WPM scoring.",
-    githubLink: "https://github.com/Hamish-MarshallDawson/WordsPerMinute",
-    img: typingSpeedImage,
-    alt: "Someone typing on a laptop",
-    featured: false,
-    category: "Archive",
-  },
-  {
-    name: "Real time chat app",
-    shortDescription: "A real-time chat app built with React and Node.",
-    description:
-      "A real-time chat application built with React and Node.js where two users can join the same room and exchange messages.",
-    githubLink: "https://github.com/Hamish-MarshallDawson/RealtimeChatApp",
-    img: chatAppImage,
-    alt: "A ui interface of a conversation on a phone",
-    featured: false,
-    category: "Archive",
+      "Two years in a multi-disciplinary engineering team, translating what the car could actually do into something sponsors and the public understood. Built external partnerships to grow visibility and funding.",
+    image: img("hw-racing.jpg"),
   },
 ];

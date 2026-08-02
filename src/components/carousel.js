@@ -24,7 +24,7 @@ export const Carousel = () => {
 
         // Curated order wins; live GitHub stats fill in where the repo is public.
         const merged = carouselProjects.map((project) => {
-          const live = byName.get(project.repo.toLowerCase());
+          const live = project.repo && byName.get(project.repo.toLowerCase());
           if (!live) return project;
           return {
             ...project,
@@ -85,10 +85,14 @@ export const Carousel = () => {
         }}
       >
         {projects.map((project) => (
-          <SwiperSlide key={project.repo} className="projectSlide">
+          <SwiperSlide key={project.id} className="projectSlide">
             <div
               className="swiperSlideMedia"
-              style={{ background: project.accent }}
+              style={{
+                backgroundImage: project.image
+                  ? `url(${project.image}), ${project.accent}`
+                  : project.accent,
+              }}
             />
             <div className="swiperSlideContent">
               <span className="project-card-eyebrow">{project.category}</span>
@@ -96,19 +100,30 @@ export const Carousel = () => {
               <p>{project.description}</p>
               <div className="project-card-meta">
                 {project.language && <span>{project.language}</span>}
-                {project.stars !== undefined && <span>⭐ {project.stars}</span>}
-                {project.forks !== undefined && <span>⑂ {project.forks}</span>}
+                {project.stars > 0 && <span>★ {project.stars}</span>}
               </div>
-              {project.url && (
-                <a
-                  className="detail-link"
-                  href={project.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View on GitHub
-                </a>
-              )}
+              <div className="slide-links">
+                {project.url && (
+                  <a
+                    className="detail-link"
+                    href={project.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {project.url.includes("github.com") ? "GitHub" : "Visit"}
+                  </a>
+                )}
+                {project.secondaryUrl && (
+                  <a
+                    className="detail-link"
+                    href={project.secondaryUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {project.secondaryLabel}
+                  </a>
+                )}
+              </div>
             </div>
           </SwiperSlide>
         ))}

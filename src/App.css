@@ -52,8 +52,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.04);
@@ -65,9 +65,11 @@ body {
   border-color: var(--accent);
 }
 
+/* Each source SVG has its viewBox cropped to its actual content bounds, so a
+   single size renders all three at matching optical weight. */
 .svgLinks svg {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: block;
 }
 
@@ -209,6 +211,26 @@ body {
   aspect-ratio: 16 / 9;
   width: 100%;
   flex-shrink: 0;
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Reserve the footer row so slides without links stay the same height. */
+.slide-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: auto;
+  min-height: 45px;
+}
+
+/* margin-top:auto on both meta and links would split the slack between them.
+   min-height keeps slides without tags level with the ones that have them. */
+.swiperSlideContent .project-card-meta {
+  margin-top: 0;
+  min-height: 27px;
 }
 
 .swiperSlideContent {
@@ -291,30 +313,35 @@ body {
 
 /* animation section */
 
+/* Slow drift between off-white and the page accent, no third colour. */
 .textColourAnimation {
-  /*adding colour animation to text*/
-
-  color: rgba(255, 255, 255, 0.1);
+  color: transparent;
   background: linear-gradient(
-    to right,
-    rgb(255, 255, 250),
-    /* rgb(81, 80, 82), */ rgb(224, 152, 145),
-    /* rgb(51, 49, 56), */ rgb(116, 156, 117)
+    100deg,
+    #fffffa 0%,
+    #e09891 25%,
+    #fffffa 50%,
+    #e09891 75%,
+    #fffffa 100%
   );
-  background-size: 400%;
+  background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;
-  animation: sTransition 10s linear infinite;
+  animation: sTransition 28s linear infinite;
 }
 
-/*keyframe section */
 @keyframes sTransition {
   0% {
-    background-position: 0%;
+    background-position: 0% 50%;
   }
-
   100% {
-    background-position: 400%;
+    background-position: 300% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .textColourAnimation {
+    animation: none;
   }
 }
 
@@ -667,6 +694,81 @@ button:focus {
   line-height: 1.6;
 }
 
+/* Experience */
+.experience-item ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+  font-size: clamp(14px, 1.6vw, 15px);
+}
+
+.experience-item li::marker {
+  color: var(--accent);
+}
+
+.experience-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  width: 100%;
+}
+
+.experience-period {
+  font-size: 0.8rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Extracurricular */
+.extra-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+  width: 100%;
+}
+
+.extra-card {
+  padding: 0;
+  overflow: hidden;
+  gap: 0;
+}
+
+.extra-card-media {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: rgba(224, 152, 145, 0.16);
+  background-image: linear-gradient(
+    135deg,
+    rgba(224, 152, 145, 0.3),
+    rgba(116, 156, 117, 0.22)
+  );
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid var(--line);
+}
+
+.extra-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+}
+
+.extra-card-body .extra-card-org {
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 720px) {
+  .extra-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 1024px) {
   .project-grid > * {
     grid-column: span 6;
@@ -681,10 +783,6 @@ button:focus {
 @media (max-width: 768px) {
   .project-grid > * {
     grid-column: 1 / -1;
-  }
-
-  .svgLinks svg {
-    width: 44px;
   }
 }
 
