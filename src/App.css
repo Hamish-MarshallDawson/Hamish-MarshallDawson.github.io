@@ -731,6 +731,15 @@ button:focus {
   width: 100%;
 }
 
+/* Three cards, so let the column count fall out of the available width rather
+   than stepping it at fixed breakpoints. */
+.personal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--space-md);
+  width: 100%;
+}
+
 .extra-card {
   padding: 0;
   overflow: hidden;

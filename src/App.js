@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import "./App.css";
 import Header from "./components/Header";
 import { Carousel } from "./components/carousel";
-import { experience, extracurricular } from "./components/projectdata";
+import { experience, extracurricular, personal } from "./components/projectdata";
 
 function Title() {
   useEffect(() => {
@@ -24,8 +24,8 @@ function Home() {
           </div>
           <p className="hero-intro">
             Final-year MEng student at Heriot-Watt, currently building AI
-            pipelines at STMicroelectronics. Mostly robotics, perception, and
-            getting models to run on hardware that shouldn't fit them.
+            pipelines at STMicroelectronics. A bit of robotics, perception, and
+            getting a bunch of models to run on hardware that shouldn't fit them.
           </p>
           <Header />
         </header>
@@ -81,6 +81,30 @@ function Home() {
                   <span className="project-card-eyebrow">{item.period}</span>
                   <h3>{item.role}</h3>
                   <p className="extra-card-org">{item.org}</p>
+                  <p>{item.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="portfolio-section">
+          <div className="stacked-intro">
+            <span className="section-eyebrow">Off the clock</span>
+            <h2 className="section-title">When I'm not at a keyboard.</h2>
+          </div>
+          <div className="personal-grid">
+            {personal.map((item) => (
+              <article key={item.title} className="note-card extra-card">
+                <div
+                  className="extra-card-media"
+                  style={{
+                    backgroundImage: `url(${item.image}), linear-gradient(135deg, rgba(224,152,145,0.3), rgba(116,156,117,0.22))`,
+                  }}
+                />
+                <div className="extra-card-body">
+                  <span className="project-card-eyebrow">{item.meta}</span>
+                  <h3>{item.title}</h3>
                   <p>{item.description}</p>
                 </div>
               </article>
