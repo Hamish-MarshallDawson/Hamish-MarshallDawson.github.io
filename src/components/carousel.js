@@ -1,159 +1,118 @@
 import { useState, useEffect } from "react";
 import { fetchUserRepos, formatRepoData } from "../services/githubAPI";
+import { carouselProjects } from "./projectdata";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/effect-coverflow";
 import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
-import { register } from "swiper/element/bundle";
-import { isMobile } from "react-device-detect";
-
-register();
 
 export const Carousel = () => {
-  const [repos, setRepos] = useState([]);
+  const [projects, setProjects] = useState(carouselProjects);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all"); // 'all', 'original', 'forks'
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadRepos = async () => {
       try {
-        setLoading(true);
         const data = await fetchUserRepos("Hamish-MarshallDawson");
-        const formattedRepos = data.map(formatRepoData);
-        setRepos(formattedRepos);
+        const byName = new Map(
+          data.map(formatRepoData).map((repo) => [repo.name.toLowerCase(), repo])
+        );
+
+        // Curated order wins; live GitHub stats fill in where the repo is public.
+        const merged = carouselProjects.map((project) => {
+          const live = byName.get(project.repo.toLowerCase());
+          if (!live) return project;
+          return {
+            ...project,
+            url: project.url || live.url,
+            language: project.language || live.language,
+            stars: live.stars,
+            forks: live.forks,
+          };
+        });
+
+        if (!cancelled) setProjects(merged);
       } catch (err) {
         console.error("Failed to load GitHub repos:", err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     loadRepos();
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  // Filter repos based on selection
-  const filteredRepos = repos.filter((repo) => {
-    if (filter === "original") return !repo.isFork;
-    if (filter === "forks") return repo.isFork;
-    return true; // 'all'
-  });
 
   if (loading) {
     return (
-      <section className="pageCarouselPage">
+      <div className="pageCarouselPage">
         <div className="carousel-loading">
           <div className="loading-spinner"></div>
-          <p>Loading projects from GitHub...</p>
+          <p>Loading project details…</p>
         </div>
-      </section>
-    );
-  }
-
-  if (repos.length === 0) {
-    return (
-      <section className="pageCarouselPage">
-        <p>No projects found.</p>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="pageCarouselPage">
-      {/* Filter Dropdown */}
-      <div className="carousel-filter-container">
-        <label htmlFor="project-filter" className="filter-label">
-          Show:
-        </label>
-        <select
-          id="project-filter"
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="project-filter-dropdown"
-        >
-          <option value="all">All Projects ({repos.length})</option>
-          <option value="original">
-            My Projects ({repos.filter((r) => !r.isFork).length})
-          </option>
-          <option value="forks">
-            Forked Projects ({repos.filter((r) => r.isFork).length})
-          </option>
-        </select>
-      </div>
-
+    <div className="pageCarouselPage">
       <Swiper
-        pagination={{ clickable: true }}
+        className="projectSwiper"
+        modules={[EffectCoverflow, Navigation, Pagination]}
+        effect="coverflow"
         grabCursor={true}
         centeredSlides={true}
-        slidesPerView="auto"
-        effect="coverflow"
-        loop={filteredRepos.length > 1}
-        navigation={!isMobile}
+        slidesPerView={1.1}
+        spaceBetween={16}
+        navigation={true}
+        pagination={{ clickable: true }}
         coverflowEffect={{
-          rotate: 50,
+          rotate: 0,
           stretch: 0,
-          depth: 100,
-          modifier: 1,
+          depth: 120,
+          modifier: 1.6,
+          slideShadows: false,
         }}
-        modules={[EffectCoverflow, Navigation, Pagination]}
+        breakpoints={{
+          640: { slidesPerView: 1.6, spaceBetween: 20 },
+          1024: { slidesPerView: 2.2, spaceBetween: 24 },
+        }}
       >
-        <div className="swiperWrapper">
-          {filteredRepos.map((project) => {
-            const slug = project.name
-              ? project.name
-                  .toString()
-                  .toLowerCase()
-                  .trim()
-                  .replace(/[^a-z0-9]+/g, "-")
-                  .replace(/(^-|-$)+/g, "")
-              : project.id;
-
-            return (
-              <SwiperSlide
-                key={project.id}
-                style={{
-                  backgroundImage: project.img
-                    ? `url(${project.img})`
-                    : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                }}
-              >
-                <div className="swiperSlideContent">
-                  <h3>
-                    {project.name}
-                    {project.isFork && (
-                      <span className="fork-badge-carousel">Fork</span>
-                    )}
-                  </h3>
-                  <div>
-                    <p>{project.description}</p>
-                  </div>
-                  {project.language && (
-                    <p className="project-language">
-                      <span className="language-dot"></span>
-                      {project.language}
-                    </p>
-                  )}
-                  <div className="project-stats">
-                    <span>⭐ {project.stars}</span>
-                    <span>🔱 {project.forks}</span>
-                    {project.url && (
-                      <a
-                        href={project.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ marginLeft: 12, color: "#fffffa" }}
-                      >
-                        View
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </SwiperSlide>
-            );
-          })}
-        </div>
+        {projects.map((project) => (
+          <SwiperSlide key={project.repo} className="projectSlide">
+            <div
+              className="swiperSlideMedia"
+              style={{ background: project.accent }}
+            />
+            <div className="swiperSlideContent">
+              <span className="project-card-eyebrow">{project.category}</span>
+              <h3>{project.name}</h3>
+              <p>{project.description}</p>
+              <div className="project-card-meta">
+                {project.language && <span>{project.language}</span>}
+                {project.stars !== undefined && <span>⭐ {project.stars}</span>}
+                {project.forks !== undefined && <span>⑂ {project.forks}</span>}
+              </div>
+              {project.url && (
+                <a
+                  className="detail-link"
+                  href={project.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View on GitHub
+                </a>
+              )}
+            </div>
+          </SwiperSlide>
+        ))}
       </Swiper>
-    </section>
+    </div>
   );
 };

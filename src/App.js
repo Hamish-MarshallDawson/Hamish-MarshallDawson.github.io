@@ -47,33 +47,7 @@ function Home() {
           </div>
           <div className="project-grid">
             {featuredProjects.map((project) => (
-              <div key={project.name} className="project-card">
-                <div
-                  className="project-card-thumb"
-                  style={{
-                    backgroundImage: project.img ? `url(${project.img})` : undefined,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
-                />
-                <div className="project-card-body">
-                  {project.category && <span className="project-card-eyebrow">{project.category}</span>}
-                  <h3>{project.name}</h3>
-                  <p>{project.shortDescription || project.description}</p>
-                  <div className="project-card-meta">
-                    {project.timeline && <span>{project.timeline}</span>}
-                    {project.language && <span>{project.language}</span>}
-                    {project.stars !== undefined && <span>⭐ {project.stars}</span>}
-                  </div>
-                  <div className="project-card-cta">
-                    {project.url && (
-                      <a href={project.url} target="_blank" rel="noopener noreferrer">
-                        View on GitHub
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <ProjectCard key={project.name} project={project} />
             ))}
           </div>
         </section>
@@ -111,11 +85,11 @@ function Home() {
 
         <section className="portfolio-section">
           <div className="stacked-intro">
-            <span className="section-eyebrow">Archive</span>
-            <h2 className="section-title">Earlier projects and experiments.</h2>
+            <span className="section-eyebrow">In focus</span>
+            <h2 className="section-title">The four projects I'd point you to first.</h2>
             <p className="section-copy">
-              The carousel below shows my earlier work. While these projects are solid,
-              the featured section above better represents my current direction.
+              My dissertation, TensorRoom, the Lothian bus display, and Iteration
+              Inc — the work that best shows where my engineering is heading.
             </p>
           </div>
           <Carousel />

@@ -13,41 +13,71 @@ body {
   --panel: rgba(24, 25, 31, 0.88);
   --panel-strong: #1e2027;
   --line: rgba(255, 255, 255, 0.12);
+  --line-strong: rgba(255, 255, 255, 0.24);
   --text: #f4f1ea;
   --muted: rgba(244, 241, 234, 0.72);
   --accent: #e09891;
   --accent-2: #749c75;
+
+  /* One spacing scale so gaps/padding match across cards, sections, slides. */
+  --space-xs: 6px;
+  --space-sm: 10px;
+  --space-md: clamp(14px, 2vw, 20px);
+  --space-lg: clamp(20px, 3vw, 32px);
+  --space-xl: clamp(32px, 5vw, 56px);
+
+  /* Two radii instead of the ad-hoc 12/15/20/22/24/32px mix. */
+  --radius-sm: 12px;
+  --radius-lg: 20px;
+
+  --shadow-card: 0 18px 44px rgba(0, 0, 0, 0.28);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 .svgLinks {
   display: flex;
-  gap: 2vw;
+  gap: var(--space-md);
   justify-content: center;
   align-items: center;
   width: 100%;
 }
 
+/* Fixed sizing: vw-based icons ballooned on desktop and vanished on mobile. */
+.svgLinks a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.svgLinks a:hover {
+  background: rgba(224, 152, 145, 0.18);
+  border-color: var(--accent);
+}
+
 .svgLinks svg {
-  width: 8vw; /* Same width for all logos */
-  height: auto; /* Maintain aspect ratio */
-  max-height: 10vh;
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .svgLinks path {
-  fill: #fffffa !important; /* Default color */
-  transition: fill 0.3s; /* Add a transition effect on hover */
-  transition: 0.5s ease;
+  fill: var(--text);
+  transition: fill 0.25s ease;
 }
 
-.github-icon,
-.icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.github-icon:hover path {
-  fill: #e09891 !important; /* Hover color */
+.svgLinks a:hover path {
+  fill: var(--accent);
 }
 
 .page {
@@ -79,16 +109,15 @@ body {
   background: linear-gradient(180deg, rgba(25, 27, 33, 0.96), rgba(18, 19, 24, 0.96));
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(18px);
-  gap: 20px;
+  gap: var(--space-xl);
 }
 
+/* Paragraphs are plain text. Panels/pills are opt-in via their own classes so
+   copy inside cards, sections, and the hero all read the same. */
 .mainBody p {
-  margin: 7px;
-  border: 1px solid var(--line);
-  background-color: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-size: 16px;
+  margin: 0;
+  font-size: clamp(14px, 1.6vw, 16px);
+  line-height: 1.6;
   color: var(--muted);
 }
 
@@ -99,12 +128,14 @@ body {
   letter-spacing: -0.01em;
 }
 
+/* max-width without auto side margins pins the block to the left edge, which
+   reads as off-centre under the centred h1. */
 .hero-intro {
   color: var(--muted);
-  margin: clamp(8px, 2vw, 18px) 0;
-  max-width: 760px;
-  font-size: clamp(14px, 2vw, 16px);
-  padding: clamp(6px, 1vw, 10px) clamp(8px, 2vw, 14px);
+  margin: clamp(10px, 2vw, 18px) auto clamp(18px, 3vw, 26px);
+  max-width: 60ch;
+  font-size: clamp(15px, 1.8vw, 17px);
+  text-wrap: balance;
 }
 
 /* For slider section */
@@ -121,52 +152,6 @@ body {
   flex-direction: column;
   justify-content: center;
   gap: clamp(12px, 2vw, 20px);
-}
-
-/* Carousel Filter Dropdown */
-.carousel-filter-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(8px, 2vw, 12px);
-  margin-bottom: clamp(8px, 1.5vw, 10px);
-  flex-wrap: wrap;
-}
-
-.filter-label {
-  color: var(--muted);
-  font-size: clamp(13px, 1.8vw, 16px);
-  font-weight: 500;
-}
-
-.project-filter-dropdown {
-  padding: clamp(8px, 1.5vw, 10px) clamp(14px, 2.5vw, 20px);
-  font-size: clamp(13px, 1.8vw, 16px);
-  font-family: "Montserrat", sans-serif;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background-color: rgba(255, 255, 255, 0.05);
-  color: var(--text);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  outline: none;
-  min-height: 44px;
-}
-
-.project-filter-dropdown:hover {
-  background-color: rgba(116, 156, 117, 0.22);
-  border-color: rgba(116, 156, 117, 0.55);
-}
-
-.project-filter-dropdown:focus {
-  border-color: #e09891;
-  box-shadow: 0 0 0 3px rgba(224, 152, 145, 0.2);
-}
-
-.project-filter-dropdown option {
-  background-color: #1e2027;
-  color: var(--text);
-  padding: 10px;
 }
 
 /* Loading state */
@@ -188,140 +173,120 @@ body {
   padding: 0;
 }
 
-.swiper-slide {
-  background-position: center;
-  background-size: cover;
-  border-radius: clamp(12px, 2.5vw, 22px);
-  filter: saturate(1.08);
+/* The swiper must be width-constrained by its parent. Without this it grows to
+   the sum of its slides and pushes the whole page into horizontal scroll. */
+.projectSwiper {
+  width: 100%;
+  max-width: 100%;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+  padding: 8px 0 52px;
+  box-sizing: border-box;
+}
+
+/* Stretch every slide to the tallest so short slides don't clip their content. */
+.projectSwiper .swiper-wrapper {
+  align-items: stretch;
+}
+
+.projectSlide {
+  box-sizing: border-box;
+  height: 100%; /* fill the stretched wrapper so all slides match */
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.3s ease;
+}
+
+.swiper-slide-active.projectSlide {
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.swiperSlideMedia {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .swiperSlideContent {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 90%;
-  padding: clamp(12px, 2.5vw, 24px);
-  background: linear-gradient(180deg, rgba(10, 10, 12, 0.08), rgba(10, 10, 12, 0.68));
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  text-align: left;
+  flex: 1 0 auto; /* grow to fill, never shrink below content height */
 }
+
 .swiperSlideContent h3 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-  font-style: normal;
-  color: #fffffa;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+  line-height: 1.2;
+  margin: 0;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  /* Reserve two lines so one- and two-line titles align across slides. */
+  min-height: calc(2 * 1.2em);
 }
 
-.fork-badge-carousel {
-  display: inline-block;
-  background-color: #749c75;
-  color: #fffffa;
-  font-size: 0.8rem;
-  padding: 4px 12px;
-  border-radius: 15px;
-  font-weight: normal;
-  font-style: normal;
-}
-
+/* Clamp and reserve the same line count so all four slides match in height. */
 .swiperSlideContent p {
-  color: #fffffa;
-  font-size: 16px;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  margin: 0;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(4 * 1.6em);
 }
 
-.swiperSlideContent h3 a,
-.swiperSlideContent p a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.project-language {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.95rem !important;
-  margin-top: 10px;
-}
-
-.project-stats {
-  display: flex;
-  gap: 15px;
-  font-size: 0.9rem;
-  margin-top: 10px;
-}
-
-.swiperSlideContent a {
-  text-decoration: none; /* no underline */
-}
-/* Style for the next arrow (right) */
-.swiper-button-next {
-  background-color: none; /* Semi-transparent white */
-  border-radius: 100%; /* Make the arrow circular */
-  padding: 20px; /* Add padding around the arrow */
-  width: 40px; /* Adjust size */
-  height: 40px;
-  transition: background-color 0.5s ease;
-}
-
-/* Style for the previous arrow (left) */
-.swiper-button-prev {
-  background-color: none;
+/* Navigation arrows */
+.projectSwiper .swiper-button-next,
+.projectSwiper .swiper-button-prev {
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  padding: 20px;
-  width: 40px;
-  height: 40px;
-  transition: background-color 0.5s ease;
+  background: rgba(20, 21, 26, 0.72);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  transition: background 0.25s ease, border-color 0.25s ease;
 }
 
-/* Change the arrow icon color (the actual arrow is a pseudo-element) */
-.swiper-button-next::after,
-.swiper-button-prev::after {
-  color: #333138; /* Change the arrow icon color */
-  font-size: 20px; /* Adjust the size of the arrow */
-  font-weight: bold;
-  transition: 0.5s ease;
+.projectSwiper .swiper-button-next::after,
+.projectSwiper .swiper-button-prev::after {
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
 }
 
-.swiper-button-next:hover::after,
-.swiper-button-prev:hover::after {
-  color: #fffffa; /* Change the arrow icon color on hover */
-  transform: scale(1.2);
+.projectSwiper .swiper-button-next:hover,
+.projectSwiper .swiper-button-prev:hover {
+  background: rgba(224, 152, 145, 0.24);
+  border-color: rgba(224, 152, 145, 0.5);
 }
 
-.swiper-button-next,
-.swiper-button-prev {
-  top: 50%;
-  transform: translateY(-50%);
+/* Pagination bullets */
+.projectSwiper .swiper-pagination {
+  bottom: 12px;
 }
 
-/* Styling the pagination bullets */
-/* Target the default pagination bullets */
-.swiper-pagination-bullet {
-  background-color: rgba(255, 255, 255, 0.35) !important;
-  width: 25px; /* Custom size */
-  height: 25px;
-  opacity: 1; /* Ensure the bullets are fully visible */
-  transition: background-color 0.5s ease;
+.projectSwiper .swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.32);
+  width: 8px;
+  height: 8px;
+  opacity: 1;
+  transition: background 0.25s ease, width 0.25s ease;
 }
 
-/* Active pagination bullet */
-.swiper-pagination-bullet-active {
-  background-color: #fffffa !important; /* Green color for the active dot */
-  transform: scale(1.5);
-  transition: 0.5s ease;
-}
-
-/* Hover effect on pagination bullets */
-.swiper-pagination-bullet:hover {
-  background-color: rgba(255, 255, 250, 0.8) !important;
-  transform: scale(1.2); /* Enlarge on hover */
-  transition: 0.5s ease;
+.projectSwiper .swiper-pagination-bullet-active {
+  background: var(--accent);
+  width: 26px;
+  border-radius: 4px;
 }
 
 /* animation section */
@@ -440,27 +405,33 @@ button:focus {
 /* Editorial portfolio sections */
 .portfolio-section {
   width: 100%;
-  margin: 0 0 clamp(16px, 3vw, 28px);
-  padding: clamp(12px, 2vw, 20px) 0 clamp(6px, 1.5vw, 10px);
+  margin: 0;
+  padding: 0;
   text-align: left;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
+  gap: var(--space-md);
 }
 
 .headerSection {
   width: 100%;
   text-align: center;
-  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-lg) 0;
 }
 
-.section-eyebrow {
+.section-eyebrow,
+.project-card-eyebrow,
+.project-detail-eyebrow {
   display: inline-block;
   text-transform: uppercase;
   letter-spacing: 0.18em;
-  font-size: 0.72rem;
-  color: var(--muted);
-  margin-bottom: 8px;
+  font-size: 0.7rem;
+  color: var(--accent);
+  margin: 0;
 }
 
 .section-title {
@@ -478,10 +449,25 @@ button:focus {
   font-size: clamp(14px, 1.8vw, 16px);
 }
 
-.stacked-intro,
-.experience-callout {
-  margin-bottom: clamp(12px, 2.5vw, 18px);
+.stacked-intro {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
+}
+
+.experience-callout {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-card);
 }
 
 .project-grid {
@@ -499,15 +485,24 @@ button:focus {
 .project-card {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: clamp(12px, 3vw, 24px);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+  box-shadow: var(--shadow-card);
   backdrop-filter: blur(12px);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, border-color 0.25s ease;
 }
 
-.project-card:active {
-  transform: scale(0.98);
+.project-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--line-strong);
+}
+
+@media (hover: none) {
+  .project-card:hover {
+    transform: none;
+  }
 }
 
 .project-card-link {
@@ -518,26 +513,23 @@ button:focus {
 
 .project-card-thumb {
   aspect-ratio: 16 / 10;
-  background: linear-gradient(135deg, rgba(224, 152, 145, 0.32), rgba(116, 156, 117, 0.24));
+  background-color: rgba(224, 152, 145, 0.18);
+  background-image: linear-gradient(135deg, rgba(224, 152, 145, 0.32), rgba(116, 156, 117, 0.24));
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
 }
 
 .project-card-body {
-  padding: clamp(12px, 2.5vw, 20px);
+  padding: var(--space-md);
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1.5vw, 12px);
+  align-items: flex-start;
+  gap: var(--space-sm);
   text-align: left;
+  flex: 1;
 }
 
-.project-card-eyebrow,
-.project-detail-eyebrow {
-  display: inline-flex;
-  align-self: flex-start;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.7rem;
-  color: var(--muted);
-}
 
 .project-card-body h3 {
   margin: 0;
@@ -556,36 +548,39 @@ button:focus {
 .project-card-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  color: var(--text);
-  font-size: 0.88rem;
+  gap: var(--space-xs);
+  color: var(--muted);
+  font-size: 0.82rem;
+  margin-top: auto;
 }
 
 .project-card-meta span {
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 6px 10px;
+  padding: 5px 10px;
   background: rgba(255, 255, 255, 0.04);
+  white-space: nowrap;
 }
 
-.project-card-cta {
-  margin-top: clamp(4px, 1vw, 8px);
-}
-
-.project-card-cta a {
+/* Single link treatment shared by cards, slides, and section CTAs. */
+.project-card-cta a,
+.detail-link {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-xs);
   min-height: 44px;
-  padding: 8px 12px;
+  flex-shrink: 0; /* as a flex child it would otherwise shrink below 44px */
   color: var(--text);
   text-decoration: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  font-size: clamp(13px, 1.5vw, 15px);
-  transition: color 0.2s ease;
+  border-bottom: 1px solid var(--line-strong);
+  font-size: 0.9rem;
+  transition: color 0.25s ease, border-color 0.25s ease;
 }
 
-.project-card-cta a:active {
-  opacity: 0.8;
+.project-card-cta a:hover,
+.detail-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
 .portfolio-split {
@@ -605,32 +600,20 @@ button:focus {
 .experience-item {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: clamp(12px, 3vw, 24px);
-  padding: clamp(12px, 2.5vw, 20px);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
 }
 
 .note-card h3,
 .experience-item h3 {
-  margin: clamp(6px, 1.5vw, 10px) 0 clamp(4px, 1vw, 8px);
-  font-size: clamp(1rem, 2vw, 1.2rem);
-}
-
-.detail-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text);
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 8px 0;
-  min-height: 44px;
-  font-size: clamp(13px, 1.5vw, 15px);
-  transition: color 0.2s ease, opacity 0.2s ease;
-}
-
-.detail-link:active {
-  opacity: 0.8;
+  margin: 0;
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  line-height: 1.25;
 }
 
 .project-detail-hero {
@@ -685,339 +668,23 @@ button:focus {
 }
 
 @media (max-width: 1024px) {
-  .mainBody {
-    max-width: 95%;
-    padding: 28px 24px;
-  }
-
   .project-grid > * {
     grid-column: span 6;
   }
 
-  .portfolio-split {
-    grid-template-columns: 1fr;
-  }
-
+  .portfolio-split,
   .project-detail-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
-  .page {
-    padding: 12px;
-  }
-
-  .mainBody {
-    max-width: 100%;
-    padding: 20px 16px 28px;
-    border-radius: 20px;
-    margin: 0 auto;
-    gap: 16px;
-  }
-
-  .headerSection h1 {
-    font-size: clamp(1.8rem, 5vw, 3rem);
-  }
-
-  .section-title {
-    font-size: clamp(1.5rem, 3.5vw, 2.4rem);
-  }
-
-  .section-eyebrow {
-    font-size: 0.65rem;
-  }
-
-  .project-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
   .project-grid > * {
-    grid-column: span 1;
-  }
-
-  .portfolio-split {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .project-detail-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .svgLinks {
-    gap: 3vw;
+    grid-column: 1 / -1;
   }
 
   .svgLinks svg {
-    width: 12vw;
-    max-height: 8vh;
-  }
-
-  .mainBody p {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-
-  .project-card-body {
-    padding: 14px;
-    gap: 10px;
-  }
-
-  .project-card-body h3 {
-    font-size: 1.2rem;
-  }
-
-  .project-card-body p {
-    font-size: 13px;
-  }
-
-  .project-card-meta {
-    font-size: 0.8rem;
-  }
-
-  .project-card-meta span {
-    padding: 4px 8px;
-  }
-
-  .swiperSlideContent {
-    padding: 16px;
-  }
-
-  .swiperSlideContent h3 {
-    font-size: 1.2rem;
-  }
-
-  .swiperSlideContent p {
-    font-size: 13px;
-  }
-
-  .section-copy {
-    font-size: 14px;
-  }
-
-  .note-card,
-  .experience-item {
-    padding: 16px;
-    border-radius: 16px;
-  }
-
-  .note-card h3,
-  .experience-item h3 {
-    font-size: 1.1rem;
-  }
-
-  .carousel-filter-container {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-
-  .project-filter-dropdown {
-    padding: 8px 16px;
-    font-size: 14px;
-  }
-
-  .detail-link {
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  .page {
-    padding: 8px;
-  }
-
-  .mainBody {
-    padding: 16px 12px 24px;
-    border-radius: 16px;
-    gap: 12px;
-  }
-
-  .headerSection {
-    margin-bottom: 20px;
-  }
-
-  .headerSection h1 {
-    font-size: clamp(1.5rem, 4vw, 2.4rem);
-    margin: 8px 0;
-  }
-
-  .section-eyebrow {
-    font-size: 0.6rem;
-    margin-bottom: 6px;
-  }
-
-  .section-title {
-    font-size: clamp(1.2rem, 3vw, 1.8rem);
-    margin: 0 0 8px;
-  }
-
-  .section-copy,
-  .mainBody p {
-    font-size: 13px;
-    padding: 6px 10px;
-    margin: 4px 0;
-    line-height: 1.5;
-  }
-
-  .hero-intro {
-    margin: 8px 0 12px;
-  }
-
-  .portfolio-section {
-    margin: 0 0 20px;
-    padding: 12px 0 6px;
-  }
-
-  .stacked-intro {
-    margin-bottom: 14px;
-  }
-
-  .project-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin-top: 16px;
-  }
-
-  .project-card {
-    border-radius: 16px;
-  }
-
-  .project-card-thumb {
-    aspect-ratio: 16 / 10;
-  }
-
-  .project-card-body {
-    padding: 12px;
-    gap: 8px;
-  }
-
-  .project-card-body h3 {
-    font-size: 1.1rem;
-    margin: 0;
-  }
-
-  .project-card-body p {
-    font-size: 12px;
-    line-height: 1.4;
-  }
-
-  .project-card-eyebrow {
-    font-size: 0.65rem;
-  }
-
-  .project-card-meta {
-    gap: 6px;
-    font-size: 0.75rem;
-  }
-
-  .project-card-meta span {
-    padding: 3px 6px;
-    border-radius: 6px;
-  }
-
-  .project-card-cta a {
-    font-size: 13px;
-  }
-
-  .svgLinks {
-    gap: 2vw;
-    margin: 12px 0;
-  }
-
-  .svgLinks svg {
-    width: 14vw;
-    max-height: 7vh;
-  }
-
-  .stacked-notes {
-    gap: 12px;
-  }
-
-  .note-card,
-  .experience-item {
-    padding: 12px;
-    border-radius: 12px;
-  }
-
-  .note-card h3,
-  .experience-item h3 {
-    font-size: 1rem;
-    margin: 6px 0 4px;
-  }
-
-  .note-card p,
-  .experience-item p {
-    font-size: 12px;
-  }
-
-  .project-detail-grid {
-    gap: 12px;
-  }
-
-  .project-detail-grid > div {
-    padding: 12px;
-    border-radius: 12px;
-  }
-
-  .project-detail-grid h4 {
-    font-size: 0.95rem;
-  }
-
-  .carousel-filter-container {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
-  .filter-label {
-    font-size: 0.9rem;
-    text-align: center;
-  }
-
-  .project-filter-dropdown {
-    width: 100%;
-    padding: 10px 12px;
-    font-size: 13px;
-    border-radius: 8px;
-  }
-
-  .swiperSlideContent {
-    padding: 12px;
-  }
-
-  .swiperSlideContent h3 {
-    font-size: 1rem;
-    gap: 6px;
-  }
-
-  .swiperSlideContent p {
-    font-size: 12px;
-  }
-
-  .fork-badge-carousel {
-    font-size: 0.7rem;
-    padding: 3px 8px;
-  }
-
-  .detail-link {
-    font-size: 13px;
-    gap: 6px;
-  }
-
-  .experience-callout {
-    padding: 0;
-  }
-
-  button {
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 8px;
-    min-height: 44px;
-    min-width: 44px;
+    width: 44px;
   }
 }
 
@@ -1062,49 +729,48 @@ button:focus {
   max-width: 500px;
   padding: 12px 20px;
   font-size: 16px;
-  border: 2px solid #515052;
-  border-radius: 25px;
-  background-color: #333138;
-  color: #fffffa;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
   outline: none;
-  transition: border-color 0.3s;
+  transition: border-color 0.25s;
 }
 
 .github-search::placeholder {
-  color: #fffffa80;
+  color: rgba(244, 241, 234, 0.45);
 }
 
 .github-search:focus {
-  border-color: #e09891;
+  border-color: var(--accent);
 }
 
 .github-filters {
   display: flex;
-  gap: 10px;
+  gap: var(--space-xs);
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .github-filters button {
   padding: 10px 20px;
-  font-size: 14px;
-  border: 2px solid #515052;
-  border-radius: 20px;
-  background-color: #515052;
-  color: #fffffa;
+  font-size: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: background 0.25s, border-color 0.25s;
 }
 
 .github-filters button:hover {
-  background-color: #749c75;
-  border-color: #749c75;
-  transform: translateY(-2px);
+  background: rgba(116, 156, 117, 0.22);
+  border-color: rgba(116, 156, 117, 0.55);
 }
 
 .github-filters button.active {
-  background-color: #e09891;
-  border-color: #e09891;
+  background: rgba(224, 152, 145, 0.24);
+  border-color: var(--accent);
 }
 
 /* Repository Grid */
@@ -1126,21 +792,20 @@ button:focus {
 
 /* Repository Card */
 .github-repo-card {
-  background-color: #515052;
-  border: 2px solid #515052;
-  border-radius: clamp(12px, 2.5vw, 15px);
-  padding: clamp(12px, 2.5vw, 20px);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
   display: flex;
   flex-direction: column;
-  gap: clamp(8px, 1.5vw, 12px);
-  transition: all 0.3s;
+  gap: var(--space-sm);
+  transition: transform 0.25s ease, border-color 0.25s ease;
   height: 100%;
 }
 
 .github-repo-card:hover {
-  transform: translateY(-5px);
-  border-color: #e09891;
-  box-shadow: 0 5px 20px rgba(224, 152, 145, 0.3);
+  transform: translateY(-4px);
+  border-color: var(--line-strong);
 }
 
 .repo-header {
@@ -1194,12 +859,12 @@ button:focus {
 }
 
 .topic-tag {
-  background-color: #333138;
-  color: #fffffa;
-  padding: clamp(3px, 0.8vw, 4px) clamp(8px, 1.5vw, 10px);
-  border-radius: clamp(6px, 1.5vw, 12px);
-  font-size: clamp(11px, 1.2vw, 13px);
-  border: 1px solid #515052;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  border: 1px solid var(--line);
 }
 
 /* Footer Stats */
@@ -1207,10 +872,12 @@ button:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 12px;
-  border-top: 1px solid #333138;
-  font-size: 0.85rem;
-  color: #ffffffb3;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--line);
+  font-size: 0.82rem;
+  color: var(--muted);
 }
 
 .repo-stats {
