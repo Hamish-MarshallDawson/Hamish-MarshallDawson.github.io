@@ -60,6 +60,8 @@ body {
   font-optical-sizing: auto;
   font-weight: 500;
   font-style: normal;
+  padding: clamp(8px, 2vw, 20px);
+  box-sizing: border-box;
 }
 .mainBody {
   width: 100%;
@@ -70,13 +72,14 @@ body {
   flex-direction: column;
   align-items: stretch;
   text-align: center;
-  padding: 36px 28px 44px;
+  padding: clamp(16px, 4vw, 36px) clamp(12px, 3.5vw, 28px) clamp(24px, 4vw, 44px);
   box-sizing: border-box;
   border: 1px solid var(--line);
-  border-radius: 32px;
+  border-radius: clamp(16px, 3vw, 32px);
   background: linear-gradient(180deg, rgba(25, 27, 33, 0.96), rgba(18, 19, 24, 0.96));
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(18px);
+  gap: 20px;
 }
 
 .mainBody p {
@@ -90,31 +93,34 @@ body {
 }
 
 .headerSection h1 {
-  font-size: clamp(2.4rem, 6vw, 5rem);
+  font-size: clamp(2rem, 5.5vw, 4.8rem);
   margin: 0;
   line-height: 0.95;
+  letter-spacing: -0.01em;
 }
 
 .hero-intro {
   color: var(--muted);
-  margin: 12px 0 18px;
+  margin: clamp(8px, 2vw, 18px) 0;
   max-width: 760px;
+  font-size: clamp(14px, 2vw, 16px);
+  padding: clamp(6px, 1vw, 10px) clamp(8px, 2vw, 14px);
 }
 
 /* For slider section */
 
 .pageCarouselPage {
-  font-size: 14px;
+  font-size: clamp(12px, 1.5vw, 14px);
   color: var(--text);
   margin: 0;
-  padding: 0;
-  padding-bottom: 25px;
+  padding: clamp(12px, 2vw, 0);
+  padding-bottom: clamp(16px, 3vw, 25px);
   min-height: 50vh;
   width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 20px;
+  gap: clamp(12px, 2vw, 20px);
 }
 
 /* Carousel Filter Dropdown */
@@ -122,19 +128,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: clamp(8px, 2vw, 12px);
+  margin-bottom: clamp(8px, 1.5vw, 10px);
+  flex-wrap: wrap;
 }
 
 .filter-label {
   color: var(--muted);
-  font-size: 1rem;
+  font-size: clamp(13px, 1.8vw, 16px);
   font-weight: 500;
 }
 
 .project-filter-dropdown {
-  padding: 10px 20px;
-  font-size: 16px;
+  padding: clamp(8px, 1.5vw, 10px) clamp(14px, 2.5vw, 20px);
+  font-size: clamp(13px, 1.8vw, 16px);
   font-family: "Montserrat", sans-serif;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -143,6 +150,7 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   outline: none;
+  min-height: 44px;
 }
 
 .project-filter-dropdown:hover {
@@ -183,7 +191,7 @@ body {
 .swiper-slide {
   background-position: center;
   background-size: cover;
-  border-radius: 22px;
+  border-radius: clamp(12px, 2.5vw, 22px);
   filter: saturate(1.08);
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -195,7 +203,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   height: 90%;
-  padding: 24px;
+  padding: clamp(12px, 2.5vw, 24px);
   background: linear-gradient(180deg, rgba(10, 10, 12, 0.08), rgba(10, 10, 12, 0.68));
 }
 .swiperSlideContent h3 {
@@ -373,14 +381,27 @@ body {
 } */
 
 button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer; /* Change cursor to pointer on hover */
+  padding: clamp(8px, 2vw, 12px) clamp(14px, 3vw, 24px);
+  font-size: clamp(13px, 1.5vw, 16px);
+  cursor: pointer;
   border: none;
   background-color: transparent;
   color: #fffffa;
-  border-radius: 15px;
-  transition: background-color 0.3s;
+  border-radius: clamp(8px, 2vw, 15px);
+  transition: background-color 0.3s, transform 0.2s ease;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* button:hover {
@@ -419,8 +440,8 @@ button {
 /* Editorial portfolio sections */
 .portfolio-section {
   width: 100%;
-  margin: 0 0 28px;
-  padding: 20px 0 10px;
+  margin: 0 0 clamp(16px, 3vw, 28px);
+  padding: clamp(12px, 2vw, 20px) 0 clamp(6px, 1.5vw, 10px);
   text-align: left;
   display: flex;
   flex-direction: column;
@@ -443,9 +464,9 @@ button {
 }
 
 .section-title {
-  font-size: clamp(2rem, 4vw, 3.6rem);
+  font-size: clamp(1.6rem, 3.8vw, 3.4rem);
   line-height: 0.95;
-  margin: 0 0 12px;
+  margin: 0 0 clamp(8px, 1.5vw, 12px);
   color: var(--text);
 }
 
@@ -454,19 +475,20 @@ button {
   color: var(--muted);
   line-height: 1.6;
   margin: 0;
+  font-size: clamp(14px, 1.8vw, 16px);
 }
 
 .stacked-intro,
 .experience-callout {
-  margin-bottom: 18px;
+  margin-bottom: clamp(12px, 2.5vw, 18px);
   width: 100%;
 }
 
 .project-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 24px;
+  gap: clamp(12px, 2.5vw, 18px);
+  margin-top: clamp(16px, 2.5vw, 24px);
   width: 100%;
 }
 
@@ -477,10 +499,15 @@ button {
 .project-card {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 24px;
+  border-radius: clamp(12px, 3vw, 24px);
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(12px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.project-card:active {
+  transform: scale(0.98);
 }
 
 .project-card-link {
@@ -495,10 +522,10 @@ button {
 }
 
 .project-card-body {
-  padding: 18px 18px 20px;
+  padding: clamp(12px, 2.5vw, 20px);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: clamp(8px, 1.5vw, 12px);
   text-align: left;
 }
 
@@ -541,36 +568,52 @@ button {
   background: rgba(255, 255, 255, 0.04);
 }
 
+.project-card-cta {
+  margin-top: clamp(4px, 1vw, 8px);
+}
+
 .project-card-cta a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 12px;
   color: var(--text);
   text-decoration: none;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: clamp(13px, 1.5vw, 15px);
+  transition: color 0.2s ease;
+}
+
+.project-card-cta a:active {
+  opacity: 0.8;
 }
 
 .portfolio-split {
   display: grid;
   grid-template-columns: 0.9fr 1.1fr;
-  gap: 18px;
+  gap: clamp(12px, 2vw, 18px);
   align-items: start;
 }
 
 .stacked-notes {
   display: grid;
-  gap: 18px;
+  gap: clamp(12px, 2vw, 18px);
+  width: 100%;
 }
 
 .note-card,
 .experience-item {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 24px;
-  padding: 20px;
+  border-radius: clamp(12px, 3vw, 24px);
+  padding: clamp(12px, 2.5vw, 20px);
   text-align: left;
 }
 
 .note-card h3,
 .experience-item h3 {
-  margin: 10px 0 8px;
+  margin: clamp(6px, 1.5vw, 10px) 0 clamp(4px, 1vw, 8px);
+  font-size: clamp(1rem, 2vw, 1.2rem);
 }
 
 .detail-link {
@@ -580,25 +623,33 @@ button {
   color: var(--text);
   text-decoration: none;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding-bottom: 2px;
+  padding: 8px 0;
+  min-height: 44px;
+  font-size: clamp(13px, 1.5vw, 15px);
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.detail-link:active {
+  opacity: 0.8;
 }
 
 .project-detail-hero {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: clamp(8px, 1.5vw, 10px);
 }
 
 .project-detail-hero h2 {
-  font-size: clamp(2rem, 5vw, 4rem);
+  font-size: clamp(1.8rem, 4.5vw, 3.8rem);
   line-height: 0.95;
   margin: 0;
 }
 
 .project-detail-imageWrap {
-  border-radius: 24px;
+  border-radius: clamp(12px, 3vw, 24px);
   overflow: hidden;
   border: 1px solid var(--line);
+  margin: clamp(12px, 2vw, 20px) 0;
 }
 
 .project-detail-image {
@@ -609,14 +660,14 @@ button {
 .project-detail-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: clamp(12px, 2vw, 16px);
 }
 
 .project-detail-grid > div {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 20px;
-  padding: 18px;
+  border-radius: clamp(12px, 2.5vw, 20px);
+  padding: clamp(12px, 2vw, 18px);
   text-align: left;
 }
 
@@ -633,35 +684,340 @@ button {
   line-height: 1.6;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1024px) {
+  .mainBody {
+    max-width: 95%;
+    padding: 28px 24px;
+  }
+
   .project-grid > * {
     grid-column: span 6;
   }
 
-  .portfolio-split,
-  .project-detail-grid {
+  .portfolio-split {
     grid-template-columns: 1fr;
+  }
+
+  .project-detail-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .page {
-    padding: 14px;
+    padding: 12px;
   }
 
   .mainBody {
-    width: 100%;
-    min-height: auto;
-    padding: 24px 16px 32px;
-    border-radius: 24px;
+    max-width: 100%;
+    padding: 20px 16px 28px;
+    border-radius: 20px;
+    margin: 0 auto;
+    gap: 16px;
+  }
+
+  .headerSection h1 {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+  }
+
+  .section-title {
+    font-size: clamp(1.5rem, 3.5vw, 2.4rem);
+  }
+
+  .section-eyebrow {
+    font-size: 0.65rem;
+  }
+
+  .project-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .project-grid > * {
-    grid-column: 1 / -1;
+    grid-column: span 1;
+  }
+
+  .portfolio-split {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .project-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .svgLinks {
+    gap: 3vw;
+  }
+
+  .svgLinks svg {
+    width: 12vw;
+    max-height: 8vh;
+  }
+
+  .mainBody p {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .project-card-body {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .project-card-body h3 {
+    font-size: 1.2rem;
+  }
+
+  .project-card-body p {
+    font-size: 13px;
+  }
+
+  .project-card-meta {
+    font-size: 0.8rem;
+  }
+
+  .project-card-meta span {
+    padding: 4px 8px;
+  }
+
+  .swiperSlideContent {
+    padding: 16px;
   }
 
   .swiperSlideContent h3 {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
+  }
+
+  .swiperSlideContent p {
+    font-size: 13px;
+  }
+
+  .section-copy {
+    font-size: 14px;
+  }
+
+  .note-card,
+  .experience-item {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .note-card h3,
+  .experience-item h3 {
+    font-size: 1.1rem;
+  }
+
+  .carousel-filter-container {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .project-filter-dropdown {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .detail-link {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 8px;
+  }
+
+  .mainBody {
+    padding: 16px 12px 24px;
+    border-radius: 16px;
+    gap: 12px;
+  }
+
+  .headerSection {
+    margin-bottom: 20px;
+  }
+
+  .headerSection h1 {
+    font-size: clamp(1.5rem, 4vw, 2.4rem);
+    margin: 8px 0;
+  }
+
+  .section-eyebrow {
+    font-size: 0.6rem;
+    margin-bottom: 6px;
+  }
+
+  .section-title {
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    margin: 0 0 8px;
+  }
+
+  .section-copy,
+  .mainBody p {
+    font-size: 13px;
+    padding: 6px 10px;
+    margin: 4px 0;
+    line-height: 1.5;
+  }
+
+  .hero-intro {
+    margin: 8px 0 12px;
+  }
+
+  .portfolio-section {
+    margin: 0 0 20px;
+    padding: 12px 0 6px;
+  }
+
+  .stacked-intro {
+    margin-bottom: 14px;
+  }
+
+  .project-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .project-card {
+    border-radius: 16px;
+  }
+
+  .project-card-thumb {
+    aspect-ratio: 16 / 10;
+  }
+
+  .project-card-body {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .project-card-body h3 {
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .project-card-body p {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .project-card-eyebrow {
+    font-size: 0.65rem;
+  }
+
+  .project-card-meta {
+    gap: 6px;
+    font-size: 0.75rem;
+  }
+
+  .project-card-meta span {
+    padding: 3px 6px;
+    border-radius: 6px;
+  }
+
+  .project-card-cta a {
+    font-size: 13px;
+  }
+
+  .svgLinks {
+    gap: 2vw;
+    margin: 12px 0;
+  }
+
+  .svgLinks svg {
+    width: 14vw;
+    max-height: 7vh;
+  }
+
+  .stacked-notes {
+    gap: 12px;
+  }
+
+  .note-card,
+  .experience-item {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .note-card h3,
+  .experience-item h3 {
+    font-size: 1rem;
+    margin: 6px 0 4px;
+  }
+
+  .note-card p,
+  .experience-item p {
+    font-size: 12px;
+  }
+
+  .project-detail-grid {
+    gap: 12px;
+  }
+
+  .project-detail-grid > div {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .project-detail-grid h4 {
+    font-size: 0.95rem;
+  }
+
+  .carousel-filter-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .filter-label {
+    font-size: 0.9rem;
+    text-align: center;
+  }
+
+  .project-filter-dropdown {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  .swiperSlideContent {
+    padding: 12px;
+  }
+
+  .swiperSlideContent h3 {
+    font-size: 1rem;
+    gap: 6px;
+  }
+
+  .swiperSlideContent p {
+    font-size: 12px;
+  }
+
+  .fork-badge-carousel {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+  }
+
+  .detail-link {
+    font-size: 13px;
+    gap: 6px;
+  }
+
+  .experience-callout {
+    padding: 0;
+  }
+
+  button {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 8px;
+    min-height: 44px;
+    min-width: 44px;
   }
 }
 
@@ -754,9 +1110,10 @@ button {
 /* Repository Grid */
 .github-repos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
-  padding: 0 10px;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(280px, 90vw, 320px), 1fr));
+  gap: clamp(12px, 2vw, 20px);
+  padding: 0 clamp(8px, 2vw, 10px);
+  width: 100%;
 }
 
 .no-results {
@@ -771,11 +1128,11 @@ button {
 .github-repo-card {
   background-color: #515052;
   border: 2px solid #515052;
-  border-radius: 15px;
-  padding: 20px;
+  border-radius: clamp(12px, 2.5vw, 15px);
+  padding: clamp(12px, 2.5vw, 20px);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: clamp(8px, 1.5vw, 12px);
   transition: all 0.3s;
   height: 100%;
 }
@@ -793,7 +1150,7 @@ button {
 }
 
 .repo-header h3 {
-  font-size: 1.3rem;
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
   margin: 0;
   flex: 1;
 }
@@ -802,9 +1159,10 @@ button {
   color: #fffffa;
   text-decoration: none;
   transition: color 0.3s;
+  word-break: break-word;
 }
 
-.repo-header h3 a:hover {
+.repo-header h3 a:active {
   color: #e09891;
 }
 
@@ -821,7 +1179,7 @@ button {
 
 .repo-description {
   color: #ffffffcc;
-  font-size: 0.95rem;
+  font-size: clamp(13px, 1.4vw, 15px);
   line-height: 1.5;
   margin: 0;
   flex-grow: 1;
@@ -838,9 +1196,9 @@ button {
 .topic-tag {
   background-color: #333138;
   color: #fffffa;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.8rem;
+  padding: clamp(3px, 0.8vw, 4px) clamp(8px, 1.5vw, 10px);
+  border-radius: clamp(6px, 1.5vw, 12px);
+  font-size: clamp(11px, 1.2vw, 13px);
   border: 1px solid #515052;
 }
 
