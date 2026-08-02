@@ -12,6 +12,46 @@ const dissertationImg = textEditorImage;
 const hriImg = quizImage;
 const busTrackerImg = chatAppImage;
 
+// The carousel shows a curated set rather than every public repo. Each entry is
+// matched against the GitHub API by `repo`; live stats are merged in when the
+// repo is public. TensorRoom is private, so it renders from the values here.
+export const carouselProjects = [
+  {
+    repo: "Language-Commands-for-a-Robotic-arm-using-Object-Recognition-",
+    name: "Language Commands for a Robotic Arm",
+    category: "Dissertation",
+    description:
+      "Speech-controlled robotic arm translating language commands into actions with a VLA model, Whisper, and a local LLM under 4GB of VRAM.",
+    accent: "linear-gradient(135deg, #e09891 0%, #8a5f8f 100%)",
+  },
+  {
+    repo: "TensorRoom",
+    name: "TensorRoom",
+    category: "In progress",
+    description:
+      "Local AI workspace bringing diffusion, segmentation, and a RAG/LLM pipeline together behind a single interface.",
+    url: "https://github.com/Hamish-MarshallDawson/TensorRoom",
+    language: "Python",
+    accent: "linear-gradient(135deg, #749c75 0%, #2f6f6f 100%)",
+  },
+  {
+    repo: "Lothian-Api-Bus-Display",
+    name: "Lothian Bus Display",
+    category: "Hardware",
+    description:
+      "Live Edinburgh bus times on an e-ink display driven by a Raspberry Pi 5, built around the Lothian Buses API.",
+    accent: "linear-gradient(135deg, #c9884f 0%, #7a4b3a 100%)",
+  },
+  {
+    repo: "iteration-inc",
+    name: "Iteration Inc",
+    category: "Team project",
+    description:
+      "Group software engineering project delivered collaboratively across a full development cycle.",
+    accent: "linear-gradient(135deg, #5b7cc4 0%, #3c3f7a 100%)",
+  },
+];
+
 export const projectSections = [
   {
     label: "Featured research",
