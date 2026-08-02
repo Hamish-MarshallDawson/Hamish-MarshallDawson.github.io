@@ -1,25 +1,18 @@
 {
   "files": {
-    "main.css": "/static/css/main.0a5aab60.css",
-    "main.js": "/static/js/main.d399b525.js",
+    "main.css": "/static/css/main.f9d7a274.css",
+    "main.js": "/static/js/main.96ab342d.js",
     "static/js/453.51438130.chunk.js": "/static/js/453.51438130.chunk.js",
-    "static/media/ToDoApp.jpg": "/static/media/ToDoApp.0050ef8a31d268ea66d2.jpg",
-    "static/media/TypingSpeed.jpg": "/static/media/TypingSpeed.5d3542f999b606fd0592.jpg",
-    "static/media/textEditor.jpg": "/static/media/textEditor.3e4190b3880f7b51ea53.jpg",
-    "static/media/tic-tac-toe.jpg": "/static/media/tic-tac-toe.dcdb658580bfa4457929.jpg",
-    "static/media/Quiz.jpg": "/static/media/Quiz.1b1242a8a11baf70b907.jpg",
-    "static/media/chatapp.jpg": "/static/media/chatapp.1ee80989bec4fb1cec82.jpg",
-    "static/media/discordLogo.jpg": "/static/media/discordLogo.8d2498ebb8e527c690c6.jpg",
-    "static/media/Linkedin.svg": "/static/media/Linkedin.4cc9a39d6bb4e75e8de1a416c5d52b95.svg",
-    "static/media/Github.svg": "/static/media/Github.7c2b51fede5398d05f9968b32342522c.svg",
-    "static/media/mail.svg": "/static/media/mail.a20617e736b3f1a779da3f199c55c665.svg",
+    "static/media/Linkedin.svg": "/static/media/Linkedin.47ba652ea5e7daad9195ca14f97d94ef.svg",
+    "static/media/Github.svg": "/static/media/Github.30254e3dfe26cc7f143135fb14a9e881.svg",
+    "static/media/mail.svg": "/static/media/mail.5ec9e7c8faf872c86fc98812c7b8f9e3.svg",
     "index.html": "/index.html",
-    "main.0a5aab60.css.map": "/static/css/main.0a5aab60.css.map",
-    "main.d399b525.js.map": "/static/js/main.d399b525.js.map",
+    "main.f9d7a274.css.map": "/static/css/main.f9d7a274.css.map",
+    "main.96ab342d.js.map": "/static/js/main.96ab342d.js.map",
     "453.51438130.chunk.js.map": "/static/js/453.51438130.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.0a5aab60.css",
-    "static/js/main.d399b525.js"
+    "static/css/main.f9d7a274.css",
+    "static/js/main.96ab342d.js"
   ]
 }
