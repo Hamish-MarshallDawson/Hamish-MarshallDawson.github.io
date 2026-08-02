@@ -8,19 +8,21 @@ export const carouselProjects = [
   {
     id: "dissertation",
     repo: "Language-Commands-for-a-Robotic-arm-using-Object-Recognition-",
-    name: "Robotic Arm Object Swapping",
-    category: "Dissertation · 89/100",
+    name: "Language based control for Robotic Arm Object Swapping",
+    category: "Dissertation · 89% Final Grade",
     description:
       "A robotic arm that takes a spoken instruction and carries it out. OpenCV handles perception, a visual-action model drives manipulation, and an LLM with speech recognition sits on top. The whole pipeline runs locally, under 4GB of VRAM.",
-    image: img("dissertation.jpg"),
+    tags: ["VLA", "LLM", "ASR", "Model training"],
+    image: img("dissertation.png"),
     accent: "linear-gradient(135deg, #e09891 0%, #8a5f8f 100%)",
   },
   {
     id: "hri",
-    name: "Trust in Teleoperation",
+    name: "Trust in Teleoperation Robotics Study",
     category: "HRI research · Summer 2025",
     description:
       "Research internship measuring how input latency changes an operator's trust in a teleoperated robot. I built the Linux simulation environment, ran the study, and presented at the EPSRC Executive Showcase, which helped secure the next phase of funding.",
+    tags: ["ROS1/2", "User experience", "Experimental design", "Research"],
     image: img("hri.jpg"),
     accent: "linear-gradient(135deg, #5b7cc4 0%, #3c3f7a 100%)",
   },
@@ -32,8 +34,15 @@ export const carouselProjects = [
     description:
       "Redesign a real room by describing it. Diffusion, segmentation, and language models wired into one pipeline that edits the space you point it at, in real time.",
     url: "https://github.com/Hamish-MarshallDawson/TensorRoom",
-    language: "Python",
-    image: img("tensoroom.jpg"),
+    tags: [
+      "Local models",
+      "Segmentation",
+      "RAG",
+      "LLM",
+      "Image diffusion",
+      "LoRA",
+    ],
+    image: img("tensoroom.png"),
     accent: "linear-gradient(135deg, #749c75 0%, #2f6f6f 100%)",
   },
   {
@@ -43,6 +52,7 @@ export const carouselProjects = [
     category: "Open source",
     description:
       "Live Edinburgh bus times on an e-ink panel, driven by a Raspberry Pi 5. Written in C++ and tuned so the rendering stays smooth on low-power hardware. It hangs on my wall and tells me when to leave.",
+    tags: ["C++", "Raspberry Pi", "E-ink", "REST APIs"],
     image: img("bus.jpg"),
     accent: "linear-gradient(135deg, #c9884f 0%, #7a4b3a 100%)",
   },
@@ -54,8 +64,20 @@ export const carouselProjects = [
     description:
       "A serverless smart care-home platform. I led the team and owned authentication, device settings, and the energy-saving recommendations, with accessibility driving most of the interface decisions.",
     url: "https://iteration-inc.vercel.app/",
-    image: img("iteration-inc.jpg"),
+    tags: ["Serverless", "Authentication", "Accessibility", "Full-stack"],
+    image: img("iterationinc.png"),
     accent: "linear-gradient(135deg, #4f9c9c 0%, #2f5f7a 100%)",
+  },
+  {
+    id: "minecraft-agent",
+    name: "Minecraft Companion Agent",
+    category: "Conversational agents coursework",
+    description:
+      "A group-built in-game helper for Minecraft that runs entirely on the local machine. It watches what the player is doing, answers questions, and warns them about danger before it reaches them — no cloud calls anywhere in the loop.",
+    url: "https://github.com/CordlessGnu/F21caGames2",
+    tags: ["LLM", "VLM", "Whisper", "Local models", "TTS"],
+    image: img("minecraft.png"),
+    accent: "linear-gradient(135deg, #6a9c5b 0%, #35603f 100%)",
   },
   {
     id: "bonin-loot",
@@ -64,9 +86,8 @@ export const carouselProjects = [
     description:
       "A game built for the Games Programming coursework, playable in the browser on itch.io.",
     url: "https://hamishmad.itch.io/bonin-loot",
-    secondaryUrl: "https://github.com/CordlessGnu/F21caGames2",
-    secondaryLabel: "Source",
-    image: img("bonin-loot.jpg"),
+    tags: ["C#", "Unity"],
+    image: img("BoninLoot.png"),
     accent: "linear-gradient(135deg, #b0577f 0%, #5c3470 100%)",
   },
 ];
@@ -103,8 +124,8 @@ export const extracurricular = [
     org: "Heriot-Watt University",
     period: "Sept 2023 – present",
     description:
-      "Won Class Rep of the Month and Class Rep of the Year. Redesigned how course feedback reaches academic staff and set up new channels so problems get raised while there is still time to fix them.",
-    image: img("class-rep.jpg"),
+      "Won Class Rep of the Month and Class Rep of the Year. Redesigning how course feedback reaches academic staff and set up new channels so problems get raised while there is still time to fix them.",
+    image: img("ClassRepoftheyear.jpg"),
   },
   {
     role: "Branding and Media Manager",

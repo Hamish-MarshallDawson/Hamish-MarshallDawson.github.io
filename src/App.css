@@ -227,10 +227,11 @@ body {
 }
 
 /* margin-top:auto on both meta and links would split the slack between them.
-   min-height keeps slides without tags level with the ones that have them. */
+   Two rows are reserved so slides with fewer tags stay level with the rest. */
 .swiperSlideContent .project-card-meta {
   margin-top: 0;
-  min-height: 27px;
+  min-height: 55px;
+  align-content: flex-start;
 }
 
 .swiperSlideContent {
@@ -575,16 +576,16 @@ button:focus {
 .project-card-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-xs);
+  gap: 5px;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   margin-top: auto;
 }
 
 .project-card-meta span {
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 5px 10px;
+  padding: 4px 9px;
   background: rgba(255, 255, 255, 0.04);
   white-space: nowrap;
 }
