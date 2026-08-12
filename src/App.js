@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import "./App.css";
 import Header from "./components/Header";
+import Footer from "./components/Footer";
+import BackgroundOrbs from "./components/BackgroundOrbs";
 import { Carousel } from "./components/carousel";
 import { experience, extracurricular, personal } from "./components/projectdata";
 
@@ -15,6 +17,7 @@ function Title() {
 function Home() {
   return (
     <div className="page">
+      <BackgroundOrbs />
       <div className="mainBody">
         <header className="headerSection">
           <Title />
@@ -111,6 +114,8 @@ function Home() {
             ))}
           </div>
         </section>
+
+        <Footer />
       </div>
     </div>
   );

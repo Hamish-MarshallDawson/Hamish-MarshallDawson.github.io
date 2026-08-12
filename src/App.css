@@ -1,11 +1,89 @@
 /* Base body of page/ "header section" */
 
+/* The two accent blobs that used to be radial-gradients here now live in
+   .bg-orbs so they can move. */
 body {
-  background:
-    radial-gradient(circle at top left, rgba(224, 152, 145, 0.16), transparent 30%),
-    radial-gradient(circle at bottom right, rgba(116, 156, 117, 0.12), transparent 28%),
-    linear-gradient(180deg, #111114 0%, #1a1b20 100%);
+  background: linear-gradient(180deg, #111114 0%, #1a1b20 100%);
+  background-attachment: fixed;
   color: #f4f1ea;
+}
+
+.bg-orbs {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Scroll parallax sits on the orb, the ambient drift on its ::before, so the
+   two never overwrite each other's transform. */
+.bg-orb {
+  position: absolute;
+  width: clamp(420px, 55vw, 780px);
+  aspect-ratio: 1;
+  will-change: transform;
+}
+
+.bg-orb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.55;
+}
+
+/* Both are oversized and hang off the edge, so colour still reads in the
+   margins either side of .mainBody. */
+.bg-orb-a {
+  top: -14vh;
+  left: -12vw;
+  transform: translate3d(0, calc(var(--scroll, 0) * 160px), 0);
+}
+
+.bg-orb-a::before {
+  background: radial-gradient(circle, rgba(224, 152, 145, 0.5), transparent 68%);
+  animation: orbDrift 38s ease-in-out infinite alternate;
+}
+
+.bg-orb-b {
+  bottom: -18vh;
+  right: -14vw;
+  transform: translate3d(0, calc(var(--scroll, 0) * -190px), 0);
+}
+
+.bg-orb-b::before {
+  background: radial-gradient(circle, rgba(116, 156, 117, 0.45), transparent 68%);
+  animation: orbDriftAlt 46s ease-in-out infinite alternate;
+}
+
+@keyframes orbDrift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(9vw, 7vh, 0) scale(1.18);
+  }
+}
+
+@keyframes orbDriftAlt {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.12);
+  }
+  to {
+    transform: translate3d(-8vw, -9vh, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bg-orb::before {
+    animation: none;
+  }
+
+  .bg-orb {
+    transform: none;
+  }
 }
 
 :root {
@@ -108,7 +186,8 @@ body {
   box-sizing: border-box;
   border: 1px solid var(--line);
   border-radius: clamp(16px, 3vw, 32px);
-  background: linear-gradient(180deg, rgba(25, 27, 33, 0.96), rgba(18, 19, 24, 0.96));
+  /* Slightly translucent so the drifting orbs behind it read through. */
+  background: linear-gradient(180deg, rgba(25, 27, 33, 0.9), rgba(18, 19, 24, 0.9));
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(18px);
   gap: var(--space-xl);
@@ -191,6 +270,7 @@ body {
 }
 
 .projectSlide {
+  position: relative; /* anchor for .slide-open::after */
   box-sizing: border-box;
   height: 100%; /* fill the stretched wrapper so all slides match */
   display: flex;
@@ -200,7 +280,41 @@ body {
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-card);
-  transition: border-color 0.3s ease;
+  cursor: pointer; /* honest now — the whole card opens the expanded view */
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+/* The title is the accessible trigger; its ::after stretches over the whole
+   card so the image and body open it too. */
+.slide-open {
+  all: unset;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  min-height: 0;
+}
+
+.slide-open::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.slide-open:focus-visible::after {
+  outline: 2px solid var(--accent);
+  outline-offset: -4px;
+  border-radius: var(--radius-lg);
+}
+
+.projectSlide:hover .slide-open {
+  color: var(--accent);
+}
+
+@media (hover: hover) {
+  .swiper-slide-active.projectSlide:hover {
+    transform: translateY(-4px);
+  }
 }
 
 .swiper-slide-active.projectSlide {
@@ -224,6 +338,10 @@ body {
   gap: var(--space-md);
   margin-top: auto;
   min-height: 45px;
+  /* Sit above .slide-open::after so the external link stays clickable in its
+     own right rather than opening the expanded view. */
+  position: relative;
+  z-index: 1;
 }
 
 /* margin-top:auto on both meta and links would split the slack between them.
@@ -291,6 +409,15 @@ body {
 .projectSwiper .swiper-button-prev:hover {
   background: rgba(224, 152, 145, 0.24);
   border-color: rgba(224, 152, 145, 0.5);
+}
+
+/* On touch the swipe gesture is the natural control and the arrows only
+   crowd the card. Pagination dots still show position. */
+@media (max-width: 640px) {
+  .projectSwiper .swiper-button-next,
+  .projectSwiper .swiper-button-prev {
+    display: none;
+  }
 }
 
 /* Pagination bullets */
@@ -1036,6 +1163,160 @@ button:focus {
 .repo-demo-link:hover {
   background-color: #5a7d5b;
   transform: translateX(5px);
+}
+
+/* Expanded project view */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  background: rgba(8, 8, 11, 0.72);
+  backdrop-filter: blur(6px);
+  animation: modalFade 0.2s ease;
+  /* The modal portals into <body>, outside .page, so it has to restate the
+     typography rather than inherit it. */
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.project-modal {
+  position: relative;
+  width: min(680px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--panel-strong);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  animation: modalRise 0.24s ease;
+}
+
+/* Capped so the image can't fill a short or landscape viewport on its own and
+   push the copy below the panel's scroll. */
+.project-modal-media {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-height: min(42vh, 320px);
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid var(--line);
+}
+
+.project-modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  text-align: left;
+}
+
+.project-modal-body h3 {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  line-height: 1.15;
+  color: var(--text);
+}
+
+/* No line-clamp here — running the copy in full is the point of expanding. */
+.project-modal-body p {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(14px, 1.6vw, 16px);
+  line-height: 1.7;
+}
+
+.project-modal-body .project-card-meta {
+  margin-top: var(--space-xs);
+}
+
+.project-modal-close {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  z-index: 1;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  font-family: inherit; /* buttons don't inherit it from the backdrop */
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text);
+  background: rgba(20, 21, 26, 0.72);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+
+.project-modal-close:hover {
+  background: rgba(224, 152, 145, 0.24);
+  border-color: var(--accent);
+}
+
+@keyframes modalFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalRise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop,
+  .project-modal {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-backdrop {
+    padding: var(--space-sm);
+  }
+
+  .project-modal {
+    max-height: 92vh;
+  }
+}
+
+/* Footer */
+.siteFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  width: 100%;
+  padding-top: var(--space-xl);
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+
+.siteFooter .section-title {
+  margin: 0;
+}
+
+.mainBody .siteFooter-base {
+  font-size: 0.78rem;
+  color: rgba(244, 241, 234, 0.5);
+  text-wrap: balance;
 }
 
 /* Responsive Design */
