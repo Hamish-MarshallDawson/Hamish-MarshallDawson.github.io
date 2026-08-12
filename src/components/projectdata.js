@@ -75,7 +75,9 @@ export const carouselProjects = [
     category: "Conversational agents coursework",
     description:
       "A group-built in-game helper for Minecraft that runs entirely on the local machine. It watches what the player is doing, answers questions, and warns them about danger before it reaches them — no cloud calls anywhere in the loop.",
-    url: "https://github.com/CordlessGnu/F21caGames2",
+    // Repo was renamed from F21caGames2; the old link 404s for anyone not
+    // following GitHub's redirect.
+    url: "https://github.com/CordlessGnu/Cici",
     tags: ["LLM", "VLM", "Whisper", "Local models", "TTS"],
     image: img("minecraft.png"),
     accent: "linear-gradient(135deg, #6a9c5b 0%, #35603f 100%)",

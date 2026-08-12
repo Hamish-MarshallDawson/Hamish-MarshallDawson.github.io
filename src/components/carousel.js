@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { fetchUserRepos, formatRepoData } from "../services/githubAPI";
 import { carouselProjects } from "./projectdata";
+import { ProjectModal } from "./ProjectModal";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -11,7 +12,36 @@ import { EffectCoverflow, Navigation, Pagination } from "swiper/modules";
 export const Carousel = () => {
   const [projects, setProjects] = useState(carouselProjects);
   const [loading, setLoading] = useState(true);
+  const [openProject, setOpenProject] = useState(null);
   const swiperRef = useRef(null);
+  const pointerStart = useRef(null);
+
+  // Swiper's own preventClicks/preventClicksPropagation kill a click whenever
+  // the pointer twitches during the press, which is what made the links inside
+  // the slides unreliable. Those are off; this is the replacement, and it
+  // applies the same rule to the card overlay and the links alike.
+  const onPointerDownCapture = useCallback((event) => {
+    pointerStart.current = { x: event.clientX, y: event.clientY };
+  }, []);
+
+  const onClickCapture = useCallback((event) => {
+    const start = pointerStart.current;
+    pointerStart.current = null;
+    // detail === 0 means the click came from the keyboard, which reports no
+    // coordinates — measuring a distance from a stale pointer would block it.
+    if (!start || event.detail === 0) return;
+    const travelled = Math.hypot(
+      event.clientX - start.x,
+      event.clientY - start.y
+    );
+    // A drag that happens to end on a card is a swipe, not a click.
+    if (travelled > 8) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }, []);
+
+  const closeModal = useCallback(() => setOpenProject(null), []);
 
   // Swiper picks up the new breakpoint on resize but does not always re-lay out
   // the slides, leaving them at the previous width. Force it.
@@ -71,7 +101,11 @@ export const Carousel = () => {
   }
 
   return (
-    <div className="pageCarouselPage">
+    <div
+      className="pageCarouselPage"
+      onPointerDownCapture={onPointerDownCapture}
+      onClickCapture={onClickCapture}
+    >
       <Swiper
         className="projectSwiper"
         onSwiper={(swiper) => {
@@ -79,7 +113,10 @@ export const Carousel = () => {
         }}
         modules={[EffectCoverflow, Navigation, Pagination]}
         effect="coverflow"
-        grabCursor={true}
+        grabCursor={false}
+        preventClicks={false}
+        preventClicksPropagation={false}
+        touchStartPreventDefault={false}
         centeredSlides={true}
         observer={true}
         observeParents={true}
@@ -111,7 +148,18 @@ export const Carousel = () => {
             />
             <div className="swiperSlideContent">
               <span className="project-card-eyebrow">{project.category}</span>
-              <h3>{project.name}</h3>
+              {/* The button's ::after stretches over the whole slide, so the
+                  image and body are clickable too, without nesting flow
+                  content inside a <button>. */}
+              <h3>
+                <button
+                  type="button"
+                  className="slide-open"
+                  onClick={() => setOpenProject(project)}
+                >
+                  {project.name}
+                </button>
+              </h3>
               <p>{project.description}</p>
               <div className="project-card-meta">
                 {(project.tags || []).map((tag) => (
@@ -134,6 +182,8 @@ export const Carousel = () => {
           </SwiperSlide>
         ))}
       </Swiper>
+
+      <ProjectModal project={openProject} onClose={closeModal} />
     </div>
   );
 };
