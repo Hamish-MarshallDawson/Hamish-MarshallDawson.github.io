@@ -1,0 +1,161 @@
+/* ==========================================================================
+   HMD design tokens — neo-brutalist layer
+   --------------------------------------------------------------------------
+   Everything visual is derived from this file. Components never hard-code
+   a colour, a border width, a shadow or a type size; they read the tokens
+   below or the surface contract that the .surface-* classes set.
+
+   Palette: exactly three colours. No greys, no gradients, no opacity fades.
+     paper  #ffffff
+     ink    #000000
+     signal #1f1fff   7.8:1 against paper · 2.7:1 against ink
+
+   Pairing rules that keep every text pair above 4.5:1 (WCAG 2.2 AA):
+     ink on paper      21:1   ✓
+     paper on ink      21:1   ✓
+     paper on signal   7.8:1  ✓
+     signal on paper   7.8:1  ✓  (signal text only ever sits on paper)
+     ink on signal     2.7:1  ✗  never — text on signal is always paper
+     signal on ink     2.7:1  ✗  never — signal on ink is block colour only
+
+   RE-COLOURING THE SITE
+   --------------------------------------------------------------------------
+   --signal (just below) is the default colour: every blue on the site — the
+   loading screen, the Index menu, the photo duotones, buttons, focus
+   states, the contact section — and, at startup, the tab icon and the
+   mobile browser bar too (src/styles/brand.js regenerates both from it).
+
+   Visitors can also switch colour from the header's Colour menu; that list
+   lives in src/styles/palette.js and their pick is remembered per browser.
+
+   Text on --signal is always white, so the colour needs at least 4.5:1
+   against white. In `npm start` the console warns if it falls short.
+   Measured options (all in the Colour menu):
+     #1f1fff  electric blue   7.78:1   (default)
+     #6a00f4  violet          7.19:1
+     #0047ab  cobalt          8.44:1
+     #c43d00  deep orange     5.23:1
+     #d6006f  hot pink        5.14:1
+     #e10600  signal red      4.97:1
+     #00843d  racing green    4.81:1
+   Yellow, cyan and light orange can't work here: white text on them falls
+   to 1.3–3:1.
+
+   Two static copies exist for moments before this CSS loads: theme-color
+   in public/index.html and theme_color in public/manifest.json (the colour
+   of the installed app). Update them to match if you change --signal.
+   ========================================================================== */
+
+:root {
+  /* ---------- primitives ---------- */
+  --paper: #ffffff;
+  --ink: #000000;
+  --signal: #1f1fff; /* ← the site's default colour. See "Re-colouring" above. */
+
+  /* ---------- surface contract ----------
+     Every section picks a surface class (utilities.css). Components only
+     read these five-plus names, so the same card works on any surface.   */
+  --surface: var(--paper); /* fill */
+  --on-surface: var(--ink); /* text, icons */
+  --line: var(--ink); /* borders and rules */
+  --shadow-ink: var(--ink); /* hard shadow colour */
+  --text-accent: var(--signal); /* emphasis text; only where it clears 4.5:1 */
+  --focus-bg: var(--signal); /* focus shifts the fill to this… */
+  --focus-fg: var(--paper); /* …and the text to this */
+
+  /* ---------- geometry ---------- */
+  --bw-hair: 1px; /* microtable rules */
+  --bw-rule: 2px; /* nav cells, spreadsheet rows */
+  --bw-frame: 3px; /* primary containers */
+  --bw-heavy: 4px; /* hero objects, dialogs */
+
+  /* Hard offset shadows. Blur radius is always 0 — the shadow is a second
+     solid plate behind the object, never a glow. Offsets are tokens so
+     hover/focus can translate the object by exactly one step. */
+  --off-1: 4px;
+  --off-2: 8px;
+  --off-3: 12px;
+  --off-4: 18px;
+  --shadow-0: 0 0 0 0 var(--shadow-ink);
+  --shadow-1: var(--off-1) var(--off-1) 0 0 var(--shadow-ink);
+  --shadow-2: var(--off-2) var(--off-2) 0 0 var(--shadow-ink);
+  --shadow-3: var(--off-3) var(--off-3) 0 0 var(--shadow-ink);
+  --shadow-4: var(--off-4) var(--off-4) 0 0 var(--shadow-ink);
+
+  /* ---------- type families ---------- */
+  --font-grotesk: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+  --font-serif: "Instrument Serif", "Times New Roman", Times, serif;
+  --font-pixel: "Silkscreen", "JetBrains Mono", ui-monospace, monospace;
+
+  /* Archivo's width axis (wdth 62–125) is the whole display system:
+     compressed black for the mega rows, condensed for titles, normal for
+     reading, wide-light for spaced-out labels. */
+  --wdth-compressed: 62;
+  --wdth-condensed: 75;
+  --wdth-normal: 100;
+  --wdth-wide: 125;
+
+  /* ---------- fluid type scale ----------
+     clamp(min, intercept + slope·vw, max), solved for a 320px → 1600px
+     viewport range (mega and serif run to ~1760px). No media queries.     */
+  /* Hero rows: bound by width (14.25vw leaves room for the plate beside
+     the longest word) and by height (three rows must fit the first
+     screen under the header, sheet and strip: (100svh − 17rem) / 2.5). */
+  --fs-mega: clamp(3.5rem, min(14.25vw, (100svh - 17rem) / 2.5), 17rem); /* 56 → 272px */
+  --fs-serif: clamp(3.5rem, min(1.5rem + 11vw, 17svh), 13rem); /* 56 → 208px loading name */
+  --fs-display: clamp(2.75rem, 1.1875rem + 7.8125vw, 9rem); /* 44 → 144px section titles */
+  --fs-h2: clamp(2.25rem, 1.1875rem + 5.3125vw, 6.5rem); /* 36 → 104px statements */
+  --fs-h3: clamp(1.5rem, 1.125rem + 1.875vw, 3rem); /*  24 → 48px   card titles    */
+  --fs-h4: clamp(1.125rem, 1.03rem + 0.47vw, 1.5rem); /* 18 → 24px   sub-heads      */
+  --fs-body: clamp(1rem, 0.97rem + 0.16vw, 1.125rem); /* 16 → 18px   reading copy   */
+  --fs-small: 0.875rem; /* 14px */
+  --fs-micro: 0.75rem; /* 12px — labels, cells, readouts */
+
+  --lh-mega: 0.82;
+  --lh-display: 0.88;
+  --lh-tight: 1.05;
+  --lh-snug: 1.25;
+  --lh-body: 1.55;
+
+  --tr-mega: -0.035em;
+  --tr-display: -0.025em;
+  --tr-micro: 0.06em;
+  --tr-wide: 0.32em;
+
+  /* ---------- space & layout ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  --gutter: clamp(16px, 0.5rem + 2.5vw, 48px);
+  --section-pad: clamp(72px, 3rem + 7vw, 176px);
+  --maxw: 1680px;
+  --measure: 62ch;
+
+  --bar-h: 52px; /* spreadsheet header row */
+  --strip-h: 38px; /* status strip */
+  --hit: 44px; /* comfortable target; the hard floor is 24px (WCAG 2.5.8) */
+
+  /* ---------- motion ---------- */
+  --ease-snap: cubic-bezier(0.7, 0, 0.2, 1); /* mechanical, no float */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-1: 90ms;
+  --dur-2: 160ms;
+  --dur-3: 280ms;
+
+  /* ---------- stacking ---------- */
+  --z-bar: 50;
+  --z-stamp: 55;
+  --z-panel: 60;
+  --z-dialog: 70;
+  --z-wipe: 80;
+  --z-boot: 100;
+  --z-skip: 200;
+}

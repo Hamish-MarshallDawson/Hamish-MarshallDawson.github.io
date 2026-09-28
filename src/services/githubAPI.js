@@ -75,6 +75,7 @@ export const formatRepoData = (repo) => {
     language: repo.language,
     updatedAt: new Date(repo.updated_at).toLocaleDateString(),
     createdAt: new Date(repo.created_at).toLocaleDateString(),
+    pushedAt: repo.pushed_at,
     topics: repo.topics || [],
     isFork: repo.fork,
   };
