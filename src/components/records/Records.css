@@ -1,0 +1,415 @@
+/* ==========================================================================
+   Records: service log (ink), field ops (paper), off-duty (ink).
+   ========================================================================== */
+
+/* ---------- service log: contract sheets ---------- */
+
+.contracts {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.contract-sheet {
+  box-shadow: var(--off-3) var(--off-3) 0 0 var(--signal);
+}
+
+.contract-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: var(--bw-frame) solid var(--ink);
+}
+
+.contract-state {
+  padding: 4px var(--space-2);
+  border: var(--bw-rule) solid var(--paper);
+}
+
+.contract-state.is-active {
+  background: var(--paper);
+  color: var(--signal);
+  font-weight: 700;
+}
+
+.contract-body {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-6) var(--space-7);
+  padding: var(--space-6) var(--space-6) var(--space-5);
+}
+
+.contract-head {
+  grid-column: 1 / span 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.contract-role {
+  font: 900 clamp(2rem, 1.1rem + 2.4vw, 3.75rem) / 0.9 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  letter-spacing: var(--tr-display);
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+}
+
+.contract-org {
+  margin-top: auto;
+  padding-top: var(--space-5);
+  overflow: hidden;
+  white-space: nowrap;
+  font: 900 clamp(1.75rem, 1rem + 2.4vw, 3.5rem) / 1 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--ink);
+}
+
+.contract-objectives {
+  grid-column: 6 / -1;
+  min-width: 0;
+}
+
+.contract-objectives-title {
+  margin-bottom: var(--space-3);
+}
+
+.contract-objectives li {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+  border-top: var(--bw-rule) solid var(--ink);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+}
+
+.contract-n {
+  display: grid;
+  place-items: center;
+  align-self: start;
+  height: 26px;
+  margin-top: 1px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 1rem;
+}
+
+.contract-progress {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding-top: var(--space-5);
+  border-top: var(--bw-frame) solid var(--ink);
+}
+
+.contract-progress-bar {
+  display: block;
+  height: 22px;
+  padding: 3px;
+  border: var(--bw-rule) solid var(--ink);
+}
+
+.contract-progress-track {
+  display: block;
+  height: 100%;
+}
+
+/* Segmented fill: hard stops only, so it prints as discrete blocks. */
+.contract-progress-bar i {
+  display: block;
+  height: 100%;
+  transform-origin: 0 50%;
+  background: repeating-linear-gradient(90deg, var(--signal) 0 16px, transparent 16px 20px);
+}
+
+.contract-progress-value {
+  font-size: 1rem;
+}
+
+@media (max-width: 899px) {
+  /* One track: twelve columns' worth of gaps alone would outgrow a phone. */
+  .contract-body {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--space-5) var(--space-4) var(--space-4);
+  }
+
+  .contract-head,
+  .contract-objectives {
+    grid-column: 1 / -1;
+  }
+
+  .contract-org {
+    display: none;
+  }
+
+  .contract-objectives li {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+
+  .contract-progress {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .contract-progress-label {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------- where I've studied ---------- */
+
+/* A sub-section of the work log: its own ruled cells row and a heading one
+   step down from the section title, then the same sheets as the jobs. */
+.study {
+  margin-top: var(--space-9);
+}
+
+.study-cells {
+  margin-bottom: var(--space-7);
+}
+
+.study-title {
+  margin-bottom: clamp(var(--space-7), 5vw, var(--space-8));
+  font: 900 var(--fs-h2) / 0.9 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  letter-spacing: var(--tr-display);
+  text-transform: uppercase;
+}
+
+/* ---------- toolkit ledger ---------- */
+
+.toolkit {
+  margin-top: var(--space-9);
+}
+
+.toolkit-title {
+  margin-bottom: var(--space-5);
+  font: 900 var(--fs-h2) / 0.9 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  letter-spacing: var(--tr-display);
+  text-transform: uppercase;
+}
+
+.toolkit-rows {
+  border-top: var(--bw-frame) solid var(--line);
+}
+
+.toolkit-row {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: baseline;
+  padding: var(--space-4) 0;
+  border-bottom: var(--bw-rule) solid var(--line);
+}
+
+.toolkit-row .chip {
+  border-color: var(--line);
+}
+
+@media (max-width: 767px) {
+  .toolkit-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+  }
+}
+
+/* ---------- field ops ---------- */
+
+.field {
+  padding-top: 0;
+}
+
+.field-strip {
+  margin: 0 calc(var(--gutter) * -1) var(--section-pad);
+  border-top: 0;
+}
+
+/* Cards share row tracks through subgrid (li → reveal wrapper → article),
+   so plates line up across a row even when one title wraps further. */
+.rgrid {
+  display: grid;
+  gap: 0 var(--space-7);
+}
+
+.rgrid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rgrid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--space-6);
+}
+
+.rcard,
+.rcard > .reveal,
+.rcard article {
+  display: grid;
+  grid-row: span 5;
+  grid-template-rows: subgrid;
+}
+
+.rcard {
+  margin-bottom: var(--space-9);
+}
+
+.rcard article {
+  position: relative;
+}
+
+.rcard-meta {
+  margin-bottom: var(--space-3);
+}
+
+/* The heading sits on the plate's top edge, as tight as the type allows. */
+.rcard-title {
+  position: relative;
+  z-index: 1;
+  align-self: end;
+  margin-bottom: -0.06em;
+  font: 900 clamp(2rem, 0.9rem + 3vw, 4.5rem) / 0.86 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  overflow-wrap: break-word;
+}
+
+.rcard-media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border: var(--bw-frame) solid var(--line);
+  background: var(--signal);
+  box-shadow: var(--off-2) var(--off-2) 0 0 var(--shadow-ink);
+}
+
+/* Absolutely placed so a portrait photo can't stretch the plate past its
+   4:3 ratio (an in-flow image would set the box's minimum height). */
+.rcard-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.16);
+}
+
+@media (hover: hover) {
+  .rcard:hover .rcard-media img {
+    mix-blend-mode: screen;
+    filter: grayscale(1) contrast(1.3) brightness(1.06);
+  }
+}
+
+.rcard-badge {
+  position: absolute;
+  top: var(--space-4);
+  left: calc(var(--space-3) * -1);
+  padding: 6px var(--space-3);
+  border: var(--bw-rule) solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.rcard-stat {
+  position: absolute;
+  right: calc(var(--space-3) * -1);
+  bottom: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  border: var(--bw-frame) solid var(--line);
+  background: var(--signal);
+  color: var(--paper);
+  font: 900 clamp(1.125rem, 0.95rem + 0.8vw, 1.625rem) / 1 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  text-transform: uppercase;
+}
+
+.rcard-org {
+  margin-top: var(--space-5);
+  padding-top: var(--space-2);
+  border-top: var(--bw-rule) solid var(--line);
+  font: 700 var(--fs-micro) / 1.3 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+.rcard-copy {
+  max-width: 60ch;
+  margin-top: var(--space-4);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+}
+
+/* ---------- off-duty: spaced-out wide type, plates in duotone ---------- */
+
+.offline .rcard article {
+  padding-left: var(--space-7);
+}
+
+.offline .rcard-meta {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.offline .rcard-title {
+  margin-bottom: var(--space-4);
+  font-size: clamp(1.25rem, 1rem + 0.9vw, 1.875rem);
+  font-weight: 300;
+  font-variation-settings: "wdth" var(--wdth-wide);
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+}
+
+.offline .rcard-media img {
+  mix-blend-mode: screen;
+  filter: grayscale(1) contrast(1.3) brightness(1.06);
+}
+
+@media (hover: hover) {
+  .offline .rcard:hover .rcard-media img {
+    mix-blend-mode: normal;
+    filter: grayscale(1) contrast(1.16);
+  }
+}
+
+.offline .rcard-copy {
+  font-size: var(--fs-small);
+  line-height: 1.6;
+}
+
+@media (max-width: 1099px) {
+  .rgrid--3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .rgrid--2,
+  .rgrid--3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rcard {
+    margin-bottom: var(--space-8);
+  }
+
+  .rcard-badge {
+    left: calc(var(--space-2) * -1);
+  }
+
+  .rcard-stat {
+    right: calc(var(--space-2) * -1);
+  }
+}

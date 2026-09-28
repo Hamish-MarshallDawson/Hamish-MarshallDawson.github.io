@@ -1,0 +1,1046 @@
+/* ==========================================================================
+   Vault (#vault): tab row, file cards, category plate, inspector, dossier.
+   ========================================================================== */
+
+/* ---------- tab row: a spreadsheet's sheet tabs ---------- */
+
+.vault-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border: var(--bw-frame) solid var(--line);
+}
+
+.vault-tab {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "idx name count"
+    "label label label";
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  min-height: 76px;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-right: var(--bw-rule) solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  text-align: left;
+  transition: transform var(--dur-1) var(--ease-snap), box-shadow var(--dur-1) var(--ease-snap);
+}
+
+.vault-tab:last-child {
+  border-right: 0;
+}
+
+.vault-tab-fill {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--signal);
+}
+
+.vault-tab-idx {
+  grid-area: idx;
+  font: 500 var(--fs-micro) / 1 var(--font-mono);
+}
+
+.vault-tab-name {
+  grid-area: name;
+  font: 900 clamp(1.125rem, 0.9rem + 0.7vw, 1.625rem) / 1 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vault-tab-label {
+  grid-area: label;
+  font: 500 var(--fs-micro) / 1.25 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+.vault-tab-count {
+  grid-area: count;
+  font-size: 1rem;
+}
+
+.vault-tab[aria-selected="true"] {
+  color: var(--paper);
+  background: transparent;
+}
+
+@media (hover: hover) {
+  .vault-tab:hover:not([aria-selected="true"]) {
+    background: var(--ink);
+    color: var(--paper);
+  }
+}
+
+/* Focus lifts the tab off the row onto a hard ink plate: the plate area
+   turns from paper to ink (21:1) whether or not the tab is selected. */
+.vault-tab:focus-visible {
+  outline: none;
+  z-index: 1;
+  transform: translate(calc(var(--off-1) * -1), calc(var(--off-1) * -1));
+  box-shadow:
+    var(--off-2) var(--off-2) 0 0 var(--ink),
+    inset 0 0 0 var(--bw-frame) var(--ink);
+}
+
+.vault-tab:focus-visible:not([aria-selected="true"]) {
+  background: var(--signal);
+  color: var(--paper);
+}
+
+/* ---------- layout ---------- */
+
+.vault-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-7);
+  margin-top: var(--space-6);
+}
+
+@media (min-width: 1100px) {
+  .vault-body {
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 30%);
+    align-items: start;
+  }
+}
+
+.vault-path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  background: var(--ink);
+  color: var(--paper);
+  font: 500 var(--fs-small) / 1.4 var(--font-mono);
+}
+
+.vault-path-prompt {
+  font-weight: 700;
+}
+
+.vault-path-count {
+  margin: 0 var(--space-2);
+  padding: 0 var(--space-2);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.vault-path-hint {
+  margin-left: auto;
+  padding-left: var(--space-4);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+/* ---------- file cards ---------- */
+
+.vault-slots {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-6) var(--space-5);
+}
+
+.vslot-cell {
+  display: flex;
+  min-width: 0;
+}
+
+.vslot {
+  --focus-bg: var(--ink);
+  --focus-fg: var(--paper);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+  border: var(--bw-frame) solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  text-align: left;
+  box-shadow: var(--off-2) var(--off-2) 0 0 var(--ink);
+  transition:
+    transform var(--dur-1) var(--ease-snap),
+    box-shadow var(--dur-1) var(--ease-snap);
+}
+
+.vslot-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-bottom: var(--bw-frame) solid var(--ink);
+  background: var(--paper);
+}
+
+.vslot-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.18);
+}
+
+.vslot-media.is-contain img,
+.vinspect-media.is-contain img {
+  object-fit: contain;
+  padding: 12%;
+}
+
+/* Drawn plates (projects without a photo) fill the same box as a photo
+   and re-ink with it: ink on paper at rest, paper on signal when the card
+   is hovered or selected. */
+.schematic {
+  --sch-fg: var(--ink);
+  --sch-bg: var(--paper);
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--sch-bg);
+  color: var(--sch-fg);
+}
+
+.schematic-box {
+  fill: var(--sch-bg);
+  stroke: currentColor;
+  stroke-width: 3;
+}
+
+.schematic-plate {
+  fill: currentColor;
+}
+
+.schematic-link {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3;
+}
+
+.schematic-node {
+  fill: currentColor;
+  font: 900 23px var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  text-transform: uppercase;
+}
+
+.schematic-small {
+  fill: currentColor;
+  font: 700 13px var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.vslot.is-selected .schematic {
+  --sch-fg: var(--paper);
+  --sch-bg: var(--signal);
+}
+
+.vslot-idx,
+.vslot-tag {
+  position: absolute;
+  top: var(--space-2);
+  padding: 3px 6px;
+  font: 500 var(--fs-micro) / 1 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+.vslot-idx {
+  left: var(--space-2);
+  border: var(--bw-rule) solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.vslot-tag {
+  right: var(--space-2);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.vslot-caption {
+  flex: 1 1 auto;
+  display: grid;
+  align-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.vslot-name {
+  font: 850 clamp(1.125rem, 0.95rem + 0.5vw, 1.4rem) / 1.02 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  text-transform: uppercase;
+}
+
+.vslot-cat {
+  font: 500 var(--fs-micro) / 1.3 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+/* Hover and selection print the plate in duotone: the greyscale image is
+   screened onto signal, so it reads blue-and-white. */
+.vslot.is-selected .vslot-media {
+  background: var(--signal);
+}
+
+@media (hover: hover) {
+  .vslot:hover .vslot-media {
+    background: var(--signal);
+  }
+}
+
+.vslot.is-selected .vslot-media img {
+  mix-blend-mode: screen;
+  filter: grayscale(1) contrast(1.3) brightness(1.06);
+}
+
+@media (hover: hover) {
+  .vslot:hover .vslot-media img {
+    mix-blend-mode: screen;
+    filter: grayscale(1) contrast(1.3) brightness(1.06);
+  }
+
+  .vslot:hover .schematic {
+    --sch-fg: var(--paper);
+    --sch-bg: var(--signal);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .vslot:hover {
+    transform: translate(calc(var(--off-1) * -1), calc(var(--off-1) * -1));
+    box-shadow: var(--off-3) var(--off-3) 0 0 var(--ink);
+  }
+}
+
+.vslot.is-selected .vslot-caption {
+  background: var(--signal);
+  color: var(--paper);
+}
+
+.vslot.is-selected {
+  box-shadow: var(--off-2) var(--off-2) 0 0 var(--signal);
+}
+
+.vslot.is-selected .vslot-name::before {
+  content: "▶ ";
+}
+
+.vslot:focus-visible {
+  outline: none;
+  transform: translate(calc(var(--off-1) * -1), calc(var(--off-1) * -1));
+  box-shadow: var(--off-3) var(--off-3) 0 0 var(--ink);
+}
+
+.vslot:focus-visible .vslot-caption {
+  background: var(--focus-bg);
+  color: var(--focus-fg);
+}
+
+.vslot:active {
+  transform: translate(var(--off-2), var(--off-2));
+  box-shadow: 0 0 0 0 var(--ink);
+}
+
+.vslot--empty {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  aspect-ratio: 4 / 4.2;
+  border-style: dashed;
+  border-width: var(--bw-rule);
+  box-shadow: none;
+  background: repeating-linear-gradient(135deg, var(--ink) 0 1px, transparent 1px 12px);
+}
+
+.vslot-empty-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: var(--bw-rule) solid var(--ink);
+  background: var(--paper);
+  font: 700 1.5rem / 1 var(--font-mono);
+}
+
+/* Category line art printed over the plates. */
+.vslot-topo,
+.vslot-net {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--paper);
+  pointer-events: none;
+}
+
+.vslot-cross {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 36%;
+  height: auto;
+  color: var(--paper);
+  transform: translate(-50%, -50%);
+}
+
+@media (max-width: 1279px) {
+  .vault-tabs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .vault-tab {
+    border-bottom: var(--bw-rule) solid var(--line);
+  }
+
+  .vault-tab:nth-child(3n) {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 1099px) {
+  .vault-slots {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .vault-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .vault-tab:nth-child(3n) {
+    border-right: var(--bw-rule) solid var(--line);
+  }
+
+  .vault-tab:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .vault-tab:first-child {
+    grid-column: 1 / -1;
+    border-right: 0;
+  }
+
+  .vault-tab-label,
+  .vault-tab-idx {
+    display: none;
+  }
+
+  .vault-tab {
+    min-height: 56px;
+    padding: var(--space-2) var(--space-3);
+    grid-template-areas: "name count";
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  /* Compressed cut so the longest name (PERFORMANCE) fits a half-width
+     tab on a 320px phone without an ellipsis. */
+  .vault-tab-name {
+    font-size: 1rem;
+    font-variation-settings: "wdth" var(--wdth-compressed);
+  }
+
+  .vault-slots {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5) var(--space-4);
+  }
+
+  .vslot-cat {
+    display: none;
+  }
+
+  .vslot-caption {
+    padding: var(--space-2) var(--space-3) var(--space-3);
+  }
+
+  .vault-path-hint {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+}
+
+/* ---------- category plate ---------- */
+
+.vbanner-slot {
+  margin-top: var(--space-8);
+}
+
+.vbanner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-height: 240px;
+  border: var(--bw-frame) solid var(--ink);
+  box-shadow: var(--off-3) var(--off-3) 0 0 var(--ink);
+}
+
+.vbanner-copy {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+}
+
+.vbanner-kicker {
+  font: 500 var(--fs-micro) / 1.3 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+.vbanner-name {
+  font: 900 clamp(2.5rem, 1.5rem + 3vw, 4.75rem) / 0.86 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  letter-spacing: var(--tr-display);
+  text-transform: uppercase;
+}
+
+.vbanner-blurb {
+  max-width: 40ch;
+  font-size: var(--fs-body);
+  line-height: var(--lh-snug);
+}
+
+.vbanner-viz {
+  position: relative;
+  min-height: 200px;
+  border-left: var(--bw-frame) solid var(--paper);
+  color: var(--paper);
+  overflow: hidden;
+}
+
+/* All — index bars */
+.viz-index {
+  display: grid;
+  align-content: center;
+  gap: var(--space-3);
+  height: 100%;
+  padding: var(--space-5);
+}
+
+.viz-index-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  font: 500 var(--fs-micro) / 1 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+.viz-index-bar {
+  height: 14px;
+  border: var(--bw-rule) solid var(--paper);
+}
+
+.viz-index-bar i {
+  display: block;
+  height: 100%;
+  background: var(--paper);
+}
+
+.viz-index-count {
+  font: 400 1rem / 1 var(--font-pixel);
+}
+
+/* Research — sparkline */
+.viz-spark {
+  position: absolute;
+  inset: var(--space-5);
+  width: calc(100% - 2 * var(--space-5));
+  height: calc(100% - 2 * var(--space-5) - 42px);
+  color: var(--paper);
+}
+
+/* Robotics — hazard stencil */
+.vbanner[data-category="robotics"] .vbanner-viz {
+  background: repeating-linear-gradient(-45deg, var(--paper) 0 18px, var(--signal) 18px 36px);
+}
+
+.viz-hazard {
+  position: absolute;
+  inset: var(--space-5);
+  display: grid;
+  place-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: var(--bw-frame) solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  text-align: center;
+}
+
+.viz-stencil {
+  font: 900 clamp(2.75rem, 1.5rem + 3vw, 4.5rem) / 0.85 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-compressed);
+}
+
+.viz-stencil-sub {
+  font: 500 var(--fs-micro) / 1.3 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+/* Performance — contours under a hunting crosshair */
+.viz-topo {
+  position: absolute;
+  inset: 0;
+}
+
+.viz-topo-mesh {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.viz-topo-cross {
+  position: absolute;
+  top: 50%;
+  left: 58%;
+  width: 104px;
+  height: 104px;
+  transform: translate(-50%, -50%);
+  animation: cross-hunt 8s steps(24) infinite;
+}
+
+@keyframes cross-hunt {
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+  30% {
+    transform: translate(-128%, -32%);
+  }
+  62% {
+    transform: translate(18%, -68%);
+  }
+}
+
+/* ML — neural pathways */
+.viz-net {
+  position: absolute;
+  inset: var(--space-3) var(--space-4);
+  width: calc(100% - 2 * var(--space-4));
+  height: calc(100% - 2 * var(--space-3));
+}
+
+.net-edges line {
+  stroke: currentColor;
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.net-pulses line {
+  stroke: currentColor;
+  stroke-width: 4;
+  stroke-dasharray: 8 92;
+  stroke-dashoffset: 100;
+  vector-effect: non-scaling-stroke;
+  animation: net-pulse 2.6s linear infinite;
+}
+
+.net-nodes circle {
+  fill: var(--signal);
+  stroke: currentColor;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.vslot-net .net-nodes circle {
+  fill: none;
+}
+
+@keyframes net-pulse {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* The research plate's market-data ticker along its bottom edge. */
+.ticker {
+  position: absolute;
+  inset: auto 0 0;
+  overflow: hidden;
+  border-top: var(--bw-frame) solid var(--paper);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-run 38s linear infinite;
+}
+
+.tick {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border-right: var(--bw-rule) solid var(--paper);
+  white-space: nowrap;
+  font: 500 var(--fs-micro) / 1 var(--font-mono);
+  text-transform: uppercase;
+}
+
+.tick b {
+  font-weight: 700;
+}
+
+.tick--up .tick-val {
+  padding: 0 4px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.tick-note {
+  text-transform: none;
+}
+
+@keyframes ticker-run {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 767px) {
+  .vbanner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .vbanner-viz {
+    border-left: 0;
+    border-top: var(--bw-frame) solid var(--paper);
+  }
+
+  .vbanner[data-category="research"] .vbanner-viz {
+    min-height: 240px;
+  }
+}
+
+/* ---------- inspector ---------- */
+
+.vinspect {
+  position: sticky;
+  top: calc(var(--bar-h) + var(--space-5));
+  border: var(--bw-frame) solid var(--ink);
+  box-shadow: var(--off-3) var(--off-3) 0 0 var(--signal);
+}
+
+.vinspect-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--signal);
+  color: var(--paper);
+}
+
+.vinspect-chip {
+  padding: 3px 6px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.vinspect-body {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.vinspect-title {
+  font: 900 clamp(1.75rem, 1.2rem + 1.4vw, 2.75rem) / 0.92 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.vinspect-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border: var(--bw-frame) solid var(--paper);
+  background: var(--paper);
+}
+
+.vinspect-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.18);
+}
+
+.vinspect-tag {
+  position: absolute;
+  left: calc(var(--space-3) * -1);
+  bottom: var(--space-3);
+  padding: 4px 8px;
+  border: var(--bw-rule) solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.vinspect-abstract {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--fs-small);
+  line-height: 1.55;
+}
+
+.vinspect-abstract-key {
+  justify-self: start;
+  padding: 2px 6px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.vinspect-stats {
+  border-top: var(--bw-rule) solid var(--paper);
+}
+
+.vinspect-stats > div,
+.dossier-readout > div {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: var(--bw-hair) solid var(--line);
+}
+
+.vinspect-stats dt,
+.dossier-readout dt {
+  font: 500 var(--fs-micro) / 1.4 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+.vinspect-stats dd,
+.dossier-readout dd {
+  font-size: var(--fs-small);
+  line-height: 1.4;
+}
+
+.vinspect-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  padding-top: var(--space-2);
+}
+
+/* ---------- dossier ---------- */
+
+.dossier-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: grid;
+  place-items: center;
+  padding: var(--space-6) var(--gutter);
+  cursor: pointer;
+}
+
+.dossier {
+  display: flex;
+  flex-direction: column;
+  width: min(1180px, 100%);
+  max-height: calc(100vh - 2 * var(--space-6));
+  max-height: calc(100dvh - 2 * var(--space-6));
+  border: var(--bw-heavy) solid var(--ink);
+  box-shadow: var(--off-4) var(--off-4) 0 0 var(--ink);
+  cursor: auto;
+}
+
+.dossier-bar {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  min-height: 52px;
+  border-bottom: var(--bw-frame) solid var(--ink);
+}
+
+.dossier-file {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+}
+
+.dossier-nav {
+  display: flex;
+}
+
+.dossier-nav button {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  border: 0;
+  border-left: var(--bw-rule) solid var(--paper);
+  background: transparent;
+  color: inherit;
+}
+
+.dossier-nav button svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (hover: hover) {
+  .dossier-nav button:hover {
+    background: var(--signal);
+  }
+}
+
+.dossier-nav button:focus-visible {
+  outline: none;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* min-height: 0 lets the scroll area shrink inside the dossier's flex
+   column; without it the content overflows the sheet instead of scrolling
+   (on a phone that cut long entries off, links and all). */
+.dossier-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.dossier-media {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-right: var(--bw-frame) solid var(--ink);
+}
+
+.dossier-plate {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--paper);
+  border-bottom: var(--bw-frame) solid var(--ink);
+  cursor: grab;
+}
+
+.dossier-plate:active {
+  cursor: grabbing;
+}
+
+.dossier-plate img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.18);
+  user-select: none;
+  pointer-events: none;
+}
+
+.dossier-plate.is-contain img {
+  object-fit: contain;
+  padding: 10%;
+}
+
+/* The abstract overlaps the bottom of the plate as a signal block. */
+.dossier-abstract {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: var(--space-3);
+  margin: calc(var(--space-8) * -1) var(--space-5) var(--space-5) var(--space-7);
+  padding: var(--space-5);
+  border: var(--bw-frame) solid var(--ink);
+  box-shadow: var(--off-2) var(--off-2) 0 0 var(--ink);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+}
+
+/* A drawn plate carries information right to its edges, so the abstract
+   sits under it instead of over it. */
+.dossier-media.has-schematic .dossier-abstract {
+  margin-top: var(--space-5);
+}
+
+.dossier-abstract-key {
+  justify-self: start;
+  padding: 2px 6px;
+  background: var(--paper);
+  color: var(--signal);
+  font-weight: 700;
+}
+
+.dossier-data {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+  padding: var(--space-6);
+}
+
+.dossier-title {
+  font: 900 clamp(2rem, 1.3rem + 2.2vw, 3.75rem) / 0.9 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.dossier-data .btn {
+  justify-self: start;
+}
+
+.dossier-hint {
+  padding-top: var(--space-4);
+  border-top: var(--bw-rule) solid var(--line);
+}
+
+@media (max-width: 899px) {
+  .dossier-scrim {
+    padding: 0;
+  }
+
+  /* A definite height (not 100% of the scrim's auto-sized grid row), so
+     the sheet is exactly the screen and its body scrolls inside it. */
+  .dossier {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: none;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .dossier-scroll {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dossier-media {
+    border-right: 0;
+  }
+
+  /* Held sideways, a full-width 4:3 plate would fill the whole screen. */
+  .dossier-plate {
+    max-height: 55vh;
+  }
+
+  .dossier-abstract {
+    margin: calc(var(--space-7) * -1) var(--space-4) 0 var(--space-5);
+  }
+
+  .dossier-data {
+    padding: var(--space-6) var(--gutter) var(--space-8);
+  }
+}

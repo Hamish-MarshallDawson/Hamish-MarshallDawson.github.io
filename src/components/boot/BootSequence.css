@@ -1,0 +1,180 @@
+/* ==========================================================================
+   Loading card: a single uninterrupted field of signal blue.
+   ========================================================================== */
+
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-boot);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: var(--space-4) var(--gutter) var(--space-5);
+  cursor: default;
+}
+
+.boot-top {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--bw-rule) solid var(--line);
+}
+
+.boot-card {
+  align-self: center;
+  padding-block: var(--space-5);
+}
+
+.boot-name {
+  font-family: var(--font-serif);
+  font-size: var(--fs-serif);
+  font-weight: 400;
+  line-height: 0.86;
+  letter-spacing: -0.012em;
+}
+
+.boot-line {
+  display: block;
+  overflow: hidden;
+  overflow: clip;
+  padding-bottom: 0.08em;
+}
+
+.boot-line:nth-child(2) {
+  padding-left: 0.62em;
+  font-style: italic;
+}
+
+.boot-word {
+  display: inline-block;
+}
+
+.boot-role {
+  margin-top: var(--space-5);
+  padding-left: 0.2em;
+}
+
+.boot-foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-5) var(--space-7);
+  align-items: end;
+}
+
+.boot-log {
+  max-width: 600px;
+  border-top: var(--bw-hair) solid var(--line);
+}
+
+.boot-log li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: 5px 0;
+  border-bottom: var(--bw-hair) solid var(--line);
+}
+
+.boot-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.boot-dots {
+  flex: 1 1 auto;
+  min-width: var(--space-4);
+  border-bottom: var(--bw-rule) dotted currentColor;
+  transform: translateY(-3px);
+}
+
+.boot-status {
+  flex: none;
+}
+
+.boot-status.is-warn {
+  padding: 0 4px;
+  background: var(--paper);
+  color: var(--signal);
+}
+
+.boot-meta {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: end;
+  text-align: right;
+}
+
+.boot-granted {
+  min-height: 1.3em;
+}
+
+.boot-skip {
+  padding: 4px var(--space-2);
+  border: var(--bw-rule) solid var(--line);
+}
+
+.boot-progress {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: var(--bw-rule) solid var(--line);
+}
+
+.boot-segments {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(48, minmax(0, 1fr));
+  gap: 3px;
+  height: 14px;
+}
+
+.boot-segments span {
+  border: var(--bw-hair) solid var(--paper);
+}
+
+.boot-segments span.is-on {
+  background: var(--paper);
+}
+
+.boot-percent {
+  min-width: 4ch;
+  font: 400 1rem / 1 var(--font-pixel);
+  text-align: right;
+}
+
+/* Hangs just below the card, off screen, and only shows as the card
+   slides up — a hard ink edge on the shutter. */
+.boot-edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 16px;
+  background: var(--ink);
+}
+
+@media (max-width: 767px) {
+  .boot-top-mid {
+    display: none;
+  }
+
+  .boot-foot {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .boot-meta {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .boot-segments {
+    grid-template-columns: repeat(24, minmax(0, 1fr));
+  }
+
+  /* Every other segment, so the 24 that remain still fill evenly. */
+  .boot-segments span:nth-child(even) {
+    display: none;
+  }
+}

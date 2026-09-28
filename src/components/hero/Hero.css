@@ -1,0 +1,562 @@
+/* ==========================================================================
+   Hero (#core) and the manifesto band.
+   ========================================================================== */
+
+.hero {
+  position: relative;
+}
+
+.hero-top {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - var(--bar-h) - var(--strip-h));
+  min-height: calc(100svh - var(--bar-h) - var(--strip-h));
+}
+
+/* No status strip on short screens (see GlobalHUD.css). */
+@media (max-height: 500px) {
+  .hero-top {
+    min-height: calc(100svh - var(--bar-h));
+  }
+}
+
+/* ---------- data sheet: the catalogue's header rows ---------- */
+
+.hero-sheet {
+  display: grid;
+  grid-template-columns: minmax(160px, auto) repeat(3, minmax(0, 1fr));
+  border-bottom: var(--bw-frame) solid var(--line);
+}
+
+.hero-cell {
+  min-width: 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-right: var(--bw-rule) solid var(--line);
+}
+
+.hero-cell:last-child {
+  border-right: 0;
+}
+
+.hero-cell dt {
+  margin-bottom: var(--space-2);
+  font: 500 var(--fs-micro) / 1.2 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+.hero-cell dd {
+  font: 600 0.9375rem / 1.3 var(--font-grotesk);
+}
+
+.hero-cell--id {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.hero-cell--id dd {
+  font: 400 1rem / 1.2 var(--font-pixel);
+}
+
+/* ---------- stage: mega rows + plate ---------- */
+
+.hero-stage {
+  --stage-pad: clamp(var(--space-6), 4vw, var(--space-8));
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--space-5) 0 var(--stage-pad);
+}
+
+.hero-name {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-grotesk);
+  font-size: var(--fs-mega);
+  font-weight: 900;
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  line-height: var(--lh-mega);
+  letter-spacing: var(--tr-mega);
+  text-transform: uppercase;
+}
+
+.hero-row {
+  display: block;
+  overflow: hidden;
+  overflow: clip;
+  padding-top: 0.05em;
+}
+
+.hero-track {
+  display: inline-flex;
+  padding-left: var(--gutter);
+  white-space: nowrap;
+}
+
+/* The outline echo is generated content with empty alternative text, so
+   it paints but is never read or copied as part of the name. */
+.hero-track::after {
+  content: attr(data-echo) / "";
+  white-space: pre;
+  color: transparent;
+  -webkit-text-stroke: max(1.5px, 0.01em) var(--ink);
+}
+
+/* The plate: sized from the type so it always spans ~two rows. */
+.core {
+  --core-h: calc(var(--fs-mega) * 0.82 * 2.2);
+  position: absolute;
+  z-index: 2;
+  right: calc(var(--gutter) + 68px);
+  bottom: calc(var(--stage-pad) + 0.1 * var(--fs-mega));
+  width: calc(var(--core-h) * 0.82);
+  height: var(--core-h);
+  margin: 0;
+  border: var(--bw-heavy) solid var(--ink);
+  background: var(--signal);
+  box-shadow: var(--off-4) var(--off-4) 0 0 var(--ink);
+}
+
+.core-plate {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.core-visual {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.core-pill {
+  position: absolute;
+  top: calc(var(--space-4) * -1);
+  right: var(--space-5);
+  border-color: var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.core-pill-tag {
+  padding-left: var(--space-2);
+  border-left: var(--bw-rule) solid var(--ink);
+}
+
+.core-label {
+  position: absolute;
+  left: calc(var(--space-6) * -1);
+  bottom: var(--space-6);
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: var(--bw-frame) solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.core-index {
+  font: 400 1rem / 1 var(--font-pixel);
+}
+
+.core-devnote {
+  position: absolute;
+  top: calc(100% + var(--space-5));
+  left: 0;
+  right: 0;
+}
+
+.hero-rail {
+  position: absolute;
+  top: var(--space-7);
+  right: var(--gutter);
+  bottom: var(--stage-pad);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  width: 40px;
+  padding: var(--space-2) 0;
+  background: var(--paper);
+}
+
+.hero-barcode {
+  width: 28px;
+  height: 150px;
+  flex: none;
+}
+
+.hero-rail-text {
+  writing-mode: vertical-rl;
+  font: 500 var(--fs-micro) / 1 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ---------- deck: bio, research vector, lobby menu ---------- */
+
+.hero-deck {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--space-6);
+  row-gap: var(--space-8);
+  max-width: calc(var(--maxw) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding: var(--space-9) var(--gutter) var(--section-pad);
+}
+
+.hero-intro {
+  grid-column: 1 / span 7;
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+}
+
+.hero-role {
+  font: 900 var(--fs-h2) / 0.88 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  letter-spacing: var(--tr-display);
+  text-transform: uppercase;
+}
+
+.hero-cmd {
+  font: 500 var(--fs-small) / 1.4 var(--font-mono);
+}
+
+.hero-prompt {
+  color: var(--text-accent);
+  font-weight: 700;
+}
+
+.hero-bio {
+  max-width: 52ch;
+  font-size: var(--fs-h4);
+  line-height: 1.45;
+}
+
+.hero-cta {
+  justify-self: start;
+  margin-top: var(--space-3);
+}
+
+.hero-vector {
+  grid-column: 9 / -1;
+  align-self: start;
+  margin-top: var(--space-3);
+  padding: var(--space-6);
+  border: var(--bw-frame) solid var(--ink);
+  box-shadow: var(--off-3) var(--off-3) 0 0 var(--shadow-ink);
+}
+
+.hero-vector-value {
+  margin: var(--space-3) 0 var(--space-4);
+  font: 900 var(--fs-h3) / 0.95 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  text-transform: uppercase;
+}
+
+.hero-vector-sub {
+  font-size: var(--fs-small);
+  line-height: 1.5;
+}
+
+.hero-vector-note {
+  display: inline-block;
+  margin-top: var(--space-4);
+  padding: 4px var(--space-2);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* Credentials as a ruled row of cells, the value set heavy. The rules are
+   the grid's gaps showing the line colour through, so the row can wrap on
+   small screens without leaving orphaned borders. */
+.hero-highlights {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--bw-rule);
+  border-block: var(--bw-frame) solid var(--line);
+  background: var(--line);
+}
+
+.hero-highlight {
+  min-width: 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  background: var(--surface);
+}
+
+.hero-highlight dt {
+  margin-bottom: var(--space-2);
+  font: 500 var(--fs-micro) / 1.2 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+.hero-highlight dd {
+  font: 900 clamp(1.125rem, 0.95rem + 0.6vw, 1.5rem) / 1 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  text-transform: uppercase;
+}
+
+.hero-menu {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+.hero-item {
+  --press: var(--off-2);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--space-3);
+  min-height: 176px;
+  padding: var(--space-4) var(--space-4) var(--space-5) var(--space-5);
+  border: var(--bw-frame) solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.hero-item-glyph {
+  grid-column: 2;
+  grid-row: 1;
+  width: 24px;
+  height: 24px;
+}
+
+.hero-item-label {
+  grid-column: 1 / -1;
+  align-self: end;
+  font: 900 clamp(1.75rem, 1.1rem + 1.7vw, 3rem) / 0.9 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.hero-item-chip {
+  grid-column: 1 / -1;
+  justify-self: start;
+  border-color: currentColor;
+}
+
+@media (hover: hover) {
+  .hero-item:hover {
+    background: var(--signal);
+    color: var(--paper);
+  }
+}
+
+.hero-item[data-alert] {
+  --focus-bg: var(--paper);
+  --focus-fg: var(--ink);
+  background: var(--signal);
+  color: var(--paper);
+}
+
+@media (hover: hover) {
+  .hero-item[data-alert]:hover {
+    background: var(--ink);
+  }
+}
+
+@media (max-width: 1199px) {
+  .hero-sheet {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .hero-cell--id {
+    display: none;
+  }
+
+  .hero-intro {
+    grid-column: 1 / span 12;
+  }
+
+  .hero-vector {
+    grid-column: 1 / span 8;
+  }
+
+  .hero-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Below ~900px the longest word needs the full width, so the plate drops
+   out of the rows and prints underneath them instead. */
+@media (max-width: 899px) {
+  .hero-stage {
+    justify-content: flex-start;
+  }
+
+  .core {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    width: min(calc(100% - 2 * var(--gutter) - var(--off-4)), 560px);
+    height: auto;
+    aspect-ratio: 5 / 4;
+    margin: var(--space-7) 0 0 var(--gutter);
+  }
+
+  .core-label {
+    left: calc(var(--space-2) * -1);
+    bottom: var(--space-4);
+  }
+
+  .hero-rail {
+    display: none;
+  }
+
+  /* With the plate out of the rows, the longest word can take the full
+     width (MARSHALL is ~4.55em wide in this cut) — but on a phone held
+     sideways the three rows must still fit the first screen under the
+     header, the data sheet and the strip (~15rem between them). */
+  .hero-name {
+    font-size: clamp(3rem, min(19.5vw, (100svh - 15rem) / 2.5), 11rem);
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-top {
+    min-height: calc(100svh - var(--bar-h));
+  }
+
+  .hero-sheet {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hero-cell {
+    border-right: 0;
+    border-bottom: var(--bw-rule) solid var(--line);
+    padding-block: var(--space-2) var(--space-3);
+  }
+
+  .hero-cell:last-child {
+    border-bottom: 0;
+  }
+
+  /* One track on phones — and every child must span exactly it: a
+     leftover "span 8" or "span 12" from a wider layout would spawn implicit
+     columns and crush the content into slivers. */
+  .hero-deck {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--space-7);
+    padding-top: var(--space-8);
+  }
+
+  .hero-deck > * {
+    grid-column: 1 / -1;
+  }
+
+  .hero-menu {
+    gap: var(--space-4);
+  }
+
+  .hero-item {
+    --press: var(--off-1);
+    min-height: 124px;
+    padding: var(--space-3) var(--space-3) var(--space-4) var(--space-4);
+  }
+
+  .hero-item-label {
+    font-size: clamp(1.5rem, 1rem + 2.4vw, 2rem);
+  }
+
+  .hero-highlights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero-highlight:last-child {
+    grid-column: 1 / -1;
+  }
+
+  /* A square crop shows the portrait better on a tall screen. */
+  .core {
+    aspect-ratio: 1 / 1;
+    width: min(calc(100% - 2 * var(--gutter) - var(--off-4)), 480px);
+  }
+}
+
+@media (max-width: 359px) {
+  .hero-menu {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------- manifesto ---------- */
+
+.manifesto {
+  padding-top: var(--section-pad);
+}
+
+.manifesto .section-inner {
+  padding: 0 var(--gutter) var(--section-pad);
+}
+
+.manifesto-kicker {
+  margin-bottom: var(--space-7);
+}
+
+.manifesto-statement {
+  position: relative;
+}
+
+.manifesto-block {
+  position: absolute;
+  left: 16%;
+  top: 14%;
+  width: 46%;
+  height: 76%;
+  background: var(--signal);
+}
+
+.manifesto-type {
+  position: relative;
+  max-width: 14ch;
+  font: 900 var(--fs-display) / 0.9 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  letter-spacing: var(--tr-display);
+  text-transform: uppercase;
+}
+
+.manifesto-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  max-width: 1080px;
+  margin: var(--space-9) 0 0 auto;
+}
+
+.manifesto-col {
+  padding-top: var(--space-4);
+  border-top: var(--bw-rule) solid var(--line);
+}
+
+.manifesto-col-key {
+  margin-bottom: var(--space-3);
+}
+
+.manifesto-copy {
+  font: 400 var(--fs-small) / 1.65 var(--font-mono);
+}
+
+@media (max-width: 767px) {
+  .manifesto-block {
+    left: 8%;
+    width: 70%;
+  }
+
+  .manifesto-cols {
+    grid-template-columns: minmax(0, 1fr);
+    margin-top: var(--space-8);
+  }
+}

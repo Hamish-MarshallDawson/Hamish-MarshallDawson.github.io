@@ -1,0 +1,278 @@
+/* ==========================================================================
+   Utility layer. Single-purpose classes composed in JSX, the way a
+   utility-first framework would generate them, but backed by the tokens so
+   there is one source of truth and no build plugin.
+   ========================================================================== */
+
+/* ---------- surfaces ----------
+   A surface sets the contract every component reads. Composite shadow
+   tokens are re-declared here because custom properties resolve where
+   they are declared: without this, --shadow-2 would keep :root's ink
+   even inside an ink section.                                            */
+:root,
+.surface-paper,
+.surface-ink,
+.surface-signal {
+  --shadow-0: 0 0 0 0 var(--shadow-ink);
+  --shadow-1: var(--off-1) var(--off-1) 0 0 var(--shadow-ink);
+  --shadow-2: var(--off-2) var(--off-2) 0 0 var(--shadow-ink);
+  --shadow-3: var(--off-3) var(--off-3) 0 0 var(--shadow-ink);
+  --shadow-4: var(--off-4) var(--off-4) 0 0 var(--shadow-ink);
+}
+
+.surface-paper {
+  --surface: var(--paper);
+  --on-surface: var(--ink);
+  --line: var(--ink);
+  --shadow-ink: var(--ink);
+  --text-accent: var(--signal);
+  --focus-bg: var(--signal);
+  --focus-fg: var(--paper);
+  background: var(--surface);
+  color: var(--on-surface);
+}
+
+.surface-ink {
+  --surface: var(--ink);
+  --on-surface: var(--paper);
+  --line: var(--paper);
+  --shadow-ink: var(--signal);
+  --text-accent: var(--paper);
+  --focus-bg: var(--paper);
+  --focus-fg: var(--ink);
+  background: var(--surface);
+  color: var(--on-surface);
+}
+
+.surface-signal {
+  --surface: var(--signal);
+  --on-surface: var(--paper);
+  --line: var(--paper);
+  --shadow-ink: var(--ink);
+  --text-accent: var(--paper);
+  --focus-bg: var(--paper);
+  --focus-fg: var(--ink);
+  background: var(--surface);
+  color: var(--on-surface);
+}
+
+/* ---------- frames & rules ---------- */
+.u-frame {
+  border: var(--bw-frame) solid var(--line);
+}
+
+.u-frame-heavy {
+  border: var(--bw-heavy) solid var(--line);
+}
+
+.u-rule-t {
+  border-top: var(--bw-rule) solid var(--line);
+}
+
+.u-rule-b {
+  border-bottom: var(--bw-rule) solid var(--line);
+}
+
+/* ---------- hard shadows (0 blur, always) ---------- */
+.u-shadow-1 {
+  box-shadow: var(--off-1) var(--off-1) 0 0 var(--shadow-ink);
+}
+
+.u-shadow-2 {
+  box-shadow: var(--off-2) var(--off-2) 0 0 var(--shadow-ink);
+}
+
+.u-shadow-3 {
+  box-shadow: var(--off-3) var(--off-3) 0 0 var(--shadow-ink);
+}
+
+/* ---------- press: the one interaction model ----------
+   At rest the object sits on its shadow plate. Hover lifts it one step
+   (the plate grows), press pushes it flat onto the plate, focus shifts the
+   fill to the surface's focus pair *and* lifts it, so keyboard focus is
+   both a colour change (≥ 7.8:1) and a geometry change.                  */
+.u-press {
+  --press: var(--off-1);
+  position: relative;
+  box-shadow: var(--press) var(--press) 0 0 var(--shadow-ink);
+  transition:
+    transform var(--dur-1) var(--ease-snap),
+    box-shadow var(--dur-1) var(--ease-snap),
+    background-color 0s,
+    color 0s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .u-press:hover {
+    transform: translate(calc(var(--off-1) * -1), calc(var(--off-1) * -1));
+    box-shadow: calc(var(--press) + var(--off-1)) calc(var(--press) + var(--off-1)) 0 0 var(--shadow-ink);
+  }
+}
+
+.u-press:focus-visible {
+  outline: none;
+  background-color: var(--focus-bg);
+  color: var(--focus-fg);
+  transform: translate(calc(var(--off-1) * -1), calc(var(--off-1) * -1));
+  box-shadow: calc(var(--press) + var(--off-1)) calc(var(--press) + var(--off-1)) 0 0 var(--shadow-ink);
+}
+
+.u-press:active {
+  transform: translate(var(--press), var(--press));
+  box-shadow: 0 0 0 0 var(--shadow-ink);
+}
+
+/* ---------- type ---------- */
+.u-mega {
+  font-family: var(--font-grotesk);
+  font-size: var(--fs-mega);
+  font-weight: 900;
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  line-height: var(--lh-mega);
+  letter-spacing: var(--tr-mega);
+  text-transform: uppercase;
+}
+
+.u-display {
+  font-family: var(--font-grotesk);
+  font-size: var(--fs-display);
+  font-weight: 900;
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  line-height: var(--lh-display);
+  letter-spacing: var(--tr-display);
+  text-transform: uppercase;
+}
+
+.u-h2 {
+  font-family: var(--font-grotesk);
+  font-size: var(--fs-h2);
+  font-weight: 850;
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  line-height: var(--lh-display);
+  letter-spacing: var(--tr-display);
+}
+
+.u-h3 {
+  font-family: var(--font-grotesk);
+  font-size: var(--fs-h3);
+  font-weight: 850;
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  line-height: var(--lh-tight);
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
+}
+
+.u-micro {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  line-height: var(--lh-snug);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+.u-mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  line-height: var(--lh-body);
+}
+
+.u-wide {
+  font-family: var(--font-grotesk);
+  font-weight: 300;
+  font-variation-settings: "wdth" var(--wdth-wide);
+  letter-spacing: var(--tr-wide);
+  text-transform: uppercase;
+}
+
+.u-serif {
+  font-family: var(--font-serif);
+  font-weight: 400;
+}
+
+.u-pixel {
+  font-family: var(--font-pixel);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+/* Outline type: a stroke, not a fill. Only ever used for decorative
+   echoes (aria-hidden), so legibility of real content never depends on it. */
+.u-outline {
+  color: transparent;
+  -webkit-text-stroke: max(1.5px, 0.012em) var(--on-surface);
+}
+
+.u-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+/* ---------- layout ---------- */
+.u-inner {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+}
+
+.u-bleed {
+  overflow: hidden;
+  overflow: clip;
+}
+
+/* ---------- patterns ----------
+   Hard colour stops only: these render as flat stripes, never a blend. */
+.u-hazard {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--on-surface) 0 12px,
+    var(--surface) 12px 24px
+  );
+}
+
+.u-hatch {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--line) 0 2px,
+    transparent 2px 11px
+  );
+}
+
+/* ---------- image treatments ----------
+   RAW: black-and-white, pushed contrast. Duotone: the greyscale image is
+   screened over signal, so shadows print as signal and highlights as paper
+   — two flat inks, like a riso pull. Content images only, never fills.    */
+.u-raw img,
+img.u-raw {
+  filter: grayscale(1) contrast(1.18);
+}
+
+.u-duotone {
+  background: var(--signal);
+}
+
+.u-duotone img {
+  filter: grayscale(1) contrast(1.3) brightness(1.06);
+  mix-blend-mode: screen;
+}
+
+/* ---------- inline links ---------- */
+.u-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: var(--bw-rule);
+  text-underline-offset: 0.18em;
+}
+
+.u-link:hover {
+  text-decoration-thickness: var(--bw-heavy);
+}
+
+.u-link:focus-visible {
+  outline: none;
+  background: var(--focus-bg);
+  color: var(--focus-fg);
+  box-shadow: 0 0 0 var(--bw-frame) var(--focus-bg);
+  text-decoration: none;
+}
