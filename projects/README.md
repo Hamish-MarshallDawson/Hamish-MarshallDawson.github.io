@@ -29,6 +29,17 @@ original here and putting a resized copy in `optimized/` under the same name.
 | `NewPc.jpg`             | Building PCs                |
 | `EdinTown.jpg`          | Photography and film        |
 
+LocalMind has no image: its plate is drawn from the `schematic` field in
+`projectdata.js` (nodes, links, notes). Any project can use one instead of
+`image`.
+
+## Hero portrait
+
+`public/image_2a10f9.jpg` is the camera original (6679×4453, ~30 MB); the
+site serves `public/optimized/image_2a10f9.jpg`, a 1600px copy at JPEG
+quality 82 (~240 KB). Replace both together, keeping the originals-and-copies
+split above.
+
 Landscape crops around 16:9 work best — cards and slides use that ratio.
 
 ## Note on deploy size
