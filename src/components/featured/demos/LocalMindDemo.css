@@ -1,0 +1,879 @@
+/* ==========================================================================
+   LocalMind demo. Everything sits under .lm-demo and uses LocalMind's own
+   palette (ui/theme.py, gateway app.css) as custom properties declared on
+   that root. The root also resets the type and box rules the site sets
+   globally, so neither side leaks into the other.
+   ========================================================================== */
+
+.lm-demo {
+  --lm-navy: #12263a;
+  --lm-navy-deep: #0a1826;
+  --lm-navy-surface: #162c42;
+  --lm-sidebar-line: #24425c;
+  --lm-sidebar-muted: #9fb3b6;
+  --lm-cyan: #06bcc1;
+  --lm-cyan-deep: #026a6e;
+  --lm-ash: #c5d8d1;
+  --lm-parchment: #f4edea;
+  --lm-surface: #fbf8f6;
+  --lm-surface-2: #efe6e1;
+  --lm-line: #e2d8d2;
+  --lm-apricot: #f4d1ae;
+  --lm-muted: #4f6272;
+  --lm-placeholder: #7a8c96;
+  --lm-accent-soft: #ddf3f2;
+  --lm-ok: #0e8f6e;
+  --lm-warn: #b4513f;
+  --lm-font: "Inter", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --lm-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+
+  container: lm / inline-size;
+  position: relative;
+  height: 580px;
+  overflow: hidden;
+  background: var(--lm-parchment);
+  color: var(--lm-navy);
+  font: 400 14px / 1.5 var(--lm-font);
+  font-variation-settings: normal;
+  letter-spacing: normal;
+  text-align: left;
+  text-transform: none;
+}
+
+.lm-demo *,
+.lm-demo *::before,
+.lm-demo *::after {
+  box-sizing: border-box;
+  font-variation-settings: normal;
+  letter-spacing: inherit;
+  text-transform: none;
+}
+
+/* The reset sits in :where() so zero specificity: component classes win. */
+:where(.lm-demo) h2,
+:where(.lm-demo) h3,
+:where(.lm-demo) p,
+:where(.lm-demo) ol,
+:where(.lm-demo) ul,
+:where(.lm-demo) li,
+:where(.lm-demo) pre {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: inherit;
+  color: inherit;
+}
+
+:where(.lm-demo) button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+:where(.lm-demo) svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+.lm-demo :focus-visible {
+  outline: 2px solid var(--lm-cyan-deep);
+  outline-offset: 2px;
+}
+
+/* ---------- desktop app: sidebar, top bar, body, composer ---------- */
+
+.lm-app {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  height: 100%;
+}
+
+.lm-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  padding: 14px 12px;
+  background: var(--lm-navy);
+  color: var(--lm-parchment);
+}
+
+.lm-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px 6px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.lm-mark {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #06bcc1, #059da1);
+  color: var(--lm-navy);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+
+.lm-mark--big {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  font-size: 18px;
+  box-shadow: 0 8px 24px rgba(6, 188, 193, 0.3);
+}
+
+.lm-brand-name {
+  flex: 1;
+}
+
+.lm-new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: var(--lm-cyan);
+  color: var(--lm-navy);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.lm-filter {
+  padding: 7px 10px;
+  border: 1px solid var(--lm-sidebar-line);
+  border-radius: 10px;
+  color: var(--lm-sidebar-muted);
+  font-size: 13px;
+}
+
+.lm-convs {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.lm-conv {
+  padding: 7px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lm-conv.is-active {
+  background: var(--lm-navy-surface);
+}
+
+.lm-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 10px;
+  border-top: 1px solid var(--lm-sidebar-line);
+}
+
+.lm-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  color: var(--lm-sidebar-muted);
+  font-size: 13px;
+}
+
+.lm-nav-item.is-active {
+  background: var(--lm-navy-surface);
+  color: var(--lm-parchment);
+  box-shadow: inset 3px 0 0 var(--lm-cyan);
+}
+
+.lm-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.lm-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--lm-line);
+  background: var(--lm-surface);
+}
+
+/* Narrow-only pieces: the phone top bar and the one-line readout. */
+.lm-top--narrow,
+.lm-compact {
+  display: none;
+}
+
+.lm-menu {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: var(--lm-navy);
+}
+
+.lm-compact {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--lm-line);
+  background: var(--lm-surface);
+  color: var(--lm-muted);
+  font: 500 11px / 1.4 var(--lm-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lm-title {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.lm-model {
+  padding: 5px 8px;
+  border: 1px solid var(--lm-line);
+  border-radius: 999px;
+  color: var(--lm-muted);
+  font: 500 11px / 1 var(--lm-mono);
+}
+
+.lm-readouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.lm-pill {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: var(--lm-navy);
+  color: var(--lm-parchment);
+  font: 500 11px / 1.3 var(--lm-mono);
+  white-space: nowrap;
+}
+
+.lm-pill b {
+  color: var(--lm-cyan);
+  font-weight: 700;
+}
+
+.lm-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.lm-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 420px;
+  margin: auto;
+  text-align: center;
+}
+
+.lm-empty h3 {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.lm-empty p {
+  color: var(--lm-muted);
+}
+
+.lm-hint {
+  color: var(--lm-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.lm-bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  animation: lm-in 0.3s ease-out;
+}
+
+.lm-bubble p + p {
+  margin-top: 8px;
+}
+
+.lm-bubble--user {
+  align-self: flex-end;
+  background: var(--lm-apricot);
+  color: var(--lm-navy);
+}
+
+.lm-bubble--model {
+  align-self: flex-start;
+  max-width: 88%;
+  border: 1px solid var(--lm-line);
+  background: var(--lm-surface);
+}
+
+.lm-advert {
+  color: var(--lm-muted);
+  font-size: 12px;
+}
+
+.lm-tool {
+  align-self: flex-start;
+  max-width: 92%;
+  padding: 8px 10px;
+  border: 1px solid var(--lm-line);
+  border-left: 3px solid var(--lm-cyan);
+  border-radius: 10px;
+  background: var(--lm-surface);
+  font-size: 12.5px;
+  animation: lm-in 0.3s ease-out;
+}
+
+.lm-tool-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font: 500 12px / 1.3 var(--lm-mono);
+}
+
+.lm-tool-meta {
+  color: var(--lm-muted);
+  white-space: nowrap;
+}
+
+.lm-tool-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  color: var(--lm-muted);
+}
+
+.lm-quote {
+  font: 400 11px / 1.4 var(--lm-mono);
+}
+
+.lm-diff {
+  margin-top: 6px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--lm-surface-2);
+  color: var(--lm-navy);
+  font: 500 11px / 1.5 var(--lm-mono);
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.lm-add,
+.lm-del {
+  display: inline-block;
+  width: 100%;
+}
+
+.lm-add {
+  background: rgba(14, 143, 110, 0.14);
+}
+
+.lm-del {
+  background: rgba(180, 81, 63, 0.14);
+}
+
+.lm-ctx {
+  color: var(--lm-muted);
+}
+
+.lm-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--lm-cyan);
+  color: var(--lm-navy);
+  font: 600 12px / 1 var(--lm-font);
+}
+
+.lm-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  background: var(--lm-cyan-deep);
+  vertical-align: -2px;
+  animation: lm-blink 1s steps(1) infinite;
+}
+
+.lm-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--lm-line);
+  background: var(--lm-surface);
+}
+
+.lm-composer-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.lm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.lm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 35px;
+  padding: 0 10px;
+  border: 1px solid var(--lm-line);
+  border-radius: 999px;
+  background: var(--lm-surface);
+  color: var(--lm-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.lm-chip.is-on {
+  border-color: var(--lm-cyan);
+  background: var(--lm-accent-soft);
+  color: var(--lm-cyan-deep);
+}
+
+.lm-chip--model {
+  color: var(--lm-navy);
+  font-weight: 500;
+}
+
+.lm-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 10px 14px;
+  overflow: hidden;
+  border: 1px solid var(--lm-line);
+  border-radius: 14px;
+  background: #ffffff;
+  color: var(--lm-navy);
+  font-size: 14px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.lm-placeholder {
+  color: var(--lm-placeholder);
+}
+
+.lm-send {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--lm-cyan);
+  color: var(--lm-navy);
+}
+
+.lm-send[aria-disabled="true"] {
+  background: var(--lm-surface-2);
+  color: var(--lm-placeholder);
+  cursor: default;
+}
+
+/* ---------- knowledge base ---------- */
+
+.lm-kb {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lm-kb-sub {
+  color: var(--lm-muted);
+}
+
+.lm-kb-list {
+  overflow: hidden;
+  border: 1px solid var(--lm-line);
+  border-radius: 12px;
+  background: var(--lm-surface);
+}
+
+.lm-kb-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-top: 1px solid var(--lm-line);
+}
+
+.lm-kb-row:first-child {
+  border-top: 0;
+}
+
+.lm-kb-name {
+  font-weight: 600;
+}
+
+.lm-kb-docs {
+  grid-column: 1;
+  color: var(--lm-muted);
+  font-size: 12px;
+}
+
+.lm-badge {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border: 1px solid var(--lm-navy);
+  border-radius: 999px;
+  font: 500 11px / 1 var(--lm-mono);
+  white-space: nowrap;
+}
+
+.lm-badge.is-shared {
+  border-color: var(--lm-cyan);
+  background: var(--lm-cyan);
+}
+
+.lm-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.lm-kb-scope {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--lm-navy);
+  color: var(--lm-parchment);
+  font: 500 12px / 1.4 var(--lm-mono);
+}
+
+.lm-kb-scope b {
+  color: var(--lm-cyan);
+}
+
+/* ---------- phone: the gateway's own page ---------- */
+
+.lm-phone-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  height: 100%;
+  padding: 12px;
+  background: var(--lm-navy-deep);
+  color: var(--lm-parchment);
+}
+
+.lm-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.lm-node {
+  padding: 7px 10px;
+  border: 1px solid var(--lm-sidebar-line);
+  border-radius: 999px;
+  color: var(--lm-sidebar-muted);
+  font: 500 11px / 1 var(--lm-mono);
+}
+
+.lm-node.is-active {
+  border-color: var(--lm-cyan);
+  background: var(--lm-cyan);
+  color: var(--lm-navy);
+}
+
+.lm-phone {
+  display: flex;
+  flex: 0 1 440px;
+  flex-direction: column;
+  width: min(300px, 100%);
+  min-height: 0;
+  overflow: hidden;
+  border: 6px solid #2a3e50;
+  border-radius: 28px;
+  background: var(--lm-parchment);
+  color: var(--lm-navy);
+}
+
+.lm-phone-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--lm-line);
+  background: var(--lm-surface);
+}
+
+.lm-phone-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lm-pcpill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 7px;
+  border: 1px solid var(--lm-line);
+  border-radius: 999px;
+  font: 500 10px / 1 var(--lm-mono);
+  white-space: nowrap;
+}
+
+.lm-pcpill i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lm-muted);
+}
+
+.lm-pcpill.is-waking i {
+  background: var(--lm-apricot);
+  animation: lm-pulse 1s infinite;
+}
+
+.lm-pcpill.is-online i {
+  background: var(--lm-ok);
+}
+
+.lm-pccard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 12px 0;
+  padding: 9px 11px;
+  border: 1px solid var(--lm-line);
+  border-radius: 12px;
+  background: var(--lm-surface);
+  color: var(--lm-muted);
+  font-size: 12px;
+}
+
+.lm-pccard.is-online {
+  border-color: var(--lm-cyan);
+}
+
+.lm-pccard.is-waking {
+  border-color: var(--lm-apricot);
+}
+
+.lm-stages {
+  display: flex;
+  gap: 4px;
+}
+
+.lm-stages li {
+  flex: 1;
+  padding: 5px 0;
+  border-radius: 6px;
+  background: var(--lm-surface-2);
+  color: var(--lm-muted);
+  font: 500 10px / 1 var(--lm-mono);
+  text-align: center;
+}
+
+.lm-stages li.is-now {
+  background: var(--lm-cyan);
+  color: var(--lm-navy);
+}
+
+.lm-stages li.is-done {
+  background: var(--lm-navy);
+  color: var(--lm-parchment);
+}
+
+.lm-meter {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--lm-surface-2);
+}
+
+.lm-meter i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--lm-cyan);
+  animation: lm-fill 2.4s linear forwards;
+}
+
+.lm-phone-thread {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.lm-phone .lm-bubble {
+  max-width: 88%;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+.lm-composer--phone {
+  padding: 10px;
+}
+
+.lm-phone .lm-input {
+  min-height: 44px;
+  font-size: 12.5px;
+}
+
+.lm-phone .lm-send {
+  width: 44px;
+  height: 44px;
+}
+
+/* ---------- narrow frames: the desktop UI is simplified, not shrunk ---------- */
+
+@container lm (max-width: 640px) {
+  .lm-app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lm-sidebar {
+    display: none;
+  }
+
+  .lm-top--wide {
+    display: none;
+  }
+
+  .lm-top--narrow {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--lm-line);
+    background: var(--lm-surface);
+  }
+
+  .lm-top--narrow .lm-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lm-compact {
+    display: block;
+  }
+
+  .lm-body {
+    padding: 12px;
+  }
+
+  .lm-bubble,
+  .lm-bubble--model {
+    max-width: 94%;
+  }
+}
+
+/* Landscape phones are short: the walkthrough frame sits under the fixed
+   header and shrinks to fit the rest, and the chat scrolls inside it. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .lm-demo {
+    /* Leave room for the fixed site header above the frame and a margin below. */
+    height: min(580px, calc(100dvh - var(--bar-h) - 2rem));
+    min-height: 240px;
+  }
+}
+
+@keyframes lm-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@keyframes lm-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes lm-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes lm-fill {
+  to {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lm-demo *,
+  .lm-demo *::before,
+  .lm-demo *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

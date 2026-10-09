@@ -10,6 +10,7 @@ import { CategoryBanner } from "./CategoryBanner";
 import { VaultSlot, pad } from "./VaultSlot";
 import { VaultInspector } from "./VaultInspector";
 import { ProjectDossier } from "./ProjectDossier";
+import { FeaturedProjects } from "../featured/FeaturedProjects";
 import "./Vault.css";
 
 const ALL = {
@@ -52,6 +53,8 @@ export function AIResearchVault() {
       }),
     [repos]
   );
+
+  const featured = useMemo(() => projects.filter((project) => project.featured), [projects]);
 
   const counts = useMemo(
     () =>
@@ -135,6 +138,8 @@ export function AIResearchVault() {
           Projects I&apos;m proud of: robotics research, neural pipelines and the software around them. Filter the index
           by category.
         </SectionHeader>
+
+        <FeaturedProjects projects={featured} />
 
         <LayoutGroup id="vault-tabs">
           <div className="vault-tabs" role="tablist" aria-label="Categories">

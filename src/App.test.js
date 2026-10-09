@@ -291,3 +291,108 @@ test("the contact form speaks plainly", () => {
   expect(within(reachOut).getByRole("button", { name: /send message/i })).toBeInTheDocument();
   expect(reachOut.textContent).not.toMatch(/ident|payload|transmit|firewall|intercept/i);
 });
+
+test("the featured block shows LocalMind and TensoRoom, each with a demo", () => {
+  render(<App />);
+  const grid = screen.getByRole("list", { name: "Featured projects" });
+  const cards = within(grid).getAllByRole("article");
+  expect(cards.map((card) => within(card).getByRole("heading", { level: 4 }).textContent)).toEqual([
+    "LocalMind",
+    "TensoRoom",
+  ]);
+  expect(within(grid).getAllByRole("button", { name: /^run the demo/i })).toHaveLength(2);
+});
+
+test("Run the demo opens one walkthrough stage with its step controls", async () => {
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
+
+  expect(await screen.findByRole("group", { name: "Walkthrough navigation" })).toBeInTheDocument();
+  expect(screen.getByRole("group", { name: "Walkthrough options" })).toBeInTheDocument();
+  expect(screen.getByRole("list", { name: "Walkthrough steps" })).toBeInTheDocument();
+  // Back and Next are aria-disabled, not disabled, so they keep focus.
+  expect(screen.getByRole("button", { name: "Back" })).toHaveAttribute("aria-disabled", "true");
+  expect(screen.getByRole("button", { name: "Next" })).toHaveAttribute("aria-disabled", "false");
+  expect(screen.getByRole("button", { name: "Restart" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /auto-play/i })).toHaveAttribute("aria-pressed", "false");
+
+  // Opening a second demo replaces the first: still exactly one stage.
+  fireEvent.click(screen.getByRole("button", { name: "Run the demo for TensoRoom" }));
+  await waitFor(() => expect(screen.getAllByRole("region", { name: /^Demo · / })).toHaveLength(1));
+  expect(screen.getByRole("button", { name: "Run the demo for LocalMind" })).toHaveAttribute("aria-expanded", "false");
+});
+
+test("Next moves the walkthrough caption on", async () => {
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
+
+  expect(await screen.findByText(/Chats sit on the left/)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Next" }));
+
+  expect(screen.getByText(/Paste the advert and ask for the CV to be tailored/)).toBeInTheDocument();
+  expect(screen.queryByText(/Chats sit on the left/)).not.toBeInTheDocument();
+});
+
+test("Next keeps keyboard focus when it becomes unavailable on the last step", async () => {
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
+  await screen.findByText(/Chats sit on the left/);
+
+  const next = screen.getByRole("button", { name: "Next" });
+  next.focus();
+  for (let i = 0; i < 5; i += 1) fireEvent.click(next);
+
+  expect(screen.getByText(/The PC is asleep/)).toBeInTheDocument();
+  expect(next).toHaveAttribute("aria-disabled", "true");
+  expect(next).not.toBeDisabled();
+  expect(next).toHaveFocus();
+
+  // Clicking the unavailable button does nothing, and focus stays on it.
+  fireEvent.click(next);
+  expect(screen.getByText(/The PC is asleep/)).toBeInTheDocument();
+  expect(next).toHaveFocus();
+});
+
+test("Restart returns to the first step with the demo freshly mounted", async () => {
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
+  await screen.findByText(/Chats sit on the left/);
+  fireEvent.click(screen.getByRole("button", { name: "Next" }));
+  fireEvent.click(screen.getByRole("button", { name: "Next" }));
+  // The demo's root node is the only way to tell a fresh mount from a reused one.
+  // eslint-disable-next-line testing-library/no-node-access
+  const before = document.querySelector(".lm-demo");
+
+  fireEvent.click(screen.getByRole("button", { name: "Restart" }));
+
+  expect(screen.getByText(/Chats sit on the left/)).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Back" })).toHaveAttribute("aria-disabled", "true");
+  // The demo is a new instance, so any state it held is gone.
+  // eslint-disable-next-line testing-library/no-node-access
+  expect(document.querySelector(".lm-demo")).not.toBe(before);
+});
+
+test("reduced motion turns auto-play off and cannot be switched on", async () => {
+  localStorage.setItem("hmd:fx", "off");
+  render(<App />);
+  fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
+  await screen.findByText(/Chats sit on the left/);
+
+  const auto = screen.getByRole("button", { name: /auto-play/i });
+  expect(auto).toHaveAttribute("aria-disabled", "true");
+  fireEvent.click(auto);
+  expect(auto).toHaveAttribute("aria-pressed", "false");
+  expect(screen.getByText(/Auto-play is off with reduced motion/)).toBeInTheDocument();
+});
+
+test("Escape closes the stage and returns focus to its card button", async () => {
+  render(<App />);
+  const run = screen.getByRole("button", { name: "Run the demo for LocalMind" });
+  fireEvent.click(run);
+  await screen.findByText(/Chats sit on the left/);
+
+  fireEvent.keyDown(window, { key: "Escape" });
+
+  expect(screen.queryByRole("region", { name: /^Demo · / })).toBeNull();
+  expect(run).toHaveFocus();
+});
