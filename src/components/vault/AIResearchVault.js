@@ -215,7 +215,6 @@ export function AIResearchVault() {
                     key={project.id}
                     project={project}
                     fileNo={projects.indexOf(project) + 1}
-                    category={category}
                     inspector={withInspector}
                     selected={withInspector && project.id === selected.id}
                     onSelect={() => onSlot(project)}
