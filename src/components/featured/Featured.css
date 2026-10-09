@@ -1,0 +1,401 @@
+/* ==========================================================================
+   Featured block (inside #vault): cards, the open stage and the demo
+   controls. Chrome uses the site tokens only, so it follows the Colour menu
+   through --signal. Demo styles live in each demo's own root class.
+   ========================================================================== */
+
+.feat {
+  margin-top: var(--space-7);
+}
+
+.feat-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-5);
+  padding: var(--space-3) 0;
+  border-top: var(--bw-rule) solid var(--line);
+  border-bottom: var(--bw-rule) solid var(--line);
+}
+
+.feat-title {
+  font: 900 clamp(1.125rem, 0.95rem + 0.6vw, 1.5rem) / 1 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  text-transform: uppercase;
+}
+
+.feat-note {
+  letter-spacing: var(--tr-micro);
+}
+
+.feat-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6) var(--space-5);
+  margin-top: var(--space-6);
+}
+
+@media (min-width: 900px) {
+  .feat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.feat-cell {
+  display: flex;
+  min-width: 0;
+}
+
+.feat-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-5);
+  border: var(--bw-frame) solid var(--line);
+  box-shadow: var(--off-2) var(--off-2) 0 0 var(--line);
+}
+
+.feat-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+}
+
+.feat-idx {
+  padding: 3px var(--space-2);
+  background: var(--line);
+  color: var(--surface);
+  letter-spacing: var(--tr-micro);
+}
+
+.feat-cat {
+  letter-spacing: var(--tr-micro);
+  color: var(--text-accent);
+}
+
+.feat-name {
+  font: 850 clamp(1.5rem, 1.1rem + 1vw, 2.125rem) / 1 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  text-transform: uppercase;
+}
+
+.feat-pitch {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+
+.feat-facts {
+  border-top: var(--bw-hair) solid var(--line);
+}
+
+.feat-facts li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: var(--bw-hair) solid var(--line);
+  font: 500 var(--fs-small) / 1.45 var(--font-mono);
+}
+
+.feat-facts li::before {
+  content: "→";
+  color: var(--text-accent);
+}
+
+.feat-tags .chip {
+  min-height: 24px;
+}
+
+.feat-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+/* ---------- the open stage ---------- */
+
+.fstage {
+  margin-top: var(--space-6);
+  border: var(--bw-frame) solid var(--line);
+  box-shadow: var(--off-3) var(--off-3) 0 0 var(--line);
+  scroll-margin-top: calc(var(--bar-h) + var(--space-4));
+}
+
+.fstage-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--line);
+  color: var(--surface);
+  letter-spacing: var(--tr-micro);
+}
+
+.fstage-title {
+  font: inherit;
+  text-transform: uppercase;
+}
+
+.fstage-title:focus {
+  outline: none;
+}
+
+.fstage-title:focus-visible {
+  outline: var(--bw-rule) solid var(--surface);
+  outline-offset: 3px;
+}
+
+.fstage-close {
+  min-height: var(--hit);
+  padding: 0 var(--space-4);
+  border: var(--bw-rule) solid var(--surface);
+  background: var(--surface);
+  color: var(--line);
+  font: 700 var(--fs-micro) / 1 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-transform: uppercase;
+}
+
+.fstage-close:focus-visible {
+  outline: var(--bw-rule) solid var(--surface);
+  outline-offset: 2px;
+  background: var(--focus-bg);
+  color: var(--focus-fg);
+}
+
+/* ---------- DemoStage: frame, navigation, steps, caption, options ----------
+   One DOM order everywhere (frame, Back / count / Next, steps, caption,
+   options). Phones stack it, so the navigation sits right under the frame and
+   the steps collapse to a row of numbers. Wider stages stack the steps with
+   their titles, and the two-column layout (desktop, or a landscape phone)
+   puts the frame beside the controls. */
+
+.fdemo-status {
+  display: grid;
+  place-items: center;
+  min-height: 320px;
+  padding: var(--space-5);
+}
+
+.fdemo-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "frame"
+    "nav"
+    "steps"
+    "caption"
+    "extras";
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.fdemo-frame {
+  grid-area: frame;
+  min-width: 0;
+  border: var(--bw-rule) solid var(--line);
+  overflow: hidden;
+}
+
+.fdemo-nav {
+  grid-area: nav;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.fdemo-nav .btn {
+  min-width: 0;
+  min-height: var(--hit);
+  padding: 0 var(--space-4);
+}
+
+.fdemo-count {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  letter-spacing: var(--tr-micro);
+}
+
+/* Phones: six equal number-only buttons; the caption carries the words. */
+.fdemo-steps {
+  grid-area: steps;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  /* 6px, kept exactly; there is no 6px token (--space-1 is 4px). */
+  gap: calc(var(--space-1) * 1.5);
+}
+
+.fdemo-steps li {
+  min-width: 0;
+}
+
+.fdemo-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--hit);
+  padding: 0 var(--space-1);
+  border: var(--bw-rule) solid var(--line);
+  background: var(--surface);
+  color: var(--on-surface);
+  font: 500 var(--fs-micro) / 1.2 var(--font-mono);
+  letter-spacing: var(--tr-micro);
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.fdemo-step[aria-current="step"] {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: var(--paper);
+}
+
+.fdemo-step:focus-visible {
+  outline: none;
+  background: var(--focus-bg);
+  color: var(--focus-fg);
+  transform: translate(calc(var(--off-1) * -1), calc(var(--off-1) * -1));
+  box-shadow: var(--off-1) var(--off-1) 0 0 var(--line);
+}
+
+.fdemo-num {
+  font-family: var(--font-pixel);
+  font-size: 0.95rem;
+}
+
+.fdemo-step-title {
+  display: none;
+}
+
+.fdemo-caption {
+  grid-area: caption;
+  min-height: 5.5em;
+  padding-left: var(--space-4);
+  border-left: var(--bw-frame) solid var(--signal);
+  font: 500 1rem / 1.55 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-normal);
+}
+
+.fdemo-extras {
+  grid-area: extras;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.fdemo-extras .btn {
+  min-height: var(--hit);
+  padding: 0 var(--space-4);
+}
+
+.fdemo-note {
+  flex-basis: 100%;
+  letter-spacing: var(--tr-micro);
+}
+
+/* Disabled controls stay focusable (aria-disabled) and read as spent. */
+.fdemo .btn[aria-disabled="true"] {
+  background: var(--surface);
+  color: var(--on-surface);
+  border-style: dashed;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.fdemo .btn[aria-pressed="true"] {
+  background: var(--line);
+  color: var(--surface);
+}
+
+/* Fixed site chrome (top bar, bottom status strip) must never cover a
+   control when focus scrolls it into view (WCAG 2.4.11). */
+.fdemo .btn,
+.fdemo-step,
+.fdemo-caption {
+  scroll-margin-top: calc(var(--bar-h) + var(--space-4));
+  scroll-margin-bottom: calc(var(--strip-h) + var(--space-4));
+}
+
+/* ---------- wider stages ---------- */
+
+@media (min-width: 640px) {
+  .fdemo-grid {
+    padding: var(--space-4);
+  }
+
+  .fdemo-steps {
+    grid-template-columns: none;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .fdemo-step {
+    width: auto;
+    gap: var(--space-2);
+    padding: 0 var(--space-3);
+  }
+}
+
+/* Breakpoints, in one place. Custom properties cannot be used inside media
+   queries, so these literals are repeated in the rules below on purpose:
+     640px   wider stage: flex step row, landscape phones qualify with 500px high
+     900px   stage shows step titles; the frame takes the full width
+     1280px  two columns, frame beside the controls (desktop)
+     500px   short height, used with 640px and landscape for two columns */
+
+/* 900–1279px: the stage is wide enough for the desktop app, so the side
+   column stacks under the frame (full width) and the steps show titles. */
+@media (min-width: 900px) {
+  .fdemo-grid {
+    padding: var(--space-5);
+    gap: var(--space-4);
+  }
+
+  .fdemo-step-title {
+    display: inline;
+  }
+}
+
+/* Two columns, frame beside the controls: desktop from 1280px, and landscape
+   phones (which are wide but short), where the stacked column would not fit. */
+@media (min-width: 1280px), (min-width: 640px) and (max-height: 500px) and (orientation: landscape) {
+  .fdemo-grid {
+    grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr);
+    grid-template-areas:
+      "frame nav"
+      "frame steps"
+      "frame caption"
+      "frame extras";
+    align-items: start;
+    column-gap: var(--space-5);
+  }
+
+  .fdemo-frame {
+    align-self: start;
+  }
+
+  .fdemo-steps {
+    align-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fdemo-step,
+  .fstage-close {
+    transition: none;
+  }
+}

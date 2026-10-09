@@ -100,6 +100,15 @@ export const vaultProjects = [
     url: "https://github.com/Hamish-MarshallDawson/LocalMind",
     tags: ["VLM", "Tool-using agent", "RAG", "Voice", "Tailscale", "Wake-on-LAN"],
     categories: ["ml", "performance"],
+    featured: {
+      pitch: "A private assistant on my own PC that I can message from my phone. It wakes the GPU when I need it, searches my own documents and tailors a LaTeX CV to a job advert.",
+      facts: [
+        "Qwen3-VL 8B on a 16 GB GPU, with context sized from free VRAM",
+        "Knowledge base sections: shared CV material, private employer folders",
+        "The PC switches itself off after ten idle minutes",
+      ],
+      demo: "localmind",
+    },
     schematic: {
       nodes: ["Phone", "Gateway", "GPU PC"],
       links: ["Tailscale", "Wake-on-LAN"],
@@ -125,6 +134,15 @@ export const vaultProjects = [
       "LoRA",
     ],
     categories: ["ml"],
+    featured: {
+      pitch: "Photograph a room, name the pieces you want to change and see them redrawn, with everything else left exactly as it was. It all runs on a local GPU.",
+      facts: [
+        "Words in the request are matched to objects in the photo, each with a precise mask",
+        "Anyone shown in a photo is refused before anything is stored",
+        "Built to be used from a phone on the same Wi-Fi network",
+      ],
+      demo: "tensoroom",
+    },
     image: img("tensoroom.png"),
     alt: "TensoRoom logo, a wireframe cube",
     fit: "contain",
