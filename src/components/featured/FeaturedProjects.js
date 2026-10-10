@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DemoStage } from "./DemoStage";
 import { ExternalIcon } from "../shared/Icons";
+import { ProjectMedia } from "../vault/ProjectMedia";
 import { pad } from "./format";
 import "./Featured.css";
 
@@ -78,54 +79,65 @@ export function FeaturedProjects({ projects }) {
           const isOpen = project.id === openId;
           return (
             <li key={project.id} className="feat-cell">
-              <article className="feat-card surface-paper" aria-labelledby={`feat-${project.id}`} data-category={project.categories[0]}>
-                <header className="feat-head">
-                  <span className="feat-idx u-micro">Featured {pad(index + 1)}/{pad(projects.length)}</span>
-                  <p className="feat-cat u-micro">{project.category}</p>
-                </header>
+              <article
+                className={`feat-card surface-paper${isOpen ? " is-open" : ""}`}
+                aria-labelledby={`feat-${project.id}`}
+                data-category={project.categories[0]}
+              >
+                {/* The vault's own plate, decorative here: the heading names the project. */}
+                <div className={`feat-media${project.fit === "contain" ? " is-contain" : ""}`}>
+                  <ProjectMedia project={project} decorative lazy />
+                </div>
 
-                <h4 id={`feat-${project.id}`} className="feat-name">
-                  {project.name}
-                </h4>
-                <p className="feat-pitch">{pitch}</p>
+                <div className="feat-body">
+                  <header className="feat-head">
+                    <span className="feat-idx u-micro">Featured {pad(index + 1)}/{pad(projects.length)}</span>
+                    <p className="feat-cat u-micro">{project.category}</p>
+                  </header>
 
-                <ul className="feat-facts" aria-label="Key facts">
-                  {facts.map((fact) => (
-                    <li key={fact}>{fact}</li>
-                  ))}
-                </ul>
+                  <h4 id={`feat-${project.id}`} className="feat-name">
+                    {project.name}
+                  </h4>
+                  <p className="feat-pitch">{pitch}</p>
 
-                <ul className="chip-list feat-tags" aria-label="Stack">
-                  {project.tags.map((tag) => (
-                    <li key={tag} className="chip">
-                      {tag}
-                    </li>
-                  ))}
-                </ul>
+                  <ul className="feat-facts" aria-label="Key facts">
+                    {facts.map((fact) => (
+                      <li key={fact}>{fact}</li>
+                    ))}
+                  </ul>
 
-                <div className="feat-actions">
-                  {hasDemo && (
-                    <button
-                      type="button"
-                      ref={(node) => {
-                        runRefs.current[project.id] = node;
-                      }}
-                      className="btn btn--signal u-press"
-                      aria-expanded={isOpen}
-                      aria-controls={isOpen ? "feat-stage" : undefined}
-                      onClick={() => toggle(project.id)}
-                    >
-                      {isOpen ? "Close the demo" : "Run the demo"}
-                      <span className="sr-only"> for {project.name}</span>
-                    </button>
-                  )}
-                  {project.url && (
-                    <a className="btn btn--paper u-press" href={project.url} target="_blank" rel="noopener noreferrer">
-                      {repoLabel(project.url)}
-                      <span className="sr-only"> (opens in a new tab)</span>
-                      <ExternalIcon className="btn-glyph" />
-                    </a>
-                  )}
+                  <ul className="chip-list feat-tags" aria-label="Stack">
+                    {project.tags.map((tag) => (
+                      <li key={tag} className="chip">
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="feat-actions">
+                    {hasDemo && (
+                      <button
+                        type="button"
+                        ref={(node) => {
+                          runRefs.current[project.id] = node;
+                        }}
+                        className="btn btn--signal u-press"
+                        aria-expanded={isOpen}
+                        aria-controls={isOpen ? "feat-stage" : undefined}
+                        onClick={() => toggle(project.id)}
+                      >
+                        {isOpen ? "Close the demo" : "Run the demo"}
+                        <span className="sr-only"> for {project.name}</span>
+                      </button>
+                    )}
+                    {project.url && (
+                      <a className="btn btn--paper u-press" href={project.url} target="_blank" rel="noopener noreferrer">
+                        {repoLabel(project.url)}
+                        <span className="sr-only"> (opens in a new tab)</span>
+                        <ExternalIcon className="btn-glyph" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </article>
             </li>

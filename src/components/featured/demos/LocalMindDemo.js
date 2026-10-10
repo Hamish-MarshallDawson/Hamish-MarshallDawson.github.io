@@ -1,49 +1,85 @@
 import { useEffect, useState } from "react";
 import "./LocalMindDemo.css";
 
-// The LocalMind walkthrough, redrawn from the app's own screens (ui/app.py,
-// ui/render.py and the gateway's phone app). Every value is made up and local.
+// The LocalMind walkthrough, redrawn from the app's own screens: the Gradio
+// desktop app (src/localmind/ui/app.py, theme.py) and the gateway's phone page
+// (gateway/localmind_gateway/static). Every value is made up and local.
+//
+// `tour` drives the cursor (see DemoStage). Each target is a data-tour name
+// rendered inside this demo; a target that is not on screen at the current
+// width (the sidebar on a narrow frame) is skipped by the tour.
 export const steps = [
   {
     id: "home",
     title: "Home screen",
     caption:
       "Chats sit on the left. The top bar reads VRAM, GPU use and how much context is left before the model runs out of room.",
+    tour: [
+      { target: "chats", label: "Chats on this PC" },
+      { target: "hud", label: "VRAM, GPU, context" },
+    ],
   },
   {
     id: "advert",
     title: "Paste a job advert",
     caption: "Paste the advert and ask for the CV to be tailored. Sending it starts the tool loop.",
+    tour: [
+      { target: "new-chat", label: "New chat" },
+      { target: "input", label: "Advert pasted", hold: 1000 },
+      { target: "send", label: "Send", click: true },
+    ],
   },
   {
     id: "tools",
     title: "Tool calls",
     caption:
       "The model searches only the sections this chat can see, opens the original cv.tex, writes the new file and compiles it. Each call shows what it did.",
+    tour: [
+      { target: "tool-search", label: "Shared sections only" },
+      { target: "tool-open", label: "Opens the original" },
+      { target: "tool-write", label: "Writes the new file" },
+      { target: "tool-compile", label: "Compiles the PDF" },
+    ],
   },
   {
     id: "answer",
     title: "Answer and PDF",
     caption: "The answer streams in British English, says what changed, and the compiled PDF is offered as a download.",
+    tour: [
+      { target: "answer", label: "Streams in" },
+      { target: "pdf", label: "PDF offered", hold: 1800 },
+    ],
   },
   {
     id: "kb",
     title: "Knowledge base",
     caption:
       "Shared sections, such as the general CV, are searchable from every chat. A private section, like one employer's material, is only searchable from chats scoped to it.",
+    tour: [
+      { target: "shared", label: "Any chat can search" },
+      { target: "private", label: "Scoped chats only" },
+    ],
   },
   {
     id: "phone",
     title: "From my phone",
     caption:
       "The PC is asleep. A message from the phone wakes it with a Wake-on-LAN packet, the answer streams back, and the PC switches itself off after ten idle minutes.",
+    tour: [
+      { target: "node-phone", label: "Phone" },
+      { target: "node-gateway", label: "Always on" },
+      { target: "node-pc", label: "Woken on message" },
+      { target: "pc-pill", label: "PC state" },
+    ],
   },
 ];
 
-// Context in thousands of tokens and GPU use, per step, for the top bar.
+// Context in thousands of tokens and GPU use, per step, for the readouts.
 const CONTEXT_K = [1.1, 1.1, 4.9, 8.4, 8.4, 8.4];
 const GPU_PCT = [0, 0, 86, 64, 0, 0];
 const CONTEXT_WINDOW_K = 46;
+const VRAM_USED_GB = 13.1;
+const VRAM_TOTAL_GB = 16;
 
 const CHATS = ["Barclays · graduate analyst", "Rust async notes", "Gas boiler quote", "Tax return 2025"];
 const NAV = [
@@ -70,9 +106,7 @@ const TYPE_CHUNK = 3;
 // Milliseconds each phone phase lasts: asleep, waking, answering, idle countdown.
 const PHONE_TIMES = [1600, 1800, 2600, 2400];
 
-const FONTS = "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap";
-
-// Lucide-style strokes, the same set that theme.py draws as CSS masks.
+// Lucide-style strokes, the same paths theme.py draws as CSS masks.
 const ICONS = {
   plus: <path d="M12 5v14M5 12h14" />,
   chat: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
@@ -106,7 +140,7 @@ const ICONS = {
   ),
   lock: (
     <>
-      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <rect x="4" y="11" width="16" height="10" />
       <path d="M8 11V7a4 4 0 0 1 8 0v4" />
     </>
   ),
@@ -115,14 +149,7 @@ const ICONS = {
   globe: (
     <>
       <circle cx="12" cy="12" r="10" />
-      <path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20" />
-    </>
-  ),
-  mic: (
-    <>
-      <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
-      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-      <path d="M12 19v3" />
+      <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
     </>
   ),
   spark: <path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z" />,
@@ -164,26 +191,36 @@ function usePhoneScript(reduced) {
   return phase;
 }
 
-function Readout({ label, value }) {
+// A readout in the app's HUD: a label, a numeral in the pixel face, and a
+// meter when the value has a ceiling. Over 80% the cell inverts, as in app.css.
+function Readout({ label, numeric, pct }) {
+  const level = pct === undefined ? "" : pct >= 0.8 ? " lm-hud-warm" : "";
   return (
-    <span className="lm-pill">
-      <b>{label}</b> {value}
+    <span className={`lm-hud-pill${level}`}>
+      <b>{label}</b>
+      <span className="lm-num">{numeric}</span>
+      {pct !== undefined && (
+        <span className="lm-meter" aria-hidden="true">
+          <i style={{ width: `${Math.min(100, pct * 100).toFixed(0)}%` }} />
+        </span>
+      )}
     </span>
   );
 }
 
-function Sidebar({ view, chatting }) {
+function Sidebar({ chatting, kb }) {
   return (
-    <aside className="lm-sidebar" aria-hidden="true">
+    <aside className="lm-sidebar" aria-hidden="true" data-tour="chats">
       <div className="lm-brand">
         <span className="lm-mark">LM</span>
         <span className="lm-brand-name">LocalMind</span>
       </div>
-      <div className="lm-new">
+      <div className="lm-new" data-tour="new-chat">
         <Icon name="plus" />
         New chat
       </div>
       <div className="lm-filter">Search chats</div>
+      <p className="lm-group-label">Recent</p>
       <div className="lm-convs">
         {CHATS.map((chat, i) => (
           <div key={chat} className={`lm-conv${i === 0 && chatting ? " is-active" : ""}`}>
@@ -193,7 +230,7 @@ function Sidebar({ view, chatting }) {
       </div>
       <nav className="lm-nav">
         {NAV.map((item) => (
-          <div key={item.id} className={`lm-nav-item${item.id === (view === "kb" ? "kb" : "chat") ? " is-active" : ""}`}>
+          <div key={item.id} className={`lm-nav-item${item.id === (kb ? "kb" : "chat") ? " is-active" : ""}`}>
             <Icon name={item.icon} />
             {item.label}
           </div>
@@ -203,80 +240,139 @@ function Sidebar({ view, chatting }) {
   );
 }
 
-// Wide frames get the desktop top bar with three readouts. Narrow frames get
-// the phone app's single bar (menu, title, PC pill) and one compact readout line.
-function TopBar({ step, title }) {
+// The app's readouts, ruled and pinned to the top right of the window. The
+// VRAM cell is 82% of the card, so it inverts as the app does at 80%.
+function Hud({ step }) {
   const used = CONTEXT_K[step];
   const left = CONTEXT_WINDOW_K - used;
   return (
-    <>
-      <header className="lm-top lm-top--wide">
-        <h2 className="lm-title">{title}</h2>
-        <span className="lm-model">Qwen3-VL 8B · bf16</span>
-        <div className="lm-readouts">
-          <Readout label="VRAM" value="13.1 / 16 GB" />
-          <Readout label="GPU" value={`${GPU_PCT[step]}%`} />
-          <Readout label="Context" value={`${used.toFixed(1)}K / ${CONTEXT_WINDOW_K}K · ${left.toFixed(1)}K left`} />
-        </div>
-      </header>
-      <header className="lm-top lm-top--narrow">
-        <span className="lm-menu">
-          <Icon name="menu" />
+    <div className="lm-hud" data-tour="hud">
+      <Readout label="VRAM" numeric={`${VRAM_USED_GB}/${VRAM_TOTAL_GB}`} pct={VRAM_USED_GB / VRAM_TOTAL_GB} />
+      <span className="lm-hud-pill lm-hud-gpu">
+        <b>GPU</b>
+        <span className="lm-num">{GPU_PCT[step]}%</span>
+      </span>
+      <span className={`lm-hud-pill lm-hud-ctx${used / CONTEXT_WINDOW_K >= 0.8 ? " lm-hud-warm" : ""}`}>
+        <b>Context</b>
+        <span className="lm-num lm-num-ctx">{used.toFixed(1)}K/{CONTEXT_WINDOW_K}K</span>
+        <span className="lm-meter" aria-hidden="true">
+          <i style={{ width: `${((used / CONTEXT_WINDOW_K) * 100).toFixed(0)}%` }} />
         </span>
-        <h2 className="lm-title">{title}</h2>
-        <span className="lm-pcpill is-online">
-          <i aria-hidden="true" />
-          PC online
-        </span>
-      </header>
-      <p className="lm-compact">
-        VRAM 13.1/16 · GPU {GPU_PCT[step]}% · Ctx {used.toFixed(1)}K/{CONTEXT_WINDOW_K}K
-      </p>
-    </>
+        <b>left</b>
+        <span className="lm-num lm-num-left">{left.toFixed(1)}K</span>
+      </span>
+    </div>
   );
 }
 
-// The option chips under the composer, with the labels the app shows
-// (app.py: Web search, Knowledge base, Thinking, Voice).
-function ChipRow({ step }) {
+// The app's top bar: a ruled row of cells. On a narrow frame the menu icon
+// leads, the model cell drops out, and the title takes the room.
+function TopBar({ step, title, chatting }) {
+  const running = chatting && step === 2;
   return (
-    <div className="lm-chips" aria-hidden="true">
-      <span className="lm-chip lm-chip--model">Qwen3-VL 8B ▾</span>
+    <header className="lm-top">
+      <span className="lm-menu" aria-hidden="true">
+        <Icon name="menu" />
+      </span>
+      <span className={`lm-cell lm-cell-fill${chatting ? "" : " is-off"}`} aria-hidden={!chatting}>
+        Chat
+      </span>
+      <h2 className="lm-cell lm-cell-title">
+        <span className="lm-title">{title}</span>
+      </h2>
+      <span className={`lm-cell lm-model${chatting ? "" : " is-off"}`} aria-hidden={!chatting}>
+        Qwen3-VL 8B <span className="lm-badge">local</span>
+      </span>
+      <span className={`lm-cell lm-cell-push${running ? "" : " is-off"}`} aria-hidden={!running}>
+        <span className="lm-status">
+          <span className="lm-dot" aria-hidden="true" />
+          Running tools
+        </span>
+      </span>
+    </header>
+  );
+}
+
+// The option row under the composer, with the labels the app shows: the model
+// and knowledge scope pickers, then Web, Knowledge, Queue tasks and Thinking.
+function Options({ step }) {
+  return (
+    <div className="lm-options" aria-hidden="true">
+      <span className="lm-select">Qwen3-VL 8B</span>
+      <span className="lm-select">Shared + Barclays</span>
       <span className="lm-chip">
         <Icon name="globe" />
-        Web search
+        Web
       </span>
       <span className={`lm-chip${step >= 2 ? " is-on" : ""}`}>
         <Icon name="book" />
-        Knowledge base
+        Knowledge
+      </span>
+      <span className="lm-chip">
+        <Icon name="tasks" />
+        Queue tasks
       </span>
       <span className="lm-chip">
         <Icon name="spark" />
         Thinking
       </span>
-      <span className="lm-chip">
-        <Icon name="mic" />
-        Voice
-      </span>
     </div>
   );
 }
 
-function ToolPanel({ icon, title, meta, children }) {
+// The composer: the paste box with the Send control. Send stays focusable when
+// it is not live (aria-disabled), so keyboard focus never drops to the page.
+function Composer({ step, onAdvance }) {
+  const ready = step === 1;
+  const send = () => {
+    if (ready) onAdvance();
+  };
   return (
-    <div className="lm-tool">
-      <div className="lm-tool-head">
-        <span className="lm-tool-title">
+    <div className="lm-composer">
+      <div className="lm-composer-card">
+        {ready ? (
+          <p className="lm-input" data-tour="input">
+            {ADVERT}
+          </p>
+        ) : (
+          <p className="lm-input" data-tour="input">
+            <span className="lm-placeholder">Message LocalMind…</span>
+          </p>
+        )}
+        <button
+          type="button"
+          className="lm-send"
+          data-tour="send"
+          aria-label={ready ? "Send the advert to tailor the CV" : "Send"}
+          aria-disabled={!ready}
+          onClick={send}
+        >
+          <Icon name="send" />
+        </button>
+      </div>
+      <Options step={step} />
+    </div>
+  );
+}
+
+function ToolPanel({ icon, title, meta, tour, children }) {
+  return (
+    <div className="lm-panel" data-tour={tour}>
+      <div className="lm-panel-head">
+        <span className="lm-panel-mark" aria-hidden="true">
+          –
+        </span>
+        <span className="lm-panel-title">
           {icon} {title}
         </span>
-        <span className="lm-tool-meta">{meta}</span>
+        <span className="lm-panel-dur">{meta}</span>
       </div>
-      {children && <div className="lm-tool-body">{children}</div>}
+      {children && <div className="lm-panel-body">{children}</div>}
     </div>
   );
 }
 
-function ChatView({ step, reduced, onAdvance }) {
+function ChatView({ step, reduced }) {
   const typed = useTyped(ANSWER, step >= 3, reduced);
   const sentAdvert = step >= 2;
 
@@ -292,23 +388,23 @@ function ChatView({ step, reduced, onAdvance }) {
 
   return (
     <div className="lm-thread">
-      {step === 1 && <p className="lm-hint">New chat · scoped to Barclays</p>}
+      {step === 1 && <p className="lm-note">New chat · scoped to Barclays</p>}
       {sentAdvert && (
-        <div className="lm-bubble lm-bubble--user">
+        <div className="lm-user">
           <p>Here's the advert for the Barclays role, pasted below. Tailor my CV to it, keep it to two pages and British English. Save it as cv-barclays.tex and compile it.</p>
           <p className="lm-advert">{ADVERT}</p>
         </div>
       )}
       {step >= 2 && (
         <>
-          <ToolPanel icon="📚" title="knowledge_search · graduate analyst, data engineering" meta="0.4 s">
+          <ToolPanel icon="📚" title="knowledge_search · graduate analyst, data engineering" meta="0.4 s" tour="tool-search">
             <p>Scope: <b>General CV</b> (shared). The Barclays section is not in this chat's scope.</p>
             <p className="lm-quote">CV · general · Experience: built and tested Python data pipelines, reproducible splits</p>
           </ToolPanel>
-          <ToolPanel icon="📂" title="open_document · cv.tex" meta="original · 214 lines">
+          <ToolPanel icon="📂" title="open_document · cv.tex" meta="original · 214 lines" tour="tool-open">
             <p>Opened the .tex original, not retrieved fragments.</p>
           </ToolPanel>
-          <ToolPanel icon="✏️" title="write_file · cv-barclays.tex" meta="+2 −2 lines">
+          <ToolPanel icon="✏️" title="write_file · cv-barclays.tex" meta="+2 −2 lines" tour="tool-write">
             <pre className="lm-diff">
               <span className="lm-del">- Final-year MEng student focused on AI systems.</span>
               {"\n"}
@@ -321,81 +417,75 @@ function ChatView({ step, reduced, onAdvance }) {
               <span className="lm-add">+ \item Built and tested data pipelines, with fixed splits and reproducible results</span>
             </pre>
           </ToolPanel>
-          <ToolPanel icon="🧾" title="compile_latex · cv-barclays.tex" meta="2 pages · 212 KB">
+          <ToolPanel icon="🧾" title="compile_latex · cv-barclays.tex" meta="2 pages · 212 KB" tour="tool-compile">
             <p>Typeset with the TeX already installed on the PC.</p>
           </ToolPanel>
         </>
       )}
       {step >= 3 && (
-        <div className="lm-bubble lm-bubble--model">
+        <div className="lm-bot" data-tour="answer">
           <p>
             {typed}
             {typed.length < ANSWER.length && <span className="lm-caret" aria-hidden="true" />}
           </p>
           {typed.length === ANSWER.length && (
-            <span className="lm-file">
+            <span className="lm-file" data-tour="pdf">
               <Icon name="download" />
               cv-barclays.pdf · 212 KB
             </span>
           )}
         </div>
       )}
-      {step === 1 && <p className="lm-hint">Advert pasted. Send to start the tool loop.</p>}
-    </div>
-  );
-}
-
-function Composer({ step, onAdvance }) {
-  // The advert is pasted in on step 1; sending it is the in-demo interaction.
-  // Send stays focusable when it is not live (aria-disabled), so keyboard
-  // focus never drops to the page.
-  const ready = step === 1;
-  const draft = ready ? "Tailor my CV to this advert…" : "";
-  const send = () => {
-    if (ready) onAdvance();
-  };
-  return (
-    <div className="lm-composer">
-      <div className="lm-composer-row">
-        <div className="lm-input">{draft || <span className="lm-placeholder">Message LocalMind…</span>}</div>
-        <button
-          type="button"
-          className="lm-send"
-          aria-label={ready ? "Send the advert to tailor the CV" : "Send"}
-          aria-disabled={!ready}
-          onClick={send}
-        >
-          <Icon name="send" />
-        </button>
-      </div>
-      <ChipRow step={step} />
+      {step === 1 && <p className="lm-note">Advert pasted. Send to start the tool loop.</p>}
     </div>
   );
 }
 
 function KnowledgeView() {
-  const sections = [
-    { name: "General CV", docs: "cv.tex, 3 PDFs, 2 references", shared: true },
-    { name: "Study notes", docs: "14 documents", shared: true },
-    { name: "Barclays", docs: "job pack, 4 documents", shared: false },
-    { name: "STMicroelectronics", docs: "placement reports, 9 documents", shared: false },
+  const shared = [
+    { name: "General CV", docs: "cv.tex, 3 PDFs, 2 references" },
+    { name: "Study notes", docs: "14 documents" },
+  ];
+  const priv = [
+    { name: "Barclays", docs: "job pack, 4 documents" },
+    { name: "STMicroelectronics", docs: "placement reports, 9 documents" },
   ];
   return (
     <div className="lm-kb">
-      <p className="lm-kb-sub">Sections decide which chats can see a document. Shared sections reach every chat.</p>
-      <ul className="lm-kb-list">
-        {sections.map((section) => (
-          <li key={section.name} className="lm-kb-row">
-            <span className="lm-kb-name">{section.name}</span>
-            <span className="lm-kb-docs">{section.docs}</span>
-            <span className={`lm-badge${section.shared ? " is-shared" : ""}`}>
-              {!section.shared && <Icon name="lock" />}
-              {section.shared ? "Shared" : "Private"}
-            </span>
-          </li>
+      <div className="lm-page-head">
+        <h3>Knowledge base</h3>
+        <p>Sections decide which chats can see a document. Shared sections reach every chat.</p>
+      </div>
+      <section className="lm-section" data-tour="shared" aria-label="Shared sections">
+        <p className="lm-group-head">
+          <span>Shared</span>
+          <span className="lm-muted">every chat</span>
+        </p>
+        {shared.map((section) => (
+          <div key={section.name} className="lm-section-row">
+            <span className="lm-section-name">{section.name}</span>
+            <span className="lm-section-docs">{section.docs}</span>
+            <span className="lm-badge">Shared</span>
+          </div>
         ))}
-      </ul>
-      <p className="lm-kb-scope">
+      </section>
+      <section className="lm-section" data-tour="private" aria-label="Private sections">
+        <p className="lm-group-head">
+          <span>Private</span>
+          <span className="lm-muted">scoped chats only</span>
+        </p>
+        {priv.map((section) => (
+          <div key={section.name} className="lm-section-row">
+            <span className="lm-section-name">{section.name}</span>
+            <span className="lm-section-docs">{section.docs}</span>
+            <span className="lm-badge is-private">
+              <Icon name="lock" />
+              Private
+            </span>
+          </div>
+        ))}
+      </section>
+      <p className="lm-scope">
         This chat can search: <b>General CV</b>, <b>Barclays</b>
       </p>
     </div>
@@ -403,36 +493,40 @@ function KnowledgeView() {
 }
 
 function DesktopView({ step, reduced, onAdvance }) {
-  const view = step === 4 ? "kb" : "chat";
-  const title = view === "kb" ? "Knowledge base" : step === 0 ? "New chat" : "Barclays · graduate analyst";
+  const kb = step === 4;
+  const chatting = !kb;
+  const title = kb ? "Knowledge base" : step === 0 ? "New chat" : "Barclays · graduate analyst";
   return (
-    <div className="lm-app">
-      <Sidebar view={view} chatting={step > 0 && view === "chat"} />
-      <div className="lm-main">
-        <TopBar step={step} title={title} />
-        <div className="lm-body">
-          {view === "kb" ? <KnowledgeView /> : <ChatView key={step} step={step} reduced={reduced} onAdvance={onAdvance} />}
+    <div className="lm-desk">
+      <Hud step={step} />
+      <div className="lm-app">
+        <Sidebar chatting={step > 0 && chatting} kb={kb} />
+        <div className="lm-main">
+          <TopBar step={step} title={title} chatting={chatting} />
+          <div className="lm-body">
+            {kb ? <KnowledgeView /> : <ChatView key={step} step={step} reduced={reduced} />}
+          </div>
+          {chatting && <Composer step={step} onAdvance={onAdvance} />}
         </div>
-        {view === "chat" && <Composer step={step} onAdvance={onAdvance} />}
       </div>
     </div>
   );
 }
 
-// The gateway's phone page: a PC status card, the chat, and the composer.
-// The three nodes above it show where the message is in the chain.
+// The gateway's phone page: its top bar with the PC pill, the wake card, the
+// chat and the composer. The three route nodes above show where the message is.
 function PhoneView({ reduced }) {
   const phase = usePhoneScript(reduced);
   const typed = useTyped(PHONE_ANSWER, phase >= 2, reduced);
-  const pcState = [
-    { dot: "is-asleep", label: "PC asleep" },
-    { dot: "is-waking", label: "Waking your PC" },
-    { dot: "is-online", label: "PC online" },
-    { dot: "is-online", label: "PC online" },
-    { dot: "is-asleep", label: "PC asleep" },
+  const pc = [
+    { state: "asleep", label: "PC asleep" },
+    { state: "waking", label: "Waking your PC" },
+    { state: "online", label: "PC online" },
+    { state: "online", label: "PC online" },
+    { state: "asleep", label: "PC asleep" },
   ][phase];
 
-  const cardText = [
+  const card = [
     "Asleep · Wake-on-LAN ready",
     "Wake-on-LAN packet sent",
     "Answering from the PC",
@@ -441,47 +535,50 @@ function PhoneView({ reduced }) {
   ][phase];
 
   const node = phase === 0 ? 0 : phase === 1 ? 1 : 2;
+  const nodes = [
+    { id: "node-phone", name: "Phone" },
+    { id: "node-gateway", name: "Gateway" },
+    { id: "node-pc", name: "GPU PC" },
+  ];
 
   return (
     <div className="lm-phone-stage">
       <ol className="lm-nodes" aria-label="Route to the PC">
-        {["Phone", "Gateway", "GPU PC"].map((name, i) => (
-          <li key={name} className={`lm-node${i === node ? " is-active" : ""}`}>
-            {name}
+        {nodes.map((item, i) => (
+          <li key={item.id} className={`lm-node${i === node ? " is-active" : ""}`} data-tour={item.id}>
+            {item.name}
           </li>
         ))}
       </ol>
 
       <div className="lm-phone">
         <header className="lm-phone-top">
-          <span className="lm-mark">LM</span>
+          <span className="lm-phone-menu" aria-hidden="true">
+            <Icon name="menu" />
+          </span>
           <span className="lm-phone-title">Barclays · graduate analyst</span>
-          <span className={`lm-pcpill ${pcState.dot}`}>
-            <i aria-hidden="true" />
-            {pcState.label}
+          <span className={`lm-pcpill is-${pc.state}`} data-tour="pc-pill">
+            <span className="lm-dot" aria-hidden="true" />
+            {pc.label}
           </span>
         </header>
 
-        <div className={`lm-pccard ${pcState.dot}`}>
-          <span className="lm-pccard-text">{cardText}</span>
-          {phase === 3 && (
-            <div className="lm-meter" aria-hidden="true">
-              <i />
-            </div>
-          )}
-          {phase >= 1 && phase <= 2 && (
-            <ol className="lm-stages">
-              <li className={phase >= 2 ? "is-done" : "is-now"}>Wake PC</li>
-              <li className={phase >= 2 ? "is-now" : ""}>Deliver</li>
-              <li className={phase >= 2 ? "is-now" : ""}>Answer</li>
-            </ol>
-          )}
+        <div className={`lm-job is-${pc.state}`}>
+          <span className="lm-job-detail">{card}</span>
+          <span className={`lm-meter-wide${phase === 3 ? "" : " is-off"}`} aria-hidden="true">
+            <span />
+          </span>
+          <ol className={`lm-steps${phase >= 1 && phase <= 2 ? "" : " is-off"}`}>
+            <li className={phase >= 2 ? "is-done" : "is-now"}>Wake PC</li>
+            <li className={phase >= 2 ? "is-now" : ""}>Deliver</li>
+            <li className={phase >= 2 ? "is-now" : ""}>Answer</li>
+          </ol>
         </div>
 
         <div className="lm-phone-thread">
-          {phase >= 1 && <div className="lm-bubble lm-bubble--user">Any news from Barclays about the interview?</div>}
+          {phase >= 1 && <div className="lm-user">Any news from Barclays about the interview?</div>}
           {phase >= 2 && (
-            <div className="lm-bubble lm-bubble--model">
+            <div className="lm-bot">
               {typed}
               {typed.length < PHONE_ANSWER.length && <span className="lm-caret" aria-hidden="true" />}
             </div>
@@ -489,15 +586,15 @@ function PhoneView({ reduced }) {
         </div>
 
         <div className="lm-composer lm-composer--phone">
-          <div className="lm-composer-row">
-            <div className="lm-input" aria-hidden="true">
+          <div className="lm-composer-card">
+            <p className="lm-input" data-tour="input">
               {phase === 0 ? "Any news from Barclays about the interview?" : <span className="lm-placeholder">Message LocalMind…</span>}
-            </div>
+            </p>
             <span className="lm-send" aria-hidden="true">
               <Icon name="send" />
             </span>
           </div>
-          <div className="lm-chips" aria-hidden="true">
+          <div className="lm-options" aria-hidden="true">
             <span className="lm-chip">Model</span>
             <span className="lm-chip">Web</span>
             <span className="lm-chip">Knowledge</span>
@@ -510,18 +607,9 @@ function PhoneView({ reduced }) {
   );
 }
 
-// The walkthrough shell passes the step; every demo root carries the palette
-// as its own custom properties so nothing leaks in or out.
+// The walkthrough shell passes the step; the demo root carries the palette as
+// its own custom properties, so the site's Colour menu cannot reach it.
 export default function LocalMindDemo({ step, reducedMotion, onAdvance }) {
-  useEffect(() => {
-    if (document.getElementById("lm-demo-fonts")) return;
-    const link = document.createElement("link");
-    link.id = "lm-demo-fonts";
-    link.rel = "stylesheet";
-    link.href = FONTS;
-    document.head.appendChild(link);
-  }, []);
-
   const isPhone = step === steps.length - 1;
   return (
     <div className="lm-demo" data-step={steps[step].id}>
