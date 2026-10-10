@@ -314,7 +314,7 @@ test("Run the demo opens one walkthrough stage with its step controls", async ()
   expect(screen.getByRole("button", { name: "Back" })).toHaveAttribute("aria-disabled", "true");
   expect(screen.getByRole("button", { name: "Next" })).toHaveAttribute("aria-disabled", "false");
   expect(screen.getByRole("button", { name: "Restart" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: /auto-play/i })).toHaveAttribute("aria-pressed", "false");
+  expect(screen.getByRole("button", { name: "Play tour" })).toBeInTheDocument();
 
   // Opening a second demo replaces the first: still exactly one stage.
   fireEvent.click(screen.getByRole("button", { name: "Run the demo for TensoRoom" }));
@@ -329,7 +329,8 @@ test("Next moves the walkthrough caption on", async () => {
   expect(await screen.findByText(/Chats sit on the left/)).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
-  expect(screen.getByText(/Paste the advert and ask for the CV to be tailored/)).toBeInTheDocument();
+  // The step changes after the frame's fade-out, so wait for the new caption.
+  expect(await screen.findByText(/Paste the advert and ask for the CV to be tailored/)).toBeInTheDocument();
   expect(screen.queryByText(/Chats sit on the left/)).not.toBeInTheDocument();
 });
 
@@ -342,7 +343,7 @@ test("Next keeps keyboard focus when it becomes unavailable on the last step", a
   next.focus();
   for (let i = 0; i < 5; i += 1) fireEvent.click(next);
 
-  expect(screen.getByText(/The PC is asleep/)).toBeInTheDocument();
+  expect(await screen.findByText(/The PC is asleep/)).toBeInTheDocument();
   expect(next).toHaveAttribute("aria-disabled", "true");
   expect(next).not.toBeDisabled();
   expect(next).toHaveFocus();
@@ -378,11 +379,11 @@ test("reduced motion turns auto-play off and cannot be switched on", async () =>
   fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
   await screen.findByText(/Chats sit on the left/);
 
-  const auto = screen.getByRole("button", { name: /auto-play/i });
+  const auto = screen.getByRole("button", { name: "Play tour" });
   expect(auto).toHaveAttribute("aria-disabled", "true");
   fireEvent.click(auto);
-  expect(auto).toHaveAttribute("aria-pressed", "false");
-  expect(screen.getByText(/Auto-play is off with reduced motion/)).toBeInTheDocument();
+  expect(auto).toHaveTextContent("Play tour");
+  expect(screen.getByText(/The tour is off with reduced motion/)).toBeInTheDocument();
 });
 
 test("Escape closes the stage and returns focus to its card button", async () => {

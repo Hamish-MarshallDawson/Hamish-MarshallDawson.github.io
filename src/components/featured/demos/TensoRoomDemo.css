@@ -99,10 +99,11 @@
   box-shadow: 0 18px 40px -22px rgb(43 29 20 / 0.55);
 }
 
+/* A fixed height, so the phone is the same size on every step. The view scrolls inside it. */
 .tr-demo__screen {
   display: flex;
   flex-direction: column;
-  min-height: 620px;
+  height: 620px;
   overflow: hidden;
   border-radius: var(--r-l);
   background: var(--paper);
@@ -128,12 +129,15 @@
   color: var(--accent);
 }
 
+/* Reserved width and tabular digits, so the counter does not move as it changes. */
 .tr-demo__count {
+  min-width: 5.2em;
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 /* Five progress segments, as in the app's phone header. */
@@ -154,13 +158,23 @@
 
 .tr-demo__view > * {
   flex-shrink: 0; /* Children keep their size; only the view itself scrolls */
+  order: 2; /* Status, lede and the step's controls, after the picture box */
+}
+/* The picture box sits straight under the title on every step, so it never moves. */
+.tr-demo__view > .tr-demo__title {
+  order: 0;
+}
+.tr-demo__view > .tr-demo__figure {
+  order: 1;
 }
 .tr-demo__view {
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: 12px;
+  min-height: 0;
   padding: 16px 18px 18px;
+  overflow-y: auto;
 }
 
 .tr-demo__title {
@@ -190,8 +204,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Heights reserved for the most lines each text can take (status 2, lede 3), so a
+   step change does not move what sits below. */
 .tr-demo__status {
-  min-height: 1.2em;
+  min-height: 3em;
+  line-height: 1.5;
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -200,6 +217,8 @@
 }
 
 .tr-demo__lede {
+  min-height: 4.5em;
+  line-height: 1.5;
   color: var(--ink-2);
   font-size: 0.92rem;
 }
@@ -207,6 +226,7 @@
 .tr-demo__note {
   font-size: 0.8rem;
   color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
 }
 .tr-demo__note b {
   color: var(--accent);
@@ -226,9 +246,6 @@
   border-radius: var(--r-m);
   background: var(--paper-2);
   isolation: isolate;
-}
-.tr-demo__frame--wide {
-  aspect-ratio: 1.94;
 }
 .tr-demo__frame > img {
   position: absolute;
@@ -257,6 +274,7 @@
 }
 
 .tr-demo__badge {
+  font-variant-numeric: tabular-nums;
   position: absolute;
   left: 10px;
   bottom: 10px;
@@ -578,6 +596,30 @@
   font-size: 0.82rem;
   opacity: 0.75;
 }
+/* On the picture box the tiles sit over a dimmed copy of the room, at the box's size. */
+/* The room, faded over the frame's paper colour. An opacity rather than a filter,
+   so the step's fade never has to re-filter the picture. */
+.tr-demo__veil {
+  opacity: 0.45;
+}
+.tr-demo__frame .tr-demo__tiles {
+  position: absolute;
+  inset: 10px;
+}
+.tr-demo__frame .tr-demo__tile {
+  height: 100%;
+  min-height: 0;
+  padding: 10px;
+}
+.tr-demo__frame .tr-demo__tile-label {
+  font-size: 1rem;
+}
+.tr-demo__frame .tr-demo__icon {
+  top: 10px;
+  left: 10px;
+  transform: scale(0.65);
+  transform-origin: top left;
+}
 /* Round arrow in the corner, as on the app. */
 .tr-demo__tile::after {
   content: "";
@@ -666,15 +708,17 @@
     box-shadow: none;
   }
   .tr-demo__screen {
-    min-height: 0;
     border-radius: 0;
-    /* Fit below the site's fixed header and the step controls, so the dock stays in view. */
-    max-height: calc(100dvh - 180px);
+    /* Fit below the site's fixed header and status strip, so the dock stays in view. */
+    height: calc(100vh - 158px);
+    height: calc(100dvh - 158px);
   }
   .tr-demo__view {
-    min-height: 0;
     gap: 10px;
-    overflow-y: auto;
+  }
+  /* Two rows of chips at phone width, reserved so the step's chips do not change the height. */
+  .tr-demo__chips {
+    min-height: 96px;
   }
   /* The compare step's instruction is in its note, which keeps the view short enough to fit. */
   .tr-demo[data-step="4"] .tr-demo__lede {
@@ -688,13 +732,8 @@
     width: auto;
   }
   .tr-demo__screen {
+    height: calc(100vh - 66px);
     height: calc(100dvh - 66px);
-    min-height: 0;
-    max-height: none;
     aspect-ratio: 9 / 16;
-  }
-  .tr-demo__view {
-    min-height: 0;
-    overflow-y: auto;
   }
 }

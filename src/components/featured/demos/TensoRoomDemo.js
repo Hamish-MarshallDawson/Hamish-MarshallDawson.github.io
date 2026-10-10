@@ -32,26 +32,49 @@ export const steps = [
     id: "room",
     title: "Your room",
     caption: "Take a photo of the room with nobody in it. TensorRoom checks it for people before anything is stored.",
+    tour: [
+      { target: "choose-photo", label: "Choose a photo", click: true, hold: 700 },
+      { target: "dock", label: "Use this photo", click: true },
+    ],
   },
   {
     id: "objects",
     title: "What to change",
     caption: "Name the pieces, or tap a suggestion. Each one is matched to an object in the photo and given its own mask.",
+    tour: [
+      { target: "terms", label: "Type the pieces", hold: 900 },
+      { target: "dock", label: "Find objects", click: true, hold: 400 },
+      { target: "dock", label: "Choose a piece", click: true },
+    ],
   },
   {
     id: "choose",
     title: "Choose & describe",
     caption: "Tap the photo or the list to choose what to change, then say what it should become.",
+    tour: [
+      { target: "pick-sofa", label: "Tap the sofa", click: true, hold: 700 },
+      { target: "instruction", label: "Say what it becomes", hold: 1000 },
+      { target: "dock", label: "Redraw", click: true },
+    ],
   },
   {
     id: "redraw",
     title: "Redraw",
     caption: "A quick four-step preview first, then the full render. Only a crop around the chosen pieces goes to the model.",
+    tour: [
+      { target: "dock", label: "Preview · 4 steps", click: true, hold: 700 },
+      { target: "dock", label: "Final render", click: true, hold: 700 },
+      { target: "dock", label: "Compare before & after", click: true },
+    ],
   },
   {
     id: "compare",
     title: "Compare",
     caption: "Drag across the photo to see before and after. Everything outside the mask is copied exactly from the original.",
+    tour: [
+      { target: "compare", label: "Drag to compare", drag: { from: 50, to: 20 }, hold: 1000 },
+      { target: "edit-chair", label: "Another edit", click: true },
+    ],
   },
 ];
 
@@ -114,14 +137,15 @@ function useClock(running, target, speed, reducedMotion, onDone) {
   return elapsed;
 }
 
-function Frame({ wide, children }) {
-  return <div className={`tr-demo__frame${wide ? " tr-demo__frame--wide" : ""}`}>{children}</div>;
+// Every picture sits in a frame of the same aspect ratio, so the box keeps one size on every step.
+function Frame({ children }) {
+  return <div className="tr-demo__frame">{children}</div>;
 }
 
-function Figure({ num, caption, wide, children }) {
+function Figure({ num, caption, children }) {
   return (
     <figure className="tr-demo__figure">
-      <Frame wide={wide}>{children}</Frame>
+      <Frame>{children}</Frame>
       <figcaption className="tr-demo__caption">
         <b>Fig. {num}</b> <span>{caption}</span>
       </figcaption>
@@ -159,11 +183,16 @@ function Compare({ before, after, alt, reducedMotion }) {
     <figure className="tr-demo__figure">
       <div
         ref={frame}
-        className={`tr-demo__frame tr-demo__frame--wide tr-demo__compare${stillClass(reducedMotion)}`}
+        data-tour="compare"
+        className={`tr-demo__frame tr-demo__compare${stillClass(reducedMotion)}`}
         style={{ "--pos": `${pos}%` }}
         onPointerDown={(event) => {
           dragging.current = true;
-          event.currentTarget.setPointerCapture(event.pointerId);
+          try {
+            event.currentTarget.setPointerCapture(event.pointerId);
+          } catch (error) {
+            // Synthetic pointers (the tour's drag) have no capture; the drag still tracks on the frame.
+          }
           placeAt(event.clientX);
         }}
         onPointerMove={(event) => {
@@ -300,18 +329,22 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
       return (
         <>
           <p className="tr-demo__lede">Start with a photo, taken from where you would normally stand.</p>
-          <div className="tr-demo__tiles">
-            <button type="button" className="tr-demo__tile tr-demo__tile--accent" onClick={takePhoto}>
-              <span className="tr-demo__icon tr-demo__icon--lens" aria-hidden="true" />
-              <span className="tr-demo__tile-label">Take a photo</span>
-              <span className="tr-demo__tile-hint">Opens the camera</span>
-            </button>
-            <button type="button" className="tr-demo__tile" onClick={takePhoto}>
-              <span className="tr-demo__icon tr-demo__icon--arch" aria-hidden="true" />
-              <span className="tr-demo__tile-label">Choose a photo</span>
-              <span className="tr-demo__tile-hint">From your library</span>
-            </button>
-          </div>
+          {/* The picture box is here from the first step: the room, dimmed, with the two tiles over it. */}
+          <Figure num="01" caption="Living room, taken from where you would normally stand">
+            <img className="tr-demo__veil" src={ASSET("original.jpg")} alt="" aria-hidden="true" />
+            <div className="tr-demo__tiles">
+              <button type="button" className="tr-demo__tile tr-demo__tile--accent" onClick={takePhoto}>
+                <span className="tr-demo__icon tr-demo__icon--lens" aria-hidden="true" />
+                <span className="tr-demo__tile-label">Take a photo</span>
+                <span className="tr-demo__tile-hint">Opens the camera</span>
+              </button>
+              <button type="button" className="tr-demo__tile" data-tour="choose-photo" onClick={takePhoto}>
+                <span className="tr-demo__icon tr-demo__icon--arch" aria-hidden="true" />
+                <span className="tr-demo__tile-label">Choose a photo</span>
+                <span className="tr-demo__tile-hint">From your library</span>
+              </button>
+            </div>
+          </Figure>
         </>
       );
     }
@@ -343,6 +376,7 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
             <span className="tr-demo__label">Objects</span>
             <input
               type="text"
+              data-tour="terms"
               value={terms}
               onChange={(event) => setTerms(event.target.value)}
               placeholder="sofa, coffee table"
@@ -392,6 +426,7 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
                 key={region.id}
                 type="button"
                 className="tr-demo__hit"
+                data-tour={region.id === SOFA.id ? "pick-sofa" : undefined}
                 tabIndex={-1}
                 aria-hidden="true"
                 aria-pressed={picked.includes(region.id)}
@@ -418,7 +453,7 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
           </ul>
           <label className="tr-demo__field">
             <span className="tr-demo__label">Change them to</span>
-            <textarea rows={2} value={instruction} onChange={(event) => setInstruction(event.target.value)} placeholder="a green velvet mid-century sofa" />
+            <textarea rows={2} data-tour="instruction" value={instruction} onChange={(event) => setInstruction(event.target.value)} placeholder="a green velvet mid-century sofa" />
           </label>
           {!picked.includes(SOFA.id) && <p className="tr-demo__note">Choose the sofa to continue.</p>}
         </>
@@ -443,7 +478,7 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
       return (
         <>
           <p className="tr-demo__lede">Preview first (4 steps, about 12 s), then the full render (20 steps, 17 to 26 s).</p>
-          <Figure num="04" wide caption={`“${SOFA.instruction}”`}>
+          <Figure num="04" caption={`“${SOFA.instruction}”`}>
             <img
               src={ASSET(showAfter ? SOFA.image : "original.jpg")}
               alt={showAfter ? "The sofa redrawn in dark green velvet" : "The room before the redraw"}
@@ -481,6 +516,7 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
               key={item.id}
               type="button"
               className="tr-demo__chip"
+              data-tour={`edit-${item.id.replace(" ", "-")}`}
               aria-pressed={item.id === edit.id}
               onClick={() => setEditId(item.id)}
             >
@@ -530,6 +566,7 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
               ref={dockRef}
               type="button"
               className="tr-demo__cta"
+              data-tour="dock"
               aria-disabled={action.disabled ? "true" : undefined}
               onClick={() => {
                 if (!action.disabled) action.run();
