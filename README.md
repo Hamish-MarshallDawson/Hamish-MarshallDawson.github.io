@@ -10,9 +10,18 @@ My portfolio site. This branch (`demo`) adds a **Featured builds** block to the 
 |---|---|
 | <img src="docs/preview/desktop-0-featured.jpg" alt="Featured builds block with LocalMind and TensoRoom cards on desktop" width="560"> | <img src="docs/preview/phone-0-featured.jpg" alt="Featured builds block on a phone" width="220"> |
 
+### Play tour
+
+Press **Play tour** and a pointer walks through each step: it glides to each part of the screen, highlights it, labels it and presses it. Steps fade between each other, and a progress bar shows where the tour is. With reduced motion or the site's FX switch off, the tour is replaced by manual stepping.
+
+| | |
+|---|---|
+| <img src="docs/preview/desktop-localmind-tour.jpg" alt="LocalMind tour highlighting the open_document tool call with a label" width="560"> | <img src="docs/preview/phone-tensoroom-tour.jpg" alt="TensoRoom tour on a phone, pointer on the prompt box with a label" width="220"> |
+| <sub>LocalMind, step 03 mid-tour</sub> | <sub>TensoRoom on a phone, step 03 mid-tour</sub> |
+
 ### LocalMind demo
 
-Six steps: the chat home screen, pasting a job advert, the tool calls, the answer with a PDF, the knowledge base sections, and messaging the PC from a phone.
+Styled like the current app, with paper, ink and a blue accent. Six steps: the chat home screen, pasting a job advert, the tool calls, the answer with a PDF, the knowledge base sections, and messaging the PC from a phone.
 
 | | |
 |---|---|
@@ -26,7 +35,7 @@ Six steps: the chat home screen, pasting a job advert, the tool calls, the answe
 
 ### TensoRoom demo
 
-Five steps, in the app's own phone layout: your room, what to change, choose and describe, redraw, and a before/after comparison using real renders.
+Five steps, in the app's own phone layout, with the picture box in the same place on every step: your room, what to change, choose and describe, redraw, and a before/after comparison using real renders.
 
 | | | | |
 |---|---|---|---|
@@ -38,9 +47,9 @@ Five steps, in the app's own phone layout: your room, what to change, choose and
 
 ## Where it lives
 
-- `src/components/featured/`: the block (`FeaturedProjects.js`), the step engine (`DemoStage.js`) and one module per demo in `demos/`.
+- `src/components/featured/`: the block (`FeaturedProjects.js`), the step and tour engine (`DemoStage.js`, `DemoCursor.js`) and one module per demo in `demos/`.
 - `public/featured/tensoroom/`: the room photos the TensoRoom demo uses.
-- To feature another project, add a `featured` entry to it in `src/components/projectdata.js` and register a demo module in `FeaturedProjects.js`.
+- To feature another project, add a `featured` entry to it in `src/components/projectdata.js` and register a demo module in `FeaturedProjects.js`. A step's `tour` lists the `data-tour` targets the pointer visits (the contract is at the top of `DemoStage.js`).
 - `docs/preview/`: the screenshots above. They aren't part of the built site.
 
 ---
