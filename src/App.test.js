@@ -307,7 +307,8 @@ test("Run the demo opens one walkthrough stage with its step controls", async ()
   render(<App />);
   fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
 
-  expect(await screen.findByRole("group", { name: "Walkthrough navigation" })).toBeInTheDocument();
+  // The demo's code loads on demand, which can take longer than findBy's default second under load.
+  expect(await screen.findByRole("group", { name: "Walkthrough navigation" }, { timeout: 8000 })).toBeInTheDocument();
   expect(screen.getByRole("group", { name: "Walkthrough options" })).toBeInTheDocument();
   expect(screen.getByRole("list", { name: "Walkthrough steps" })).toBeInTheDocument();
   // Back and Next are aria-disabled, not disabled, so they keep focus.

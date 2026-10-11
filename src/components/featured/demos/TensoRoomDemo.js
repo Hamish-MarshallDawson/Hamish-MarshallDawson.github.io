@@ -137,6 +137,13 @@ function useClock(running, target, speed, reducedMotion, onDone) {
   return elapsed;
 }
 
+// Runs a clock for the part of the view that shows it. Only this subtree
+// re-renders each frame, not the whole demo, and it unmounts with its step.
+function Timed({ running, target, speed, reducedMotion, onDone, children }) {
+  const elapsed = useClock(running, target, speed, reducedMotion, onDone);
+  return children(elapsed);
+}
+
 // Every picture sits in a frame of the same aspect ratio, so the box keeps one size on every step.
 function Frame({ children }) {
   return <div className="tr-demo__frame">{children}</div>;
@@ -205,8 +212,8 @@ function Compare({ before, after, alt, reducedMotion }) {
           dragging.current = false;
         }}
       >
-        <img className="tr-demo__img" src={after} alt={alt} draggable={false} />
-        <img className="tr-demo__img tr-demo__before" src={before} alt="" aria-hidden="true" draggable={false} />
+        <img className="tr-demo__img" src={after} alt={alt} width={576} height={297} decoding="async" draggable={false} />
+        <img className="tr-demo__img tr-demo__before" src={before} alt="" aria-hidden="true" width={576} height={297} decoding="async" draggable={false} />
         <span className="tr-demo__handle" aria-hidden="true" />
         <span
           className="tr-demo__knob"
@@ -255,10 +262,16 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
   const termList = terms.split(",").map((term) => term.trim()).filter(Boolean);
   const edit = EDITS.find((item) => item.id === editId) || SOFA;
 
-  useClock(people === "checking", CHECK_SECONDS, REAL_TIME, reducedMotion, () => setPeople("clear"));
-  const scanTime = useClock(scan === "scanning", SCAN_SECONDS, REAL_TIME, reducedMotion, () => setScan("found"));
-  const previewTime = useClock(redraw === "previewing", PREVIEW_SECONDS, SPEED, reducedMotion, () => setRedraw("preview"));
-  const finalTime = useClock(redraw === "finalising", SOFA.seconds, SPEED, reducedMotion, () => setRedraw("final"));
+  // The people check has no readout, so it is a single timeout, not a frame clock.
+  useEffect(() => {
+    if (people !== "checking") return undefined;
+    if (reducedMotion) {
+      setPeople("clear");
+      return undefined;
+    }
+    const timer = setTimeout(() => setPeople("clear"), CHECK_SECONDS * 1000);
+    return () => clearTimeout(timer);
+  }, [people, reducedMotion]);
 
   const togglePick = (id) => {
     setPicked((list) => (list.includes(id) ? list.filter((item) => item !== id) : [...list, id]));
@@ -331,7 +344,7 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
           <p className="tr-demo__lede">Start with a photo, taken from where you would normally stand.</p>
           {/* The picture box is here from the first step: the room, dimmed, with the two tiles over it. */}
           <Figure num="01" caption="Living room, taken from where you would normally stand">
-            <img className="tr-demo__veil" src={ASSET("original.jpg")} alt="" aria-hidden="true" />
+            <img className="tr-demo__veil" src={ASSET("original.jpg")} alt="" aria-hidden="true" width={576} height={359} decoding="async" />
             <div className="tr-demo__tiles">
               <button type="button" className="tr-demo__tile tr-demo__tile--accent" onClick={takePhoto}>
                 <span className="tr-demo__icon tr-demo__icon--lens" aria-hidden="true" />
@@ -354,7 +367,7 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
         <>
           <p className="tr-demo__lede">The photo is checked for people before anything is stored. A portrait or a TV on the wall is fine.</p>
           <Figure num="01" caption="Living room, taken from where you would normally stand">
-            <img src={ASSET("original.jpg")} alt="A bright living room with a grey sofa, a wooden coffee table and a mustard armchair" />
+            <img src={ASSET("original.jpg")} alt="A bright living room with a grey sofa, a wooden coffee table and a mustard armchair" width={576} height={359} decoding="async" />
             {people === "checking" ? (
               <>
                 <span className="tr-demo__sweep" aria-hidden="true" />
@@ -402,11 +415,16 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
             <img
               src={ASSET(scan === "found" ? "find-objects.jpg" : "original.jpg")}
               alt={scan === "found" ? "The room with the sofa, rug, coffee table and chair each shaded in a different mask" : "The room, before any objects are found"}
+              width={576}
+              height={359}
+              decoding="async"
             />
             {scan === "scanning" && (
               <>
                 <span className="tr-demo__sweep" aria-hidden="true" />
-                <span className="tr-demo__badge">Finding objects · {fmt(scanTime)}</span>
+                <Timed running target={SCAN_SECONDS} speed={REAL_TIME} reducedMotion={reducedMotion} onDone={() => setScan("found")}>
+                  {(scanTime) => <span className="tr-demo__badge">Finding objects · {fmt(scanTime)}</span>}
+                </Timed>
               </>
             )}
           </Figure>
@@ -419,7 +437,7 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
         <>
           <p className="tr-demo__lede">Tap the sofa in the photo or in the list, then say what it should become.</p>
           <Figure num="03" caption={picked.length ? `${picked.length} chosen` : "Nothing chosen yet"}>
-            <img src={ASSET("find-objects.jpg")} alt="The room with each object shaded in a different mask" />
+            <img src={ASSET("find-objects.jpg")} alt="The room with each object shaded in a different mask" width={576} height={359} decoding="async" />
             {REGIONS.map((region) => (
               // Pointer-only: the list below is the keyboard and screen reader route to the same choices.
               <button
@@ -462,35 +480,47 @@ export default function TensoRoomDemo({ step = 0, reducedMotion = false, onAdvan
 
     if (step === 3) {
       const showAfter = redraw === "preview" || redraw === "finalising" || redraw === "final";
-      const blur = redraw === "preview" ? 1.5 : redraw === "finalising" ? 1.5 * (1 - finalTime / SOFA.seconds) : 0;
-      const meter = redraw === "previewing"
-        ? previewTime / PREVIEW_SECONDS
-        : redraw === "finalising"
-          ? finalTime / SOFA.seconds
-          : 0;
-      const badge = {
-        idle: "",
-        previewing: `Preview · ${previewTime.toFixed(1)} of ${PREVIEW_SECONDS} s`,
-        preview: "Preview · 4 steps",
-        finalising: `Final render · ${finalTime.toFixed(1)} of ${SOFA.seconds} s`,
-        final: `Final render · ${fmt(SOFA.seconds)}`,
-      }[redraw];
+      const rendering = redraw === "previewing" || redraw === "finalising";
       return (
         <>
           <p className="tr-demo__lede">Preview first (4 steps, about 12 s), then the full render (20 steps, 17 to 26 s).</p>
-          <Figure num="04" caption={`“${SOFA.instruction}”`}>
-            <img
-              src={ASSET(showAfter ? SOFA.image : "original.jpg")}
-              alt={showAfter ? "The sofa redrawn in dark green velvet" : "The room before the redraw"}
-              style={blur ? { filter: `blur(${blur}px)` } : undefined}
-            />
-            {badge && <span className="tr-demo__badge">{badge}</span>}
-            {(redraw === "previewing" || redraw === "finalising") && (
-              <div className="tr-demo__meter" aria-hidden="true">
-                <span style={{ width: `${Math.round(meter * 100)}%` }} />
-              </div>
-            )}
-          </Figure>
+          <Timed
+            running={rendering}
+            target={redraw === "previewing" ? PREVIEW_SECONDS : SOFA.seconds}
+            speed={SPEED}
+            reducedMotion={reducedMotion}
+            onDone={() => setRedraw(redraw === "previewing" ? "preview" : "final")}
+          >
+            {(elapsed) => {
+              const blur = redraw === "preview" ? 1.5 : redraw === "finalising" ? 1.5 * (1 - elapsed / SOFA.seconds) : 0;
+              const meter = redraw === "previewing" ? elapsed / PREVIEW_SECONDS : redraw === "finalising" ? elapsed / SOFA.seconds : 0;
+              const badge = {
+                idle: "",
+                previewing: `Preview · ${elapsed.toFixed(1)} of ${PREVIEW_SECONDS} s`,
+                preview: "Preview · 4 steps",
+                finalising: `Final render · ${elapsed.toFixed(1)} of ${SOFA.seconds} s`,
+                final: `Final render · ${fmt(SOFA.seconds)}`,
+              }[redraw];
+              return (
+                <Figure num="04" caption={`“${SOFA.instruction}”`}>
+                  <img
+                    src={ASSET(showAfter ? SOFA.image : "original.jpg")}
+                    alt={showAfter ? "The sofa redrawn in dark green velvet" : "The room before the redraw"}
+                    width={576}
+                    height={showAfter ? 297 : 359}
+                    decoding="async"
+                    style={blur ? { filter: `blur(${blur}px)` } : undefined}
+                  />
+                  {badge && <span className="tr-demo__badge">{badge}</span>}
+                  {rendering && (
+                    <div className="tr-demo__meter" aria-hidden="true">
+                      <span style={{ transform: `scaleX(${meter})` }} />
+                    </div>
+                  )}
+                </Figure>
+              );
+            }}
+          </Timed>
           <p className="tr-demo__note">
             {redraw === "final"
               ? `Final render · peak ${SOFA.vram.toFixed(1)} GB of graphics memory · RTX 5080`

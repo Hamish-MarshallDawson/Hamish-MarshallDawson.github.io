@@ -7,7 +7,10 @@ import "./LocalMindDemo.css";
 //
 // `tour` drives the cursor (see DemoStage). Each target is a data-tour name
 // rendered inside this demo; a target that is not on screen at the current
-// width (the sidebar on a narrow frame) is skipped by the tour.
+// width is skipped by the tour. A name is used once in the desktop views and
+// the phone view never mounts with them, so every name points at one element.
+// On a narrow frame the sidebar is hidden, so the steps that tour it also tour
+// the menu button in the top bar (`menu`), which only shows there.
 export const steps = [
   {
     id: "home",
@@ -16,6 +19,7 @@ export const steps = [
       "Chats sit on the left. The top bar reads VRAM, GPU use and how much context is left before the model runs out of room.",
     tour: [
       { target: "chats", label: "Chats on this PC" },
+      { target: "menu", label: "Chats, from the menu" },
       { target: "hud", label: "VRAM, GPU, context" },
     ],
   },
@@ -25,6 +29,7 @@ export const steps = [
     caption: "Paste the advert and ask for the CV to be tailored. Sending it starts the tool loop.",
     tour: [
       { target: "new-chat", label: "New chat" },
+      { target: "menu", label: "New chat, from the menu" },
       { target: "input", label: "Advert pasted", hold: 1000 },
       { target: "send", label: "Send", click: true },
     ],
@@ -99,9 +104,10 @@ const ANSWER =
 const PHONE_ANSWER =
   "Yes. The recruiter's email came in at 09:12 with a 30-minute video interview on Thursday at 14:00. I've added it to your notes in the Barclays section.";
 
-// The answer types out in chunks, as the app streams it.
-const TYPE_TICK_MS = 22;
-const TYPE_CHUNK = 3;
+// The answer types out in chunks, as the app streams it. A tick of 33 ms is
+// about 30 renders a second, so the streamed text never costs one per character.
+const TYPE_TICK_MS = 33;
+const TYPE_CHUNK = 6;
 
 // Milliseconds each phone phase lasts: asleep, waking, answering, idle countdown.
 const PHONE_TIMES = [1600, 1800, 2600, 2400];
@@ -201,7 +207,7 @@ function Readout({ label, numeric, pct }) {
       <span className="lm-num">{numeric}</span>
       {pct !== undefined && (
         <span className="lm-meter" aria-hidden="true">
-          <i style={{ width: `${Math.min(100, pct * 100).toFixed(0)}%` }} />
+          <i style={{ transform: `scaleX(${Math.min(1, pct).toFixed(2)})` }} />
         </span>
       )}
     </span>
@@ -271,7 +277,7 @@ function TopBar({ step, title, chatting }) {
   const running = chatting && step === 2;
   return (
     <header className="lm-top">
-      <span className="lm-menu" aria-hidden="true">
+      <span className="lm-menu" aria-hidden="true" data-tour="menu">
         <Icon name="menu" />
       </span>
       <span className={`lm-cell lm-cell-fill${chatting ? "" : " is-off"}`} aria-hidden={!chatting}>
@@ -330,15 +336,9 @@ function Composer({ step, onAdvance }) {
   return (
     <div className="lm-composer">
       <div className="lm-composer-card">
-        {ready ? (
-          <p className="lm-input" data-tour="input">
-            {ADVERT}
-          </p>
-        ) : (
-          <p className="lm-input" data-tour="input">
-            <span className="lm-placeholder">Message LocalMind…</span>
-          </p>
-        )}
+        <p className="lm-input" data-tour="input">
+          {ready ? ADVERT : <span className="lm-placeholder">Message LocalMind…</span>}
+        </p>
         <button
           type="button"
           className="lm-send"
@@ -587,7 +587,7 @@ function PhoneView({ reduced }) {
 
         <div className="lm-composer lm-composer--phone">
           <div className="lm-composer-card">
-            <p className="lm-input" data-tour="input">
+            <p className="lm-input" data-tour="phone-input">
               {phase === 0 ? "Any news from Barclays about the interview?" : <span className="lm-placeholder">Message LocalMind…</span>}
             </p>
             <span className="lm-send" aria-hidden="true">
