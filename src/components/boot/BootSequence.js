@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { animate, motion, useMotionValue, useTransform } from "framer-motion";
-import { isMobile } from "react-device-detect";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { Typewriter } from "../shared/Typewriter";
 import { categories, experience, profile, vaultProjects } from "../projectdata";
 import "./BootSequence.css";
@@ -51,6 +51,7 @@ const SEGMENTS = 48;
 // reset underneath), then plays and leaves as usual.
 export function BootSequence({ onFinish, palette = null, onCovered }) {
   const replay = Boolean(palette);
+  const isTouch = useMediaQuery("(pointer: coarse)");
   const [core, setCore] = useState("····");
   const [granted, setGranted] = useState(false);
   const finished = useRef(false);
@@ -180,7 +181,7 @@ export function BootSequence({ onFinish, palette = null, onCovered }) {
               " "
             )}
           </p>
-          <p className="boot-skip">{isMobile ? "Tap anywhere to skip" : "Press any key to skip"}</p>
+          <p className="boot-skip">{isTouch ? "Tap anywhere to skip" : "Press any key to skip"}</p>
         </div>
 
         <div className="boot-progress">

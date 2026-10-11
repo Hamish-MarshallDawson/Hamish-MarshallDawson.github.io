@@ -107,6 +107,40 @@ describe("the frame loop", () => {
     expect(jest.getTimerCount()).toBe(0);
   });
 
+  // The tag is drawn at the offset tagPlacement gives, so the tested placement is the drawn one.
+  test("the tag is drawn at the offset tagPlacement gives, and flipped above the tip near the bottom", () => {
+    const { frame, target } = setup();
+    Object.defineProperty(frame, "clientWidth", { value: 260 });
+    Object.defineProperty(frame, "clientHeight", { value: 180 });
+    const { rerender, container } = render(<DemoCursor cursor={null} />);
+    rerender(<DemoCursor cursor={{ target, frame, glide: 0, label: "Pick" }} />);
+    runFrame(16);
+    // The tip is at (20, 10): the default placement, 8px inside the frame's top left.
+    // eslint-disable-next-line testing-library/no-node-access
+    const tag = container.querySelector(".fdemo-tag");
+    expect(tag.style.transform).toBe("translate3d(20px, 22px, 0)");
+    const placed = tagPlacement({ cx: 20, cy: 10, frameW: 260, frameH: 180 });
+    expect(tag.style.transform).toBe(`translate3d(${placed.x}px, ${placed.y}px, 0)`);
+
+    document.body.removeChild(frame);
+  });
+
+  test("a flipped tag keeps the offset of the axis that is not flipped", () => {
+    const { frame, target } = setup();
+    Object.defineProperty(frame, "clientWidth", { value: 260 });
+    Object.defineProperty(frame, "clientHeight", { value: 30 });
+    const { rerender, container } = render(<DemoCursor cursor={null} />);
+    rerender(<DemoCursor cursor={{ target, frame, glide: 0, label: "Pick" }} />);
+    runFrame(16);
+    // A 30px frame puts the tip (y 10) in the bottom band, so the tag goes above it; its x stays as placed.
+    // eslint-disable-next-line testing-library/no-node-access
+    const tag = container.querySelector(".fdemo-tag");
+    expect(tagPlacement({ cx: 20, cy: 10, frameW: 260, frameH: 30 })).toMatchObject({ up: true, left: false, x: 20 });
+    expect(tag.style.transform).toBe("translate3d(20px, -4px, 0)");
+
+    document.body.removeChild(frame);
+  });
+
   test("a new target is measured from the start, not the element the last cursor pointed at", () => {
     const { frame, target } = setup();
     const other = document.createElement("button");

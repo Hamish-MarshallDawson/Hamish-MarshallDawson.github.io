@@ -20,41 +20,14 @@ export const fetchUserRepos = async (username) => {
       throw new Error(`GitHub API error: ${response.status}`);
     }
 
-    const repos = await response.json();
-
     // Filter out forks if you only want original repos
     // return repos.filter(repo => !repo.fork);
 
-    // Return all repos sorted by update date (most recent first)
-    return repos.sort(
-      (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
-    );
+    // sort=updated already returns the most recent first.
+    return await response.json();
   } catch (error) {
     console.error("Error fetching GitHub repos:", error);
     throw error;
-  }
-};
-
-/**
- * Fetches repository languages
- * @param {string} username - GitHub username
- * @param {string} repoName - Repository name
- * @returns {Promise<Object>} - Object with language stats
- */
-export const fetchRepoLanguages = async (username, repoName) => {
-  try {
-    const response = await fetch(
-      `${GITHUB_API_BASE}/repos/${username}/${repoName}/languages`
-    );
-
-    if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching repo languages:", error);
-    return {};
   }
 };
 

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import { isMobile } from "react-device-detect";
 import { categories, profile, vaultProjects } from "../projectdata";
 import { useRepoTelemetry } from "../../hooks/useRepoTelemetry";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
@@ -41,6 +40,7 @@ export function AIResearchVault() {
   const [openId, setOpenId] = useState(null);
   const repos = useRepoTelemetry(profile.githubUser);
   const withInspector = useMediaQuery("(min-width: 1100px)");
+  const isTouch = useMediaQuery("(pointer: coarse)");
   const tabRefs = useRef({});
 
   // Curated order and copy always win; GitHub only adds the repo link (for
@@ -199,7 +199,7 @@ export function AIResearchVault() {
               </span>
               <span className="caret" />
               <span className="vault-path-hint">
-                {withInspector ? "Select a file to inspect it" : `${isMobile ? "Tap" : "Select"} a file to open it`}
+                {withInspector ? "Select a file to inspect it" : `${isTouch ? "Tap" : "Select"} a file to open it`}
               </span>
             </p>
 

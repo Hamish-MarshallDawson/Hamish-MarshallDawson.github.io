@@ -37,10 +37,12 @@ export function FeaturedProjects({ projects }) {
     runRefs.current[id]?.focus();
   }, []);
 
-  // Escape closes the open stage, as it closes the vault's dossier.
+  // Escape closes the open stage, as it closes the vault's dossier. A dialog that
+  // is open on top (the dossier) has already handled the key, so it is left alone.
   useEffect(() => {
     if (!openId) return undefined;
     const onKeyDown = (event) => {
+      if (event.defaultPrevented) return;
       if (event.key === "Escape") closeStage(openId);
     };
     window.addEventListener("keydown", onKeyDown);
