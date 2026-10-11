@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
+import { findTarget } from "./targets";
 
 // The tour's pointer, highlight ring and label tag. DemoStage hands over the
 // target element, and this component follows it: while it is moving it reads the
@@ -33,9 +34,8 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 // named target is looked up again rather than trusting the element it had.
 function liveTarget(c) {
   if (c.name && c.root) {
-    const all = c.root.querySelectorAll(`[data-tour="${c.name}"]`);
-    // The first copy that is rendered (a name can occur twice, one hidden at this width).
-    const found = [...all].find((el) => el.getClientRects().length > 0 && el.getBoundingClientRect().width > 0) ?? all[0];
+    // The first copy that is shown, as DemoStage picks it (see targets.js).
+    const found = findTarget(c.root, c.name);
     if (found) return found;
   }
   return c.target && c.target.isConnected ? c.target : null;
@@ -44,17 +44,17 @@ function liveTarget(c) {
 // The tag sits below and to the right of the tip. In the right half of the frame
 // it moves to the left of the tip, and near the bottom it moves above it. A tip
 // off the left or top edge pushes it in. Its width is capped to the room it has.
-// `x` and `y` are only known for the default placement; a flipped tag is placed
-// from its own measured size, in paintTag.
+// `x` and `y` are the offsets from the tip on each axis that is not flipped. A flipped
+// axis has none (undefined): paintTag places it from the tag's own measured size.
 export function tagPlacement({ cx = 0, cy = 0, frameW = 0, frameH = 0 }) {
   const left = frameW > 0 && cx > frameW / 2;
   const up = frameH > 0 && cy > frameH - 48;
+  const x = left ? undefined : Math.max(20, 8 - cx);
+  const y = up ? undefined : Math.max(22, 8 - cy);
   if (left || up || frameW <= 0) {
     const room = left ? cx - 14 : frameW - cx - 28;
-    return { left, up, maxWidth: frameW > 0 ? Math.max(40, Math.round(room)) : undefined };
+    return { left, up, x, y, maxWidth: frameW > 0 ? Math.max(40, Math.round(room)) : undefined };
   }
-  const x = Math.max(20, 8 - cx);
-  const y = Math.max(22, 8 - cy);
   const room = frameW - cx - x - 8;
   return { left, up, x, y, maxWidth: Math.max(40, Math.round(room)) };
 }
@@ -104,13 +104,12 @@ function paintTag(t, at, f, s) {
     k.h = t.offsetHeight;
     k.sized = true;
   }
-  const x = tag.left ? -6 - k.w : Math.max(20, 8 - at.x);
-  const y = tag.up ? -4 - k.h : Math.max(22, 8 - at.y);
+  const x = tag.left ? -6 - k.w : tag.x;
+  const y = tag.up ? -4 - k.h : tag.y;
   t.style.transform = `translate3d(${x}px, ${y}px, 0)`;
 }
 
 export function DemoCursor({ cursor, paused = false }) {
-  const layer = useRef(null);
   const ringEl = useRef(null);
   const pointerEl = useRef(null);
   const tagEl = useRef(null);
@@ -265,7 +264,7 @@ export function DemoCursor({ cursor, paused = false }) {
   const pulse = cursor?.mode === "pulse";
 
   return (
-    <div className="fdemo-tour" aria-hidden="true" ref={layer}>
+    <div className="fdemo-tour" aria-hidden="true">
       <span
         ref={ringEl}
         className={`fdemo-hl${pulse ? " is-pulse" : ""}`}

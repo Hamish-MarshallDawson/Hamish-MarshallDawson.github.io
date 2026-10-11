@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { isMobile } from "react-device-detect";
 import { useDialog } from "../../hooks/useDialog";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { ArrowIcon, CloseIcon, ExternalIcon } from "../shared/Icons";
 import { ProjectMedia } from "./ProjectMedia";
 import { categoryName, linkLabel, pad } from "./VaultSlot";
@@ -19,6 +19,7 @@ export function ProjectDossier({ projects, index, onClose, onStep }) {
   const open = Boolean(project);
   const dialogRef = useDialog(open, onClose);
   const canStep = projects.length > 1;
+  const isTouch = useMediaQuery("(pointer: coarse)");
 
   useEffect(() => {
     if (!open || !canStep) return undefined;
@@ -153,7 +154,7 @@ export function ProjectDossier({ projects, index, onClose, onStep }) {
                 )}
                 {canStep && (
                   <p className="dossier-hint u-micro" aria-hidden="true">
-                    {isMobile ? "Swipe the image to step through files" : "← → keys or swipe the image to step through files"}
+                    {isTouch ? "Swipe the image to step through files" : "← → keys or swipe the image to step through files"}
                   </p>
                 )}
               </div>

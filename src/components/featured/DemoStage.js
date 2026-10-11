@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useReducedMotionConfig } from "framer-motion";
 import { pad } from "./format";
 import { DemoCursor } from "./DemoCursor";
+import { findTarget, isShown } from "./targets";
 
 // DEMO CONTRACT. Every demo under ./demos follows this, and DemoStage is the
 // only thing that drives it.
@@ -111,16 +112,6 @@ export function createTourClock(startPaused = false) {
     },
   };
 }
-// A name can occur more than once (two copies of a control, one hidden at this width),
-// so the target is the first copy that is shown.
-const findTarget = (root, name) => {
-  const all = root.querySelectorAll(`[data-tour="${name}"]`);
-  return [...all].find(isShown) ?? all[0] ?? null;
-};
-
-// A target counts only when it is rendered. A control hidden at this width
-// (display: none) has an empty box, and the pointer would fly to the corner.
-const isShown = (el) => el.getClientRects().length > 0 && el.getBoundingClientRect().width > 0;
 
 // Waits for the target to exist and be shown, and for a tap or drag, to be enabled.
 // `onWait` runs once when the wait starts, so the pointer can step aside rather
@@ -132,16 +123,17 @@ async function waitForTarget(root, item, { live, sleep }, onWait) {
   let hidden = 0;
   let waiting = false;
   while (live()) {
-    const copies = [...root.querySelectorAll(`[data-tour="${item.target}"]`)];
-    const el = copies.find(isShown) ?? null;
-    if (el && (!needsReady || el.getAttribute("aria-disabled") !== "true")) return el;
+    // The first copy shown, or else the first copy there is (hidden), or null.
+    const found = findTarget(root, item.target);
+    const shown = Boolean(found && isShown(found));
+    if (shown && (!needsReady || found.getAttribute("aria-disabled") !== "true")) return found;
     if (!waiting) {
       waiting = true;
       onWait();
     }
     // Present but never shown at this width (display none on a phone): skip it quickly.
     // Not yet present: it may arrive after a click, so it gets the full wait.
-    hidden = copies.length && !el ? hidden + 120 : 0;
+    hidden = found && !shown ? hidden + 120 : 0;
     if (hidden >= HIDDEN_MS) return null;
     if (waited > WAIT_MS) return null;
     waited += 120;

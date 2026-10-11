@@ -8,7 +8,7 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-import { isMobile } from "react-device-detect";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { AICore } from "./AICore";
 import { SECTIONS } from "../../sections";
 import { Barcode } from "../shared/Barcode";
@@ -69,6 +69,7 @@ function buildStats() {
 // plate wipes in and the sheet types itself.
 export function HeroBootSequence({ live }) {
   const reduce = useReducedMotionConfig();
+  const isTouch = useMediaQuery("(pointer: coarse)");
   const sectionRef = useRef(null);
   const [session] = useState(sessionCode);
   const [rtt] = useState(linkLatency);
@@ -91,7 +92,7 @@ export function HeroBootSequence({ live }) {
   const sx = useSpring(useTransform(px, [-0.5, 0.5], [26, 6]), { stiffness: 180, damping: 22 });
   const sy = useSpring(useTransform(py, [-0.5, 0.5], [26, 6]), { stiffness: 180, damping: 22 });
   const shadow = useMotionTemplate`${sx}px ${sy}px 0 0 var(--ink)`;
-  const steer = !reduce && !isMobile;
+  const steer = !reduce && !isTouch;
 
   const onPointerMove = (event) => {
     if (!steer || event.pointerType !== "mouse" || !sectionRef.current) return;

@@ -4,9 +4,9 @@ import { SECTIONS, SECTION_ALIASES, SECTION_IDS } from "./sections";
 import { highlights, pickHighlights, vaultProjects } from "./components/projectdata";
 import { parseHash } from "./hooks/useSectionRouter";
 
-// fireEvent from @testing-library/react rather than user-event: the installed
-// user-event resolves a second copy of @testing-library/dom whose events
-// aren't wrapped in act(), so state updates wouldn't have flushed yet.
+// Events are fired with fireEvent from @testing-library/react. user-event is
+// not a dependency: it resolved a second copy of @testing-library/dom whose
+// events weren't wrapped in act(), so state updates wouldn't have flushed.
 
 // Skip the loading screen: it only plays once per session.
 beforeEach(() => {
