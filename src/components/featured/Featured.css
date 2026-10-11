@@ -489,15 +489,19 @@
   position: relative;
 }
 
-/* The demo fades between steps. Fading out is ease-in and fading back in is
-   ease-out: the base rule (320 ms, ease-out) runs when is-fading is removed. */
+/* The demo fades between steps. Fading out is ease-in (400 ms) and fading back in
+   is ease-out (550 ms): the base rule runs when is-fading is removed. DemoStage
+   holds the frame blank for 120 ms between the two. */
 .fdemo-stage {
-  transition: opacity 320ms cubic-bezier(0, 0, 0.2, 1);
+  transition: opacity 550ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
+/* A fading frame takes no input: its controls are still there at opacity 0, and a
+   tap on one would act on a step the visitor cannot see. */
 .fdemo-stage.is-fading {
   opacity: 0;
-  transition: opacity 220ms cubic-bezier(0.4, 0, 1, 1);
+  pointer-events: none;
+  transition: opacity 400ms cubic-bezier(0.32, 0, 0.67, 0);
 }
 
 /* The layer over the demo. It never takes pointer events or focus. */
@@ -510,19 +514,21 @@
 }
 
 /* The highlight ring. DemoCursor moves it with transform only (translate and
-   scale), so it is a composited layer, and its box-shadow dims everything
-   outside it. Opacity fades it in and out. */
+   scale), and keeps its own layer (will-change) so it is not repainted with the page. Its box-shadow dims everything
+   outside it. Opacity fades it in and out over 300 ms. */
 .fdemo-hl {
   position: absolute;
   left: 0;
   top: 0;
   transform-origin: 0 0;
-  will-change: transform, opacity;
   outline: var(--bw-rule) solid var(--signal);
   outline-offset: 3px;
   box-shadow: 0 0 0 200vmax rgb(0 0 0 / 0.12);
   opacity: 0;
-  transition: opacity 200ms ease-in;
+  /* Its own layer, always. Without it, the dim (200vmax) is repainted into the page on
+     every repaint underneath, and the ring is repainted on each check of the loop. */
+  will-change: transform, opacity;
+  transition: opacity 300ms ease-in-out;
 }
 
 .fdemo-hl[data-on="true"] {
@@ -530,7 +536,7 @@
 }
 
 .fdemo-hl.is-pulse[data-on="true"] {
-  animation: fdemo-pulse 900ms ease-out;
+  animation: fdemo-pulse 900ms ease-in-out;
 }
 
 @keyframes fdemo-pulse {
@@ -544,7 +550,7 @@
 }
 
 /* The pointer: a black arrow with a white outline, so it reads on both demos.
-   DemoCursor moves it with transform; will-change keeps it on its own layer. */
+   DemoCursor moves it with transform, and keeps its own layer (will-change). */
 .fdemo-pointer {
   position: absolute;
   left: 0;
@@ -553,17 +559,18 @@
   height: 28px;
   opacity: 0;
   will-change: transform, opacity;
-  transition: opacity 200ms ease-in;
+  transition: opacity 300ms ease-in-out;
 }
 
 .fdemo-pointer[data-on="true"] {
   opacity: 1;
 }
 
+/* The press is a dip: 120 ms down, pressed for 240 ms, and 120 ms back up. */
 .fdemo-pointer svg {
   display: block;
   transform-origin: 2px 2px;
-  transition: transform 140ms ease-out;
+  transition: transform 120ms ease-in-out;
 }
 
 .fdemo-pointer[data-press="true"] svg {
@@ -605,7 +612,7 @@
   margin-top: 2px;
   letter-spacing: var(--tr-micro);
   opacity: 0;
-  transition: opacity 200ms ease-in;
+  transition: opacity 300ms ease-in-out;
 }
 
 .fdemo-tour-status.is-on {
@@ -627,7 +634,7 @@
   height: 100%;
   background: var(--signal);
   transform-origin: left center;
-  transition: transform 300ms linear;
+  transition: transform 700ms cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {

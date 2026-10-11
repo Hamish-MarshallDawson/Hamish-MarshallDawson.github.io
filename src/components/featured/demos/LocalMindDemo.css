@@ -362,9 +362,11 @@
 
 .lm-meter > i {
   display: block;
+  width: 100%;
   height: 100%;
   background: var(--signal);
-  transition: width 0.4s var(--ease-snap);
+  transform-origin: left center;
+  transition: transform 0.4s var(--ease-snap);
 }
 
 .lm-hud-warm .lm-meter {
@@ -1076,9 +1078,11 @@
 
 .lm-meter-wide > span {
   display: block;
-  width: 0;
+  width: 100%;
   height: 100%;
   background: var(--signal);
+  transform: scaleX(0);
+  transform-origin: left center;
   animation: lm-fill 2.4s linear forwards;
 }
 
@@ -1219,7 +1223,7 @@
 
 @keyframes lm-fill {
   to {
-    width: 100%;
+    transform: scaleX(1);
   }
 }
 

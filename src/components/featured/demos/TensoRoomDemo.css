@@ -299,13 +299,17 @@
   left: 0;
   right: 0;
   z-index: 1;
+  top: 0;
   height: 28%;
   background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent) 30%, transparent) 85%, var(--accent));
+  will-change: transform;
   animation: tr-demo-sweep 2.1s linear infinite;
 }
+/* Moved with transform, not top, so the sweep never triggers layout. The band is 28% tall, so -100% is its top edge
+   just above the photo and 357% puts its top edge at the bottom of the photo. */
 @keyframes tr-demo-sweep {
-  from { top: -28%; }
-  to { top: 100%; }
+  from { transform: translateY(-100%); }
+  to { transform: translateY(357.143%); }
 }
 
 /* Progress for the renders: a thin bar along the bottom of the photo. */
@@ -320,9 +324,11 @@
 }
 .tr-demo__meter span {
   display: block;
+  width: 100%;
   height: 100%;
   background: var(--accent);
-  transition: width 120ms linear;
+  transform-origin: left center;
+  transition: transform 120ms linear;
 }
 
 /* ------------------------------------------------------------ objects, chips and list */
