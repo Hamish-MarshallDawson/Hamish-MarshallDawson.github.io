@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useReducedMotionConfig } from "framer-motion";
 import { DemoStage } from "./DemoStage";
 import { ExternalIcon } from "../shared/Icons";
 import { ProjectMedia } from "../vault/ProjectMedia";
@@ -17,19 +18,23 @@ const repoLabel = (url) => (url.includes("github.com") ? "Repo" : "Visit");
 // The featured block at the top of the vault: the polished builds, each with
 // a pitch, three facts and a walkthrough. Everything comes from the `featured`
 // object on each project, so adding one is a data change. Only one demo is
-// open at a time; it opens in a framed stage under the cards.
+// open at a time. It opens inside its own card, in place of the card's image,
+// and the card's text stays below it.
 export function FeaturedProjects({ projects }) {
   const [openId, setOpenId] = useState(null);
   const runRefs = useRef({});
   const stageRef = useRef(null);
+  const boxRef = useRef(null);
+  const reduce = useReducedMotionConfig();
 
-  const open = projects.find((project) => project.id === openId) ?? null;
-
-  // Move focus into the stage when a demo opens, so keyboard and screen
-  // reader users land on what they asked for.
+  // Bring the open demo into view (smooth unless reduced motion), then move focus
+  // into it without a second scroll, so keyboard and screen reader users land on what
+  // they asked for. `nearest` leaves it alone when it is already fully on screen.
   useEffect(() => {
-    if (openId) stageRef.current?.focus();
-  }, [openId]);
+    if (!openId) return;
+    boxRef.current?.scrollIntoView?.({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    stageRef.current?.focus({ preventScroll: true });
+  }, [openId, reduce]);
 
   // Closing hands focus back to the card's button that opened the stage.
   const closeStage = useCallback((id) => {
@@ -86,10 +91,24 @@ export function FeaturedProjects({ projects }) {
                 aria-labelledby={`feat-${project.id}`}
                 data-category={project.categories[0]}
               >
-                {/* The vault's own plate, decorative here: the heading names the project. */}
-                <div className={`feat-media${project.fit === "contain" ? " is-contain" : ""}`}>
-                  <ProjectMedia project={project} decorative lazy />
-                </div>
+                {isOpen ? (
+                  <section id="feat-stage" ref={boxRef} className="fstage" aria-labelledby="fstage-title">
+                    <header className="fstage-bar u-micro">
+                      <h4 id="fstage-title" className="fstage-title" ref={stageRef} tabIndex={-1}>
+                        Demo · {project.name}
+                      </h4>
+                      <button type="button" className="fstage-close" onClick={() => closeStage(project.id)}>
+                        Close demo
+                      </button>
+                    </header>
+                    <DemoStage key={project.id} title={project.name} loader={DEMOS[demo]} />
+                  </section>
+                ) : (
+                  /* The vault's own plate, decorative here: the heading names the project. */
+                  <div className={`feat-media${project.fit === "contain" ? " is-contain" : ""}`}>
+                    <ProjectMedia project={project} decorative lazy />
+                  </div>
+                )}
 
                 <div className="feat-body">
                   <header className="feat-head">
@@ -146,20 +165,6 @@ export function FeaturedProjects({ projects }) {
           );
         })}
       </ul>
-
-      {open && (
-        <section id="feat-stage" className="fstage surface-paper" aria-labelledby="fstage-title">
-          <header className="fstage-bar u-micro">
-            <h4 id="fstage-title" className="fstage-title" ref={stageRef} tabIndex={-1}>
-              Demo · {open.name}
-            </h4>
-            <button type="button" className="fstage-close" onClick={() => closeStage(open.id)}>
-              Close demo
-            </button>
-          </header>
-          <DemoStage key={open.id} title={open.name} loader={DEMOS[open.featured.demo]} />
-        </section>
-      )}
     </section>
   );
 }

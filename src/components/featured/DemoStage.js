@@ -48,11 +48,17 @@ import { findTarget, isShown } from "./targets";
 // tab is hidden, and carries on from the same point when it comes back. Its
 // timers are not running while paused. Closing the demo cancels the tour.
 
-// Render order, top to bottom on phones: the demo frame, then the navigation
-// row (Back, step count, Next), the numbered step list, the caption, and the
-// options row (Restart, Play tour). Wider stages place the same parts with CSS
-// grid areas (see Featured.css). Controls use aria-disabled rather than
-// disabled, so a focused button never drops focus to the page.
+// Render order, top to bottom on phones: the demo frame (with the "Play the tour"
+// offer over it, until the visitor has played or touched the demo), then the
+// navigation row (Back, step count, Next), the options row (Play tour, Restart), the
+// numbered step list and the caption. Back and Next stay right under the frame, so
+// the step controls are in reach with it. The offer is for motion only: with reduced
+// motion the tour cannot play, so there is none. Its scrim lets pointers through to
+// the demo, so a press inside the demo counts as the visitor starting by hand, and
+// the offer goes. Play is the main control: a full-width signal button, and the step
+// tabs are a quieter secondary row. Wider stages place the same parts with CSS grid
+// areas (see Featured.css). Controls use aria-disabled rather than disabled, so a
+// focused button never drops focus to the page.
 
 const FADE_OUT_MS = 400; // Frame fades out, ease-in (the fade back in, ease-out, is in Featured.css)
 const BLANK_MS = 120; // Blank beat while the new step is drawn
@@ -254,6 +260,9 @@ export function DemoStage({ title, loader }) {
   const [step, setStep] = useState(0); // Where the walkthrough is headed
   const [shown, setShown] = useState(0); // The step the demo is drawing; trails `step` while the frame fades
   const [fading, setFading] = useState(false);
+  // True once the visitor has played the tour, moved a step, or pressed inside the
+  // demo. Until then, the overlay offers the tour. Restart brings it back.
+  const [touched, setTouched] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [cursor, setCursor] = useState(null);
@@ -393,6 +402,7 @@ export function DemoStage({ title, loader }) {
   const move = (to) => {
     const target = Math.max(0, Math.min(to, last));
     setPlaying(false);
+    setTouched(true);
     if (target !== step) pulseNext.current = true;
     setStep(target);
   };
@@ -407,6 +417,7 @@ export function DemoStage({ title, loader }) {
 
   const restart = () => {
     setPlaying(false);
+    setTouched(false);
     pulseNext.current = false;
     setStep(0);
     setShown(0);
@@ -425,6 +436,7 @@ export function DemoStage({ title, loader }) {
     frameRef.current?.scrollIntoView?.({ block: "nearest", behavior: "smooth" });
     // At the end, Play starts the walkthrough again from the first step.
     if (step >= last) setStep(0);
+    setTouched(true);
     setPlaying(true);
   };
 
@@ -449,14 +461,28 @@ export function DemoStage({ title, loader }) {
 
   // The caption is the aria-live line, so it follows the step asked for, not the fade.
   const { caption } = demo.steps[step];
+  // The overlay is for motion only: with reduced motion the tour cannot play at all.
+  const offerStart = !reduce && !touched;
 
   return (
     <div className="fdemo">
       <div className="fdemo-grid">
         <div className="fdemo-frame" ref={frameRef} role="region" aria-label={`${title} demo`}>
+          {offerStart && (
+            <div className="fdemo-start">
+              <button type="button" className="btn btn--signal u-press fdemo-start-btn" onClick={toggleTour}>
+                <svg className="fdemo-start-glyph" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <path d="M4 2.5v11l9-5.5z" />
+                </svg>
+                Play the tour
+              </button>
+            </div>
+          )}
           <div
             ref={stageRef}
             className={`fdemo-stage${fading ? " is-fading" : ""}`}
+            onPointerDown={() => setTouched(true)}
+            onKeyDown={() => setTouched(true)}
             onFocus={(event) => {
               focusInDemo.current = event.target;
             }}
@@ -484,9 +510,29 @@ export function DemoStage({ title, loader }) {
               </span>
             </div>
           </div>
-          <button type="button" className="btn btn--signal u-press" aria-disabled={step === last} onClick={next}>
+          <button
+            type="button"
+            className={`btn ${reduce ? "btn--signal" : "btn--paper"} u-press`}
+            aria-disabled={step === last}
+            onClick={next}
+          >
             Next
           </button>
+        </div>
+
+        <div className="fdemo-extras" role="group" aria-label="Walkthrough options">
+          <button
+            type="button"
+            className={`btn ${reduce ? "btn--paper" : "btn--signal"} u-press fdemo-play`}
+            aria-disabled={reduce}
+            onClick={toggleTour}
+          >
+            {playing ? "Pause tour" : "Play tour"}
+          </button>
+          <button type="button" className="btn btn--paper u-press" onClick={restart}>
+            Restart
+          </button>
+          {reduce && <p className="fdemo-note u-micro">The tour is off with reduced motion.</p>}
         </div>
 
         <ol ref={stepsRef} className="fdemo-steps" aria-label="Walkthrough steps">
@@ -510,15 +556,6 @@ export function DemoStage({ title, loader }) {
           <span>{caption}</span>
         </p>
 
-        <div className="fdemo-extras" role="group" aria-label="Walkthrough options">
-          <button type="button" className="btn btn--paper u-press" onClick={restart}>
-            Restart
-          </button>
-          <button type="button" className="btn btn--paper u-press" aria-disabled={reduce} onClick={toggleTour}>
-            {playing ? "Pause tour" : "Play tour"}
-          </button>
-          {reduce && <p className="fdemo-note u-micro">The tour is off with reduced motion.</p>}
-        </div>
       </div>
     </div>
   );

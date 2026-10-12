@@ -3,6 +3,7 @@ import App from "./App";
 import { SECTIONS, SECTION_ALIASES, SECTION_IDS } from "./sections";
 import { highlights, pickHighlights, vaultProjects } from "./components/projectdata";
 import { parseHash } from "./hooks/useSectionRouter";
+import { steps as lmSteps } from "./components/featured/demos/LocalMindDemo";
 
 // Events are fired with fireEvent from @testing-library/react. user-event is
 // not a dependency: it resolved a second copy of @testing-library/dom whose
@@ -327,38 +328,38 @@ test("Next moves the walkthrough caption on", async () => {
   render(<App />);
   fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
 
-  expect(await screen.findByText(/Chats sit on the left/)).toBeInTheDocument();
+  expect(await screen.findByText(lmSteps[0].caption)).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Next" }));
 
   // The step changes after the frame's fade-out, so wait for the new caption.
-  expect(await screen.findByText(/Paste the advert and ask for the CV to be tailored/)).toBeInTheDocument();
-  expect(screen.queryByText(/Chats sit on the left/)).not.toBeInTheDocument();
+  expect(await screen.findByText(lmSteps[1].caption)).toBeInTheDocument();
+  expect(screen.queryByText(lmSteps[0].caption)).not.toBeInTheDocument();
 });
 
 test("Next keeps keyboard focus when it becomes unavailable on the last step", async () => {
   render(<App />);
   fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
-  await screen.findByText(/Chats sit on the left/);
+  await screen.findByText(lmSteps[0].caption);
 
   const next = screen.getByRole("button", { name: "Next" });
   next.focus();
-  for (let i = 0; i < 5; i += 1) fireEvent.click(next);
+  for (let i = 0; i < lmSteps.length; i += 1) fireEvent.click(next);
 
-  expect(await screen.findByText(/The PC is asleep/)).toBeInTheDocument();
+  expect(await screen.findByText(lmSteps[lmSteps.length - 1].caption)).toBeInTheDocument();
   expect(next).toHaveAttribute("aria-disabled", "true");
   expect(next).not.toBeDisabled();
   expect(next).toHaveFocus();
 
   // Clicking the unavailable button does nothing, and focus stays on it.
   fireEvent.click(next);
-  expect(screen.getByText(/The PC is asleep/)).toBeInTheDocument();
+  expect(screen.getByText(lmSteps[lmSteps.length - 1].caption)).toBeInTheDocument();
   expect(next).toHaveFocus();
 });
 
 test("Restart returns to the first step with the demo freshly mounted", async () => {
   render(<App />);
   fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
-  await screen.findByText(/Chats sit on the left/);
+  await screen.findByText(lmSteps[0].caption);
   fireEvent.click(screen.getByRole("button", { name: "Next" }));
   fireEvent.click(screen.getByRole("button", { name: "Next" }));
   // The demo's root node is the only way to tell a fresh mount from a reused one.
@@ -367,7 +368,7 @@ test("Restart returns to the first step with the demo freshly mounted", async ()
 
   fireEvent.click(screen.getByRole("button", { name: "Restart" }));
 
-  expect(screen.getByText(/Chats sit on the left/)).toBeInTheDocument();
+  expect(screen.getByText(lmSteps[0].caption)).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Back" })).toHaveAttribute("aria-disabled", "true");
   // The demo is a new instance, so any state it held is gone.
   // eslint-disable-next-line testing-library/no-node-access
@@ -378,7 +379,7 @@ test("reduced motion turns auto-play off and cannot be switched on", async () =>
   localStorage.setItem("hmd:fx", "off");
   render(<App />);
   fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
-  await screen.findByText(/Chats sit on the left/);
+  await screen.findByText(lmSteps[0].caption);
 
   const auto = screen.getByRole("button", { name: "Play tour" });
   expect(auto).toHaveAttribute("aria-disabled", "true");
@@ -391,7 +392,7 @@ test("Escape closes the stage and returns focus to its card button", async () =>
   render(<App />);
   const run = screen.getByRole("button", { name: "Run the demo for LocalMind" });
   fireEvent.click(run);
-  await screen.findByText(/Chats sit on the left/);
+  await screen.findByText(lmSteps[0].caption);
 
   fireEvent.keyDown(window, { key: "Escape" });
 

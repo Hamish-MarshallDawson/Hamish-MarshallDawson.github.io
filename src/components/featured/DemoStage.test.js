@@ -209,3 +209,43 @@ test("disposing the tour clock ends every wait at once, and leaves no timers", a
   expect(jest.getTimerCount()).toBe(0);
   jest.useRealTimers();
 });
+
+// Before the tour has been played, a large Play button covers the demo. It is the way in.
+test("the overlay offers the tour, and its Play button starts it", async () => {
+  renderStage();
+  await screen.findByRole("button", { name: /^tap/ });
+  fireEvent.click(screen.getByRole("button", { name: "Play the tour" }));
+
+  expect(screen.queryByRole("button", { name: "Play the tour" })).toBeNull();
+  expect(screen.getByRole("button", { name: "Pause tour" })).toBeInTheDocument();
+});
+
+test("pressing inside the demo starts by hand, so the offer goes; the demo stays usable under it", async () => {
+  renderStage();
+  const tap = await screen.findByRole("button", { name: /^tap/ });
+  // The offer's scrim lets the press through to the demo: a real press starts with pointerdown.
+  fireEvent.pointerDown(tap);
+  fireEvent.click(tap);
+  expect(screen.getByRole("button", { name: "tap 1 on 0" })).toBe(tap);
+  expect(screen.queryByRole("button", { name: "Play the tour" })).toBeNull();
+});
+
+test("a manual step hides the overlay, and Restart brings it back", async () => {
+  renderStage();
+  await screen.findByRole("button", { name: /^tap/ });
+  fireEvent.click(screen.getByRole("button", { name: "Next" }));
+  expect(screen.queryByRole("button", { name: "Play the tour" })).toBeNull();
+
+  fireEvent.click(screen.getByRole("button", { name: "Restart" }));
+  expect(await screen.findByRole("button", { name: "Play the tour" })).toBeInTheDocument();
+});
+
+test("with reduced motion there is no overlay, because the tour cannot play", async () => {
+  render(
+    <MotionConfig reducedMotion="always">
+      <DemoStage title="Fake" loader={loader} />
+    </MotionConfig>,
+  );
+  await screen.findByRole("button", { name: /^tap/ });
+  expect(screen.queryByRole("button", { name: "Play the tour" })).toBeNull();
+});

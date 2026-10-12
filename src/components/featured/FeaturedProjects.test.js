@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { MotionConfig } from "framer-motion";
 import { FeaturedProjects } from "./FeaturedProjects";
 import { useDialog } from "../../hooks/useDialog";
 
@@ -65,4 +66,55 @@ test("with only the demo open, Escape still closes it", () => {
   fireEvent.click(screen.getByRole("button", { name: "Run the demo for Alpha" }));
   fireEvent.keyDown(window, { key: "Escape" });
   expect(screen.queryByText("stage for Alpha")).toBeNull();
+});
+
+test("Run the demo opens the demo inside its own card, in place of the image, and Close restores it", () => {
+  render(<FeaturedProjects projects={projects} />);
+  const card = screen.getByRole("article", { name: "Alpha" });
+  // eslint-disable-next-line testing-library/no-node-access
+  expect(card.querySelector(".feat-media")).not.toBeNull();
+
+  fireEvent.click(screen.getByRole("button", { name: "Run the demo for Alpha" }));
+
+  const stage = within(card).getByRole("region", { name: "Demo · Alpha" });
+  expect(stage).toHaveAttribute("id", "feat-stage");
+  expect(within(card).getByRole("button", { name: "Close demo" })).toBeInTheDocument();
+  // The image is replaced, and the card's text (pitch, facts, the Run button) stays below.
+  // eslint-disable-next-line testing-library/no-node-access
+  expect(card.querySelector(".feat-media")).toBeNull();
+  expect(within(card).getByText("A pitch.")).toBeInTheDocument();
+  expect(within(card).getByRole("button", { name: "Close the demo for Alpha" })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "Close the demo for Alpha" })).toHaveAttribute("aria-expanded", "true");
+  expect(screen.getByRole("button", { name: "Close the demo for Alpha" })).toHaveAttribute("aria-controls", "feat-stage");
+
+  fireEvent.click(within(card).getByRole("button", { name: "Close demo" }));
+
+  expect(screen.queryByRole("region", { name: "Demo · Alpha" })).toBeNull();
+  // eslint-disable-next-line testing-library/no-node-access
+  expect(card.querySelector(".feat-media")).not.toBeNull();
+});
+
+test("opening a demo moves focus to its title, and scrolls the card into view smoothly", () => {
+  const scroll = jest.fn();
+  Element.prototype.scrollIntoView = scroll;
+  render(<FeaturedProjects projects={projects} />);
+  fireEvent.click(screen.getByRole("button", { name: "Run the demo for Alpha" }));
+
+  expect(screen.getByRole("heading", { name: "Demo · Alpha" })).toHaveFocus();
+  expect(scroll).toHaveBeenCalledWith({ block: "nearest", behavior: "smooth" });
+  delete Element.prototype.scrollIntoView;
+});
+
+test("with reduced motion the card scrolls into view at once", () => {
+  const scroll = jest.fn();
+  Element.prototype.scrollIntoView = scroll;
+  render(
+    <MotionConfig reducedMotion="always">
+      <FeaturedProjects projects={projects} />
+    </MotionConfig>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Run the demo for Alpha" }));
+
+  expect(scroll).toHaveBeenCalledWith({ block: "nearest", behavior: "auto" });
+  delete Element.prototype.scrollIntoView;
 });
