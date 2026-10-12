@@ -1,12 +1,14 @@
 /* ==========================================================================
-   LocalMind demo, drawn from the app's own system (ui/theme.py LM_TOKENS and
-   CSS, and the gateway's app.css): paper, ink and signal, square corners,
-   rules at 1 to 4px, and zero-blur shadow plates that an object rests on and
-   presses flat onto. The palette is declared on the root, so the site's
-   Colour menu cannot reach it: the signal here is always #1F1FFF.
+   LocalMind scenes, drawn from the app's own system (ui/theme.py LM_TOKENS):
+   paper, ink and signal, square corners, rules of 2 to 3px, and a zero-blur
+   shadow plate. The palette is declared on the root, so the site's Colour menu
+   cannot reach it: the signal here is always #1F1FFF.
 
-   Fonts are the ones the site already loads (Archivo with its width axis,
-   JetBrains Mono, Silkscreen), which are the app's own families.
+   Motion rules. Each element's base style is its END state, and an entrance is
+   a keyframe that starts hidden and fills forwards. With `.is-still` (reduced
+   motion) animations are off, so the scene simply shows its end state. With
+   `.is-paused` the animations hold where they are. Only transform and opacity
+   move.
    ========================================================================== */
 
 .lm-demo {
@@ -14,43 +16,31 @@
   --ink: #000000;
   --signal: #1f1fff;
 
-  /* surface contract, as theme.py: light is paper on ink, dark swaps them */
   --lm-surface: var(--paper);
   --lm-on-surface: var(--ink);
   --lm-line: var(--ink);
-  --lm-shadow: var(--ink);
   --lm-muted: #4a4a4a;
   --lm-wash: #f2f2f2;
   --lm-user-fill: var(--ink);
   --lm-user-text: var(--paper);
 
-  --bw-hair: 1px;
-  --bw-rule: 2px;
-  --bw-frame: 3px;
-  --bw-heavy: 4px;
-  --off-1: 4px;
-  --off-2: 8px;
-
   --lm-sans: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --lm-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
   --lm-pixel: "Silkscreen", "JetBrains Mono", ui-monospace, monospace;
   --ease-snap: cubic-bezier(0.7, 0, 0.2, 1);
-  --dur-1: 90ms;
 
-  container: lm / inline-size;
+  /* The player's box is the size container; this root is one too, so the
+     queries below read the scene's own width and height. */
+  container: lm / size;
   position: relative;
-  /* Phones (a stage under 400px) keep a fixed, readable height: the chat, tool
-     rows and composer fit without the window scrolling much. */
   width: 100%;
-  height: 580px;
+  height: 100%;
   overflow: hidden;
   background: var(--lm-surface);
   color: var(--lm-on-surface);
-  font: 400 14px / 1.55 var(--lm-sans);
+  font: 400 13px / 1.45 var(--lm-sans);
   font-variation-settings: "wdth" 100;
-  letter-spacing: normal;
   text-align: left;
-  text-transform: none;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -59,7 +49,6 @@
     --lm-surface: var(--ink);
     --lm-on-surface: var(--paper);
     --lm-line: var(--paper);
-    --lm-shadow: var(--signal);
     --lm-muted: #b8b8b8;
     --lm-wash: #141414;
     --lm-user-fill: var(--paper);
@@ -75,27 +64,15 @@
   border-radius: 0;
 }
 
-:where(.lm-demo) h2,
-:where(.lm-demo) h3,
 :where(.lm-demo) p,
 :where(.lm-demo) ol,
 :where(.lm-demo) ul,
-:where(.lm-demo) li,
-:where(.lm-demo) pre {
+:where(.lm-demo) li {
   margin: 0;
   padding: 0;
   list-style: none;
   font: inherit;
   color: inherit;
-}
-
-:where(.lm-demo) button {
-  font: inherit;
-  color: inherit;
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
 }
 
 :where(.lm-demo) svg {
@@ -110,679 +87,733 @@
   flex: none;
 }
 
-.lm-demo :focus-visible {
-  outline: 3px solid var(--signal);
-  outline-offset: 2px;
+/* ---------- motion ---------- */
+
+@keyframes lm-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes lm-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lm-lift {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-64px);
+  }
+}
+
+@keyframes lm-pop {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes lm-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes lm-drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes lm-ring {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+@keyframes lm-blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.lm-in {
+  animation: lm-in 380ms var(--ease-snap) var(--d, 0ms) both;
+}
+
+/* !important, because a rule's `animation` shorthand resets the play state
+   (the busy dot's rule is more specific than this one). */
+.lm-demo.is-paused *,
+.lm-demo.is-paused *::before,
+.lm-demo.is-paused *::after {
+  animation-play-state: paused !important;
+}
+
+.lm-demo.is-still *,
+.lm-demo.is-still *::before,
+.lm-demo.is-still *::after {
+  animation: none !important;
+}
+
+/* The advert chip leaves the composer by animation only, so its end state here is gone. */
+.lm-demo.is-still .lm-lift {
+  display: none;
 }
 
 /* ---------- the window ----------
-   One large plate on a signal shadow. It fills the frame, inset so the shadow
-   stays inside the demo's own box. */
+   One plate on a signal shadow. The demo is the scene area above the player's
+   caption band, so the plate fills it: the inset only leaves room for the
+   6px shadow, which must stay inside the box. */
 
 .lm-window {
   position: absolute;
-  inset: 14px 16px 22px 14px;
+  inset: 8px 12px 10px 8px;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  border: var(--bw-frame) solid var(--lm-line);
+  border: 3px solid var(--lm-line);
   background: var(--lm-surface);
-  box-shadow: var(--off-2) var(--off-2) 0 0 var(--signal);
+  box-shadow: 6px 6px 0 0 var(--signal);
 }
 
-/* The title bar is always ink, in both schemes, with a signal edge. */
 .lm-titlebar {
-  --lm-line: var(--paper);
-  --lm-shadow: var(--signal);
-  --lm-muted: #b8b8b8;
-
+  flex: none;
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 46px;
-  padding: 6px 12px;
-  background: var(--ink);
-  color: var(--paper);
-  border-bottom: var(--bw-frame) solid var(--signal);
+  gap: 8px;
+  height: 28px;
+  padding: 0 10px;
+  background: var(--lm-line);
+  color: var(--lm-surface);
+  border-bottom: 2px solid var(--signal);
+  font: 400 11px / 1 var(--lm-mono);
 }
 
 .lm-mark {
-  display: inline-grid;
-  place-items: center;
   flex: none;
-  width: 30px;
-  height: 30px;
-  background: var(--signal);
-  color: var(--paper);
-  border: var(--bw-rule) solid var(--lm-line);
-  box-shadow: var(--off-1) var(--off-1) 0 0 var(--lm-shadow);
+  padding: 3px 4px;
+  border: 1px solid currentColor;
   font: 400 11px / 1 var(--lm-pixel);
-  letter-spacing: 0;
 }
 
 .lm-wordmark {
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  font: 900 16px / 1 var(--lm-sans);
-  font-variation-settings: "wdth" 75;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
   white-space: nowrap;
+  font: 400 12px / 1 var(--lm-pixel);
+  letter-spacing: 0.04em;
 }
 
-.lm-body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
-  padding: 16px;
-  overflow-y: auto;
-}
-
-.lm-badge {
-  display: inline-block;
-  padding: 2px 5px;
-  border: var(--bw-hair) solid var(--lm-line);
-  color: var(--lm-on-surface);
-  font: 700 11px / 1 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-/* The status plate: signal with paper text. Its square blinks only when busy. */
 .lm-status {
-  display: inline-flex;
   flex: none;
+  display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 6px 10px;
-  background: var(--signal);
-  color: var(--paper);
-  font: 700 11px / 1 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  gap: 6px;
   white-space: nowrap;
 }
 
 .lm-dot {
-  display: inline-block;
   width: 7px;
   height: 7px;
+  background: currentColor;
   flex: none;
-  background: var(--lm-muted);
-}
-
-.lm-status .lm-dot {
-  background: var(--paper);
-}
-
-/* Only one label reads at a time: the full text wide, the short word narrow. When
-   the full text is hidden it is clipped, not removed, so it stays the name. */
-.lm-status-short {
-  display: none;
 }
 
 .lm-status.is-busy .lm-dot {
+  background: var(--signal);
   animation: lm-blink 1s steps(1) infinite;
 }
 
-.lm-thread {
+.lm-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 8px;
+  padding: 12px 14px;
+  overflow: hidden;
 }
 
-.lm-note {
+.lm-note,
+.lm-query {
+  font: 400 11px / 1.3 var(--lm-mono);
   color: var(--lm-muted);
-  font: 500 11px / 1.4 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
-/* ---------- messages ----------
-   User: a hard plate on a signal shadow, right aligned. Assistant: no plate,
-   it reads like a document. */
+/* ---------- chat ---------- */
 
-.lm-user {
+/* The thread clips at its top, so the newest message stays whole: bubbles keep
+   their own height, and older lines scroll out of view. */
+.lm-thread {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.lm-bubble {
+  flex: none;
+  max-width: 88%;
+  padding: 8px 10px;
+  border: 2px solid var(--lm-line);
+  background: var(--lm-surface);
+}
+
+.lm-bubble.is-user {
   align-self: flex-end;
-  max-width: 82%;
-  margin-right: var(--off-1);
-  padding: 10px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   background: var(--lm-user-fill);
   color: var(--lm-user-text);
-  border: var(--bw-rule) solid var(--lm-line);
-  box-shadow: var(--off-1) var(--off-1) 0 0 var(--signal);
-  font-size: 14px;
-  line-height: 1.55;
-  overflow-wrap: anywhere;
-  animation: lm-in 0.3s ease-out;
+  border-color: var(--lm-user-fill);
 }
 
-.lm-bot {
-  padding: 2px;
-  font-size: 14px;
-  line-height: 1.6;
+.lm-bubble.is-bot {
+  align-self: flex-start;
+  min-height: 2.6em;
 }
 
 .lm-caret {
-  /* Zero-width in the line, so the caret never reflows the text it follows. The
-     block is drawn from the caret's own origin instead. */
   display: inline-block;
-  position: relative;
-  width: 0;
-  height: 1em;
-  vertical-align: -2px;
-}
-
-.lm-caret::after {
-  content: "";
-  position: absolute;
-  left: 3px;
-  top: 0;
-  width: 8px;
-  height: 100%;
-  background: var(--signal);
+  width: 7px;
+  height: 0.95em;
+  margin-left: 2px;
+  vertical-align: -0.15em;
+  background: currentColor;
   animation: lm-blink 1s steps(1) infinite;
 }
 
-/* The compiled PDF is a plate, as the app's file link is. */
-.lm-file {
+.lm-chip {
+  align-self: flex-start;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  margin-top: 10px;
-  padding: 9px 14px;
-  border: var(--bw-rule) solid var(--lm-line);
-  background: var(--lm-surface);
-  color: var(--lm-on-surface);
-  box-shadow: var(--off-1) var(--off-1) 0 0 var(--lm-shadow);
-  font: 700 11px / 1 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.lm-file svg {
-  width: 14px;
-  height: 14px;
-}
-
-/* Tool calls: one compact row each, with a signal edge, as the app's thought
-   panels. The name truncates before the row grows. */
-.lm-tools {
-  display: flex;
-  flex-direction: column;
   gap: 6px;
+  padding: 3px 6px;
+  border: 2px solid currentColor;
+  background: var(--lm-wash);
+  color: var(--lm-on-surface);
+  font: 400 11px / 1.3 var(--lm-mono);
 }
 
-.lm-tool {
+.lm-bubble.is-user .lm-chip {
+  background: var(--lm-user-fill);
+  color: var(--lm-user-text);
+  border-color: var(--lm-user-text);
+}
+
+/* The composer: the advert chip sits in it, then Send. */
+.lm-composer {
+  position: relative;
+  flex: none;
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 34px;
-  padding: 6px 10px;
-  border: var(--bw-rule) solid var(--lm-line);
-  border-left: var(--bw-heavy) solid var(--signal);
-  background: var(--lm-surface);
-  font: 500 11px / 1.3 var(--lm-mono);
-  animation: lm-in 0.3s ease-out;
+  height: 40px;
+  padding: 0 6px 0 10px;
+  border: 2px solid var(--lm-line);
 }
 
-.lm-tool-mark {
-  flex: none;
-  width: 16px;
-  font-size: 12px;
-  line-height: 1;
-  text-align: center;
+.lm-composer .lm-chip {
+  margin-right: auto;
+  align-self: center;
 }
 
-.lm-tool-name {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--lm-on-surface);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.lm-tool-meta {
-  flex: none;
-  color: var(--lm-muted);
-  font: 400 11px / 1 var(--lm-pixel);
-  letter-spacing: 0;
-}
-
-/* ---------- composer ----------
-   The chat bar: the paste box and Send, on one square plate with a hard shadow. */
-
-.lm-composer {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 6px 16px 14px;
-  background: var(--lm-surface);
-}
-
-.lm-composer-card {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  margin-right: var(--off-2);
-  padding: 8px 8px 8px 14px;
-  border: var(--bw-frame) solid var(--lm-line);
-  background: var(--lm-surface);
-  box-shadow: var(--off-2) var(--off-2) 0 0 var(--lm-shadow);
-}
-
-.lm-input {
-  flex: 1;
-  min-width: 0;
-  min-height: 40px;
-  padding: 7px 0;
-  overflow: hidden;
-  color: var(--lm-on-surface);
-  font-size: 14px;
-  line-height: 1.5;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.lm-placeholder {
-  color: var(--lm-muted);
+.lm-lift {
+  animation: lm-lift 520ms var(--ease-snap) var(--d, 0ms) both;
 }
 
 .lm-send {
+  position: relative;
+  flex: none;
   display: grid;
   place-items: center;
-  flex: none;
-  width: 44px;
-  height: 44px;
-  border: var(--bw-rule) solid var(--lm-line);
-  background: var(--signal);
-  color: var(--paper);
-  box-shadow: var(--off-1) var(--off-1) 0 0 var(--lm-shadow);
-  transition: transform var(--dur-1) var(--ease-snap), box-shadow var(--dur-1) var(--ease-snap);
-}
-
-.lm-send[aria-disabled="true"] {
-  opacity: 0.35;
-  box-shadow: none;
-  cursor: default;
-}
-
-/* The phone's option row: ruled chips, as the gateway's own page shows them. */
-.lm-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-  padding: 10px 2px 0;
-  border-top: var(--bw-hair) solid var(--lm-line);
-}
-
-.lm-chip {
-  display: inline-flex;
-  align-items: center;
-  min-height: 34px;
-  padding: 6px 11px;
-  border: var(--bw-rule) solid var(--lm-line);
-  color: var(--lm-on-surface);
-  font: 700 11px / 1 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* ---------- knowledge base ---------- */
-
-.lm-kb {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.lm-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.lm-group-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 10px;
-  padding-bottom: 6px;
-  border-bottom: var(--bw-rule) solid var(--lm-line);
-  font: 700 11px / 1.2 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.lm-group-head .lm-muted {
-  color: var(--lm-muted);
-  font-weight: 500;
-}
-
-.lm-section-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 2px;
-  border-bottom: var(--bw-hair) solid var(--lm-line);
-  font-size: 14px;
-}
-
-.lm-section-name {
-  flex: 1;
-  min-width: 0;
-  font-weight: 600;
-}
-
-.lm-badge.is-private {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 6px;
-  background: var(--lm-on-surface);
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  background: var(--lm-line);
   color: var(--lm-surface);
 }
 
-.lm-badge.is-private svg {
-  width: 11px;
-  height: 11px;
+/* The Send pulse: one ring, drawn once and then gone. */
+.lm-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--signal);
+  opacity: 0;
+  animation: lm-ring 700ms ease-out var(--d, 0ms) backwards;
 }
 
-/* ---------- phone: the gateway's own page ----------
-   The route sits above a paper handset on an ink stage. */
+/* ---------- knowledge rows ---------- */
 
-.lm-phone-stage {
+.lm-rows {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: safe center;
-  gap: 14px;
-  height: 100%;
-  padding: 12px;
-  overflow-y: auto;
-  background: var(--ink);
-  color: var(--paper);
-}
-
-.lm-nodes {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
   gap: 6px;
 }
 
-.lm-node {
-  padding: 7px 10px;
-  border: var(--bw-rule) solid var(--paper);
-  color: var(--paper);
-  font: 700 11px / 1 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.lm-node.is-active {
-  background: var(--signal);
-  border-color: var(--signal);
-  color: var(--paper);
-}
-
-.lm-phone {
+.lm-row {
   display: flex;
-  flex: none;
-  flex-direction: column;
-  width: min(300px, 100%);
-  border: var(--bw-frame) solid var(--paper);
-  background: var(--lm-surface);
-  color: var(--lm-on-surface);
-  box-shadow: var(--off-2) var(--off-2) 0 0 var(--signal);
-}
-
-/* The gateway's top bar: menu, title, and the PC pill ruled on its left. */
-.lm-phone-top {
-  display: flex;
-  align-items: stretch;
-  min-height: 44px;
-  border-bottom: var(--bw-rule) solid var(--lm-line);
-}
-
-.lm-phone-menu {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  border-right: var(--bw-rule) solid var(--lm-line);
-}
-
-.lm-phone-title {
-  flex: 1;
-  min-width: 0;
-  align-self: center;
-  padding: 0 10px;
-  overflow: hidden;
-  font: 800 14px / 1.2 var(--lm-sans);
-  font-variation-settings: "wdth" 75;
-  letter-spacing: -0.015em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.lm-pcpill {
-  display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-width: 10.5rem;
-  padding: 6px 12px;
-  border-left: var(--bw-rule) solid var(--lm-line);
-  font: 700 11px / 1 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  height: 30px;
+  padding: 0 8px;
+  border: 2px solid var(--lm-line);
+}
+
+.lm-row-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+.lm-row.is-locked .lm-row-name {
+  color: var(--lm-muted);
+}
+
+.lm-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 5px;
+  border: 1px solid var(--lm-line);
+  font: 400 11px / 1 var(--lm-mono);
+}
+
+.lm-badge.is-private {
+  background: var(--lm-line);
+  color: var(--lm-surface);
+}
+
+.lm-tick {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  background: var(--signal);
+  color: #ffffff;
+  animation: lm-pop 320ms var(--ease-snap) var(--d, 0ms) both;
+}
+
+.lm-tick svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 3;
+}
+
+/* ---------- tool calls and files ---------- */
+
+.lm-calls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lm-call {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 8px;
+  border-left: 4px solid var(--signal);
+  background: var(--lm-wash);
+  font: 400 11px / 1.3 var(--lm-mono);
+}
+
+.lm-call-name {
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.lm-call-meta {
+  margin-left: auto;
+  color: var(--lm-muted);
   white-space: nowrap;
 }
 
-.lm-pcpill.is-online .lm-dot {
-  background: var(--signal);
-}
-
-.lm-pcpill.is-waking .lm-dot {
-  background: var(--signal);
-  animation: lm-blink 0.6s steps(1) infinite;
-}
-
-/* The wake card is a plate on its own shadow, as the gateway's job card is. */
-.lm-job {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 12px 12px 0;
-  padding: 12px 14px;
-  border: var(--bw-frame) solid var(--lm-line);
-  background: var(--lm-surface);
-  box-shadow: var(--off-1) var(--off-1) 0 0 var(--lm-shadow);
-  font-size: 13px;
-}
-
-.lm-job-detail {
-  color: var(--lm-muted);
-  font-size: 13px;
-}
-
-.lm-steps.is-off,
-.lm-meter-wide.is-off {
-  visibility: hidden;
-}
-
-.lm-steps {
+.lm-files {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
-  color: var(--lm-muted);
-  font: 500 11px / 1.2 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  gap: 8px;
+  margin-top: auto;
 }
 
-.lm-steps li {
-  display: flex;
+.lm-file {
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 5px 8px;
+  border: 2px solid var(--lm-line);
+  background: var(--lm-surface);
+  font: 400 11px / 1.2 var(--lm-mono);
 }
 
-.lm-steps li::before {
-  content: "";
-  width: 9px;
-  height: 9px;
-  border: var(--bw-rule) solid var(--lm-line);
-}
-
-.lm-steps li.is-done {
-  color: var(--lm-on-surface);
-}
-
-.lm-steps li.is-done::before {
-  background: var(--lm-on-surface);
-}
-
-.lm-steps li.is-now {
-  color: var(--lm-on-surface);
-  font-weight: 700;
-}
-
-.lm-steps li.is-now::before {
+.lm-file.is-pdf {
   background: var(--signal);
   border-color: var(--signal);
-  animation: lm-blink 0.8s steps(1) infinite;
+  color: #ffffff;
 }
 
-.lm-meter-wide {
-  display: block;
-  height: 9px;
-  overflow: hidden;
-  border: var(--bw-hair) solid var(--lm-line);
-  background: var(--lm-wash);
+/* ---------- phone route ---------- */
+
+.lm-nodes {
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
 }
 
-.lm-meter-wide > span {
+.lm-node-item {
+  display: flex;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.lm-link {
+  flex: 1;
+  min-width: 6px;
+  height: 2px;
+  margin: 0 4px;
+  background: var(--lm-line);
+  transform-origin: left center;
+  animation: lm-grow 380ms ease-out var(--d, 0ms) both;
+}
+
+/* A node is ink until it lights: the signal frame and tint fade in over it. */
+.lm-node {
+  position: relative;
+  flex: 1;
+  padding: 9px 6px;
+  border: 2px solid var(--lm-line);
+  background: var(--lm-surface);
+  text-align: center;
+  font: 600 12px / 1 var(--lm-sans);
+  white-space: nowrap;
+}
+
+.lm-node::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border: 3px solid var(--signal);
+  background: rgba(31, 31, 255, 0.08);
+  pointer-events: none;
+  animation: lm-fade 360ms ease-out var(--d, 0ms) both;
+}
+
+.lm-sleep {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: 400 11px / 1.3 var(--lm-mono);
+}
+
+.lm-meter {
   display: block;
-  width: 100%;
+  height: 8px;
+  border: 2px solid var(--lm-line);
+}
+
+.lm-meter-fill {
+  display: block;
   height: 100%;
   background: var(--signal);
-  transform: scaleX(0);
   transform-origin: left center;
-  animation: lm-fill 2.4s linear forwards;
+  transform: scaleX(0);
+  animation: lm-drain 1400ms linear var(--d, 0ms) both;
 }
 
-.lm-phone-thread {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 10px;
-  min-height: 0;
-  padding: 12px;
-  overflow: hidden;
+/* ---------- large boxes (582 by 327 and up) fill the plate ----------
+   Bigger rows and type, and one chat line above the tool rows. The chat line
+   is only shown here, since the phone and short boxes have no room for it. */
+
+.lm-demo .lm-bubble.lm-wide-only {
+  display: none;
 }
 
-.lm-phone-thread .lm-user,
-.lm-phone-thread .lm-bot {
-  font-size: 13px;
-}
-
-.lm-phone-thread .lm-user {
-  max-width: 88%;
-}
-
-.lm-composer--phone {
-  padding: 10px 12px 12px;
-}
-
-.lm-composer--phone .lm-send {
-  width: 44px;
-  height: 44px;
-}
-
-/* ---------- narrow frames ----------
-   Inside a half-width card the window is still a full window; below about
-   400px the padding and the type step down a notch so the chat keeps room. */
-@container lm (max-width: 400px) {
-  .lm-window {
-    inset: 10px 12px 18px 10px;
+@container lm (min-width: 420px) and (min-height: 300px) {
+  .lm-demo .lm-bubble.lm-wide-only {
+    display: flex;
   }
 
-  .lm-status-full {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-
-  .lm-status-short {
-    display: inline;
-  }
-
-  .lm-body {
-    padding: 12px;
+  .lm-titlebar {
+    height: 34px;
+    font-size: 12px;
   }
 
   .lm-wordmark {
     font-size: 14px;
   }
 
-  .lm-user,
-  .lm-bot {
-    max-width: 94%;
+  .lm-body {
+    gap: 8px;
+    padding: 14px 16px;
   }
 
+  .lm-note,
+  .lm-query {
+    font-size: 12px;
+  }
+
+  .lm-bubble {
+    font-size: 14px;
+    padding: 9px 12px;
+  }
+
+  .lm-chip,
+  .lm-badge,
+  .lm-file,
+  .lm-sleep {
+    font-size: 12px;
+  }
+
+  /* The rows and calls share the window's free height, so the plate is full at 658 by 310. */
+  .lm-rows,
+  .lm-calls {
+    flex: 1;
+    min-height: 0;
+    gap: 6px;
+  }
+
+  .lm-row {
+    flex: 1 1 0;
+    min-height: 38px;
+    padding: 0 12px;
+    font-size: 14px;
+  }
+
+  .lm-call {
+    flex: 1 1 0;
+    align-items: center;
+  }
+
+  .lm-tick {
+    width: 22px;
+    height: 22px;
+  }
+
+  .lm-call {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+
+  .lm-composer {
+    height: 46px;
+  }
+
+  .lm-send {
+    width: 32px;
+    height: 32px;
+  }
+
+  .lm-node {
+    padding: 13px 8px;
+    font-size: 14px;
+  }
+
+  .lm-meter {
+    height: 10px;
+  }
 }
 
-/* A stage at least 400px wide takes the demo at the frame's 4:3 shape (Featured.css
-   gives the frame the same ratio there), so the window fills it. The query reads
-   the open stage, the nearest container above this element. */
-@container (min-width: 400px) {
-  .lm-demo {
-    aspect-ratio: 4 / 3;
-    height: auto;
-    max-height: 640px;
+/* ---------- short boxes (466 by 262 on a 1024 card) keep the rows inside the body ---------- */
+
+@container lm (max-height: 300px) {
+  .lm-body {
+    gap: 6px;
+    padding: 10px 14px;
+  }
+
+  .lm-rows,
+  .lm-calls {
+    gap: 4px;
+  }
+
+  .lm-row {
+    height: 26px;
   }
 }
 
-/* Landscape phones are short: the walkthrough frame sits under the fixed
-   header and shrinks to fit the rest, and the chat scrolls inside it. */
-@media (max-height: 500px) and (orientation: landscape) {
-  .lm-demo {
-    /* Leave room for the fixed site header above the frame and a margin below. */
-    max-height: min(640px, calc(100dvh - var(--bar-h) - 2rem));
-    min-height: 240px;
+/* ---------- phones: the same scenes, with room trimmed to the 355px box ---------- */
+
+@container lm (max-width: 420px) {
+  .lm-body {
+    gap: 6px;
+    padding: 10px 12px;
+  }
+
+  .lm-thread {
+    gap: 6px;
+  }
+
+  .lm-bubble,
+  .lm-call,
+  .lm-row-name {
+    font-size: 12px;
+  }
+
+  .lm-composer {
+    height: 36px;
+  }
+
+  .lm-row {
+    height: 28px;
+  }
+
+  .lm-node {
+    padding: 8px 4px;
+    font-size: 11px;
+  }
+
+  .lm-wordmark {
+    font-size: 11px;
   }
 }
 
-@keyframes lm-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
+/* ---------- short scene areas (about 180 to 210px: a 320 by 240 or 349 by 261 card) ----------
+   Rows, calls and bubbles are trimmed so each scene's last row sits whole in the body. */
+
+@container lm (max-height: 210px) {
+  .lm-titlebar {
+    height: 24px;
+  }
+
+  .lm-body {
+    gap: 4px;
+    padding: 8px 10px;
+  }
+
+  .lm-thread,
+  .lm-calls {
+    gap: 4px;
+  }
+
+  .lm-rows {
+    gap: 3px;
+  }
+
+  .lm-query,
+  .lm-note {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .lm-row {
+    height: 22px;
+    padding: 0 6px;
+  }
+
+  .lm-row-name {
+    font-size: 11px;
+  }
+
+  .lm-badge,
+  .lm-tick {
+    font-size: 11px;
+  }
+
+  .lm-tick {
+    width: 14px;
+    height: 14px;
+  }
+
+  .lm-tick svg {
+    width: 9px;
+    height: 9px;
+  }
+
+  .lm-call {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  .lm-bubble {
+    padding: 4px 7px;
+    font-size: 11px;
+  }
+
+  .lm-files {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .lm-file {
+    padding: 3px 6px;
+    white-space: nowrap;
+  }
+
+  .lm-composer {
+    height: 28px;
+  }
+
+  .lm-send {
+    width: 20px;
+    height: 20px;
+  }
+
+  .lm-node {
+    padding: 5px 2px;
+    font-size: 11px;
+  }
+
+  .lm-sleep {
+    gap: 3px;
+  }
+
+  .lm-meter {
+    height: 6px;
   }
 }
 
-@keyframes lm-blink {
-  50% {
-    opacity: 0;
-  }
-}
-
-@keyframes lm-fill {
-  to {
-    transform: scaleX(1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lm-demo *,
-  .lm-demo *::before,
-  .lm-demo *::after {
-    animation: none !important;
-    transition: none !important;
-  }
+/* The locked row has no tick, so its tick slot stays empty: the badges line up with the rows above. */
+.lm-tick.is-empty {
+  background: none;
+  animation: none;
 }

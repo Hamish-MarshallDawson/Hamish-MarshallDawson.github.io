@@ -3,7 +3,7 @@ import App from "./App";
 import { SECTIONS, SECTION_ALIASES, SECTION_IDS } from "./sections";
 import { highlights, pickHighlights, vaultProjects } from "./components/projectdata";
 import { parseHash } from "./hooks/useSectionRouter";
-import { steps as lmSteps } from "./components/featured/demos/LocalMindDemo";
+import { scenes as lmScenes } from "./components/featured/demos/LocalMindDemo";
 
 // Events are fired with fireEvent from @testing-library/react. user-event is
 // not a dependency: it resolved a second copy of @testing-library/dom whose
@@ -301,101 +301,38 @@ test("the featured block shows LocalMind and TensoRoom, each with a demo", () =>
     "LocalMind",
     "TensoRoom",
   ]);
-  expect(within(grid).getAllByRole("button", { name: /^run the demo/i })).toHaveLength(2);
+  expect(within(grid).getAllByRole("button", { name: /^play demo/i })).toHaveLength(2);
 });
 
-test("Run the demo opens one walkthrough stage with its step controls", async () => {
+test("Play demo plays LocalMind's scenes in its own picture box, with no stage", async () => {
   render(<App />);
-  fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
+  const card = screen.getByRole("article", { name: "LocalMind" });
+  fireEvent.click(within(card).getByRole("button", { name: "Play demo for LocalMind" }));
 
-  // The demo's code loads on demand, which can take longer than findBy's default second under load.
-  expect(await screen.findByRole("group", { name: "Walkthrough navigation" }, { timeout: 8000 })).toBeInTheDocument();
-  expect(screen.getByRole("group", { name: "Walkthrough options" })).toBeInTheDocument();
-  expect(screen.getByRole("list", { name: "Walkthrough steps" })).toBeInTheDocument();
-  // Back and Next are aria-disabled, not disabled, so they keep focus.
-  expect(screen.getByRole("button", { name: "Back" })).toHaveAttribute("aria-disabled", "true");
-  expect(screen.getByRole("button", { name: "Next" })).toHaveAttribute("aria-disabled", "false");
-  expect(screen.getByRole("button", { name: "Restart" })).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Play tour" })).toBeInTheDocument();
-
-  // Opening a second demo replaces the first: still exactly one stage.
-  fireEvent.click(screen.getByRole("button", { name: "Run the demo for TensoRoom" }));
-  await waitFor(() => expect(screen.getAllByRole("region", { name: /^Demo · / })).toHaveLength(1));
-  expect(screen.getByRole("button", { name: "Run the demo for LocalMind" })).toHaveAttribute("aria-expanded", "false");
+  expect(await screen.findByText(lmScenes[0].caption)).toBeInTheDocument();
+  expect(within(card).getByRole("button", { name: "Pause the LocalMind demo" })).toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: /^Demo · / })).toBeNull();
+  expect(screen.queryByRole("group", { name: "Walkthrough navigation" })).toBeNull();
 });
 
-test("Next moves the walkthrough caption on", async () => {
+test("the round control and the card's button both pause and play the demo", async () => {
   render(<App />);
-  fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
+  const card = screen.getByRole("article", { name: "LocalMind" });
+  fireEvent.click(within(card).getByRole("button", { name: "Play demo for LocalMind" }));
+  await screen.findByText(lmScenes[0].caption);
 
-  expect(await screen.findByText(lmSteps[0].caption)).toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "Next" }));
-
-  // The step changes after the frame's fade-out, so wait for the new caption.
-  expect(await screen.findByText(lmSteps[1].caption)).toBeInTheDocument();
-  expect(screen.queryByText(lmSteps[0].caption)).not.toBeInTheDocument();
+  fireEvent.click(within(card).getByRole("button", { name: "Pause the LocalMind demo" }));
+  expect(within(card).getByRole("button", { name: "Play demo for LocalMind" })).toBeInTheDocument();
+  expect(within(card).getByRole("button", { name: "Play the LocalMind demo" })).toBeInTheDocument();
 });
 
-test("Next keeps keyboard focus when it becomes unavailable on the last step", async () => {
-  render(<App />);
-  fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
-  await screen.findByText(lmSteps[0].caption);
-
-  const next = screen.getByRole("button", { name: "Next" });
-  next.focus();
-  for (let i = 0; i < lmSteps.length; i += 1) fireEvent.click(next);
-
-  expect(await screen.findByText(lmSteps[lmSteps.length - 1].caption)).toBeInTheDocument();
-  expect(next).toHaveAttribute("aria-disabled", "true");
-  expect(next).not.toBeDisabled();
-  expect(next).toHaveFocus();
-
-  // Clicking the unavailable button does nothing, and focus stays on it.
-  fireEvent.click(next);
-  expect(screen.getByText(lmSteps[lmSteps.length - 1].caption)).toBeInTheDocument();
-  expect(next).toHaveFocus();
-});
-
-test("Restart returns to the first step with the demo freshly mounted", async () => {
-  render(<App />);
-  fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
-  await screen.findByText(lmSteps[0].caption);
-  fireEvent.click(screen.getByRole("button", { name: "Next" }));
-  fireEvent.click(screen.getByRole("button", { name: "Next" }));
-  // The demo's root node is the only way to tell a fresh mount from a reused one.
-  // eslint-disable-next-line testing-library/no-node-access
-  const before = document.querySelector(".lm-demo");
-
-  fireEvent.click(screen.getByRole("button", { name: "Restart" }));
-
-  expect(screen.getByText(lmSteps[0].caption)).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Back" })).toHaveAttribute("aria-disabled", "true");
-  // The demo is a new instance, so any state it held is gone.
-  // eslint-disable-next-line testing-library/no-node-access
-  expect(document.querySelector(".lm-demo")).not.toBe(before);
-});
-
-test("reduced motion turns auto-play off and cannot be switched on", async () => {
+test("with reduced motion the round control steps through the scenes by hand", async () => {
   localStorage.setItem("hmd:fx", "off");
   render(<App />);
-  fireEvent.click(screen.getByRole("button", { name: "Run the demo for LocalMind" }));
-  await screen.findByText(lmSteps[0].caption);
+  const card = screen.getByRole("article", { name: "LocalMind" });
+  fireEvent.click(within(card).getByRole("button", { name: "Play demo for LocalMind" }));
 
-  const auto = screen.getByRole("button", { name: "Play tour" });
-  expect(auto).toHaveAttribute("aria-disabled", "true");
-  fireEvent.click(auto);
-  expect(auto).toHaveTextContent("Play tour");
-  expect(screen.getByText(/The tour is off with reduced motion/)).toBeInTheDocument();
-});
-
-test("Escape closes the stage and returns focus to its card button", async () => {
-  render(<App />);
-  const run = screen.getByRole("button", { name: "Run the demo for LocalMind" });
-  fireEvent.click(run);
-  await screen.findByText(lmSteps[0].caption);
-
-  fireEvent.keyDown(window, { key: "Escape" });
-
-  expect(screen.queryByRole("region", { name: /^Demo · / })).toBeNull();
-  expect(run).toHaveFocus();
+  expect(await screen.findByText(lmScenes[0].caption)).toBeInTheDocument();
+  fireEvent.click(within(card).getByRole("button", { name: "Next scene of the LocalMind demo" }));
+  expect(screen.getByText(lmScenes[1].caption)).toBeInTheDocument();
 });
