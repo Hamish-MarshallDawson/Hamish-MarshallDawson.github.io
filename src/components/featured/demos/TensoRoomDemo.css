@@ -1,758 +1,275 @@
-/*
-  TensorRoom demo styles
-  ======================
-  Everything is scoped under .tr-demo and uses the app's mid-century tokens
-  (web/styles.css): sepia paper, espresso ink, orange, brick, mustard, teal
-  and avocado, with Fraunces headings and DM Sans text. Soft corners, hairline
-  rules and captioned figures. Nothing here reaches outside the demo, and the
-  site's own button and input styles are reset inside it.
-*/
+/* TensorRoom's scenes, in the card's picture box. The demo fills its parent box (the
+   scene, a size container named fdemo), so sizes are in container units: the box is
+   about 355x206 on a phone and 466x202 to 664x313 on a desktop, and text never goes below 11px.
+   Each scene's base style is its final state, and its animations start from the first frame:
+   reduced motion (no animation) draws the final state, and pausing freezes the animations. */
 
 .tr-demo {
   --paper: #f3e9d8;
   --paper-2: #ebdcc3;
-  --card: #faf3e6;
   --ink: #2b1d14;
-  --ink-2: color-mix(in srgb, var(--ink) 66%, transparent);
-  --rule: color-mix(in srgb, var(--ink) 16%, transparent);
   --accent: #e4531d;
   --accent-ink: #fff6ea;
-  --brick: #b63a22;
   --mustard: #e3a92f;
-  --bezel: #2b1d14;
-
   --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
   --font-sans: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --r-m: 18px;
-  --r-l: 32px;
-  --hit: 44px;
-  --shadow: 0 1px 2px rgb(43 29 20 / 0.06), 0 10px 30px -12px rgb(43 29 20 / 0.25);
-  /* Diagonal arrow for the round buttons, as on the app. */
-  --arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17L17 7M8 7h9v9'/%3E%3C/svg%3E");
 
-  display: flex;
-  justify-content: center;
+  position: relative;
   width: 100%;
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 1.5;
-  color: var(--ink);
-  -webkit-text-size-adjust: 100%;
-  text-align: left;
-  letter-spacing: normal;
-}
-
-.tr-demo *,
-.tr-demo *::before,
-.tr-demo *::after {
-  box-sizing: border-box;
-}
-
-/* Reset what the site's global styles might add to these elements. :where()
-   keeps the reset at zero specificity, so the component classes below win. */
-:where(.tr-demo) h5,
-:where(.tr-demo) p,
-:where(.tr-demo) ul,
-:where(.tr-demo) figure {
-  margin: 0;
-  padding: 0;
-}
-:where(.tr-demo) ul { list-style: none; }
-:where(.tr-demo) button,
-:where(.tr-demo) input,
-:where(.tr-demo) textarea {
-  appearance: none;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  min-height: 0;
-  font: inherit;
-  letter-spacing: normal;
-  text-transform: none;
-  color: inherit;
-  box-shadow: none;
-}
-:where(.tr-demo) img {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  border: 0;
-  margin: 0;
-}
-
-.tr-demo :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 6px;
-}
-
-/* ------------------------------------------------------------ phone */
-
-.tr-demo__phone {
-  width: min(100%, 340px);
-  padding: 9px;
-  border-radius: 46px;
-  background: var(--bezel);
-  box-shadow: 0 18px 40px -22px rgb(43 29 20 / 0.55);
-}
-
-/* A fixed height, so the phone is the same size on every step. The view scrolls inside it. */
-.tr-demo__screen {
-  display: flex;
-  flex-direction: column;
-  height: 620px;
+  height: 100%;
   overflow: hidden;
-  border-radius: var(--r-l);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+.tr-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* The photo's own box (576x297), covering the scene and centred in it. Anything placed in
+   percent here sits on the photo, at any box shape; the photo is cropped, never stretched. */
+.tr-art {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100cqw, calc(100cqh * 1.9394));
+  aspect-ratio: 576 / 297;
+  transform: translate(-50%, -50%);
+}
+
+.tr-photo {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 55%;
+}
+
+/* A small ink tag in the corner: one or two words, never a paragraph. */
+.tr-tag {
+  position: absolute;
+  left: 4cqw;
+  top: 4cqh;
+  margin: 0;
+  padding: 0.35em 0.7em;
+  background: var(--ink);
+  color: var(--paper);
+  font: 600 max(11px, 3.4cqw) / 1.2 var(--font-sans);
+  letter-spacing: 0.02em;
+  animation: tr-rise 500ms ease-out 200ms both;
+}
+
+.tr-tag--late {
+  animation: tr-rise 500ms ease-out 2400ms both;
+}
+
+@keyframes tr-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* 1. The room: a slow settle onto the photo. */
+.tr-scene--room .tr-photo {
+  animation: tr-settle 4000ms ease-out both;
+}
+
+@keyframes tr-settle {
+  from {
+    transform: scale(1.08);
+  }
+}
+
+/* 2. The pieces: a pill that names them, with each word dropping in. */
+.tr-pill {
+  position: absolute;
+  left: 50%;
+  top: 6cqh;
+  display: flex;
+  align-items: center;
+  gap: 1.2cqw;
+  padding: 1.6cqh 2.4cqw;
+  transform: translateX(-50%);
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font: 600 max(11px, 3.4cqw) / 1 var(--font-sans);
+  white-space: nowrap;
+}
+
+.tr-pill-label {
+  color: var(--ink);
+  opacity: 0.6;
+}
+
+.tr-chip {
+  padding: 0.5em 0.9em;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.tr-chip--a {
+  animation: tr-pop 400ms ease-out 500ms both;
+}
+
+.tr-chip--b {
+  animation: tr-pop 400ms ease-out 1600ms both;
+}
+
+@keyframes tr-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+/* 3. The masks: an outline over each piece, drawn in turn. */
+.tr-mask {
+  position: absolute;
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  background: rgb(228 83 29 / 0.14);
+}
+
+/* The label sits inside its outline, centred along the top, so it is always on the photo.
+   Both labels use the ink plate and paper text, which reads on the sofa, the rug and the wall. */
+.tr-mask span {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  padding: 0.2em 0.6em;
+  background: var(--ink);
+  color: var(--paper);
+  font: 600 max(11px, 3.2cqw) / 1.2 var(--font-sans);
+}
+
+.tr-mask--sofa {
+  animation: tr-draw 600ms ease-out 300ms both;
+}
+
+.tr-mask--rug {
+  animation: tr-draw 600ms ease-out 1300ms both;
+}
+
+@keyframes tr-draw {
+  from {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+}
+
+/* 4. The redraw: the new sofa is revealed by a sweep from the left. The photo on top
+   slides right and away (transform), and the redrawn photo beneath shows through. */
+.tr-wipe {
+  transform: translateX(100%);
+  animation: tr-sweep 2400ms cubic-bezier(0.6, 0, 0.3, 1) 400ms both;
+}
+
+@keyframes tr-sweep {
+  from {
+    transform: translateX(0);
+  }
+}
+
+/* 5. The comparison: a divider sweeps across the photo, left and right, and back to the
+   middle. The divider and the after image share one custom property, so they always meet.
+   --cmp is the divider's position, as a percentage of the width. */
+@property --cmp {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+
+.tr-scene--compare {
+  animation: tr-compare 4500ms ease-in-out both;
+}
+
+@keyframes tr-compare {
+  0% {
+    --cmp: 50%;
+  }
+
+  25% {
+    --cmp: 18%;
+  }
+
+  75% {
+    --cmp: 82%;
+  }
+
+  100% {
+    --cmp: 50%;
+  }
+}
+
+.tr-after {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 0 0 var(--cmp));
+}
+
+.tr-rail {
+  position: absolute;
+  inset: 0;
+  transform: translateX(var(--cmp));
+}
+
+.tr-line {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
   background: var(--paper);
 }
 
-.tr-demo__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 16px 18px 10px;
-}
-
-.tr-demo__brand {
-  font-family: var(--font-serif);
-  font-size: 1.2rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  font-variation-settings: "opsz" 48, "SOFT" 50;
-}
-.tr-demo__brand em {
-  font-style: italic;
-  color: var(--accent);
-}
-
-/* Reserved width and tabular digits, so the counter does not move as it changes. */
-.tr-demo__count {
-  min-width: 5.2em;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-/* Five progress segments, as in the app's phone header. */
-.tr-demo__progress {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 5px;
-  padding: 0 18px 12px;
-  border-bottom: 1px solid var(--rule);
-}
-.tr-demo__progress span {
-  height: 4px;
-  border-radius: 999px;
-  background: var(--rule);
-}
-.tr-demo__progress .is-done { background: var(--ink); }
-.tr-demo__progress .is-current { background: var(--accent); }
-
-.tr-demo__view > * {
-  flex-shrink: 0; /* Children keep their size; only the view itself scrolls */
-  order: 2; /* Status, lede and the step's controls, after the picture box */
-}
-/* The picture box sits straight under the title on every step, so it never moves. */
-.tr-demo__view > .tr-demo__title {
-  order: 0;
-}
-.tr-demo__view > .tr-demo__figure {
-  order: 1;
-}
-.tr-demo__view {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 12px;
-  min-height: 0;
-  padding: 16px 18px 18px;
-  overflow-y: auto;
-}
-
-.tr-demo__title {
-  display: flex;
-  font-style: normal;
-  text-transform: none;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-serif);
-  font-size: 1.6rem;
-  font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  font-variation-settings: "opsz" 96, "SOFT" 30, "WONK" 0;
-}
-.tr-demo__num {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 30px;
-  height: 30px;
+.tr-knob {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border: 2px solid var(--paper);
   border-radius: 50%;
-  border: 1.5px solid var(--ink);
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Heights reserved for the most lines each text can take (status 2, lede 3), so a
-   step change does not move what sits below. */
-.tr-demo__status {
-  min-height: 3em;
-  line-height: 1.5;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-}
-
-.tr-demo__lede {
-  min-height: 4.5em;
-  line-height: 1.5;
-  color: var(--ink-2);
-  font-size: 0.92rem;
-}
-
-.tr-demo__note {
-  font-size: 0.8rem;
-  color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
-}
-.tr-demo__note b {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-/* ------------------------------------------------------------ figures */
-
-.tr-demo__figure {
-  margin: 0;
-}
-
-.tr-demo__frame {
-  position: relative;
-  aspect-ratio: 1.6;
-  overflow: hidden;
-  border-radius: var(--r-m);
-  background: var(--paper-2);
-  isolation: isolate;
-}
-.tr-demo__frame > img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: filter 240ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.tr-demo__caption {
-  display: flex;
-  align-items: center;
-  min-height: 30px;
-  margin-top: 6px;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  color: var(--ink-2);
-}
-.tr-demo__caption b {
-  flex: none;
-  margin-right: 4px;
-  white-space: nowrap;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.tr-demo__badge {
-  font-variant-numeric: tabular-nums;
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  z-index: 2;
-  padding: 4px 11px;
-  border-radius: 999px;
-  background: var(--accent-ink);
-  color: var(--ink);
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  font-variant-numeric: tabular-nums;
-}
-.tr-demo__badge--ok {
-  background: var(--ink);
-  color: var(--accent-ink);
-}
-
-/* A soft scan line that sweeps down the photo while something is working. */
-.tr-demo__sweep {
-  position: absolute;
-  left: 0;
-  right: 0;
-  z-index: 1;
-  top: 0;
-  height: 28%;
-  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent) 30%, transparent) 85%, var(--accent));
-  will-change: transform;
-  animation: tr-demo-sweep 2.1s linear infinite;
-}
-/* Moved with transform, not top, so the sweep never triggers layout. The band is 28% tall, so -100% is its top edge
-   just above the photo and 357% puts its top edge at the bottom of the photo. */
-@keyframes tr-demo-sweep {
-  from { transform: translateY(-100%); }
-  to { transform: translateY(357.143%); }
-}
-
-/* Progress for the renders: a thin bar along the bottom of the photo. */
-.tr-demo__meter {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 2;
-  height: 5px;
-  background: color-mix(in srgb, var(--ink) 20%, transparent);
-}
-.tr-demo__meter span {
-  display: block;
-  width: 100%;
-  height: 100%;
   background: var(--accent);
-  transform-origin: left center;
-  transition: transform 120ms linear;
 }
 
-/* ------------------------------------------------------------ objects, chips and list */
-
-.tr-demo__field {
-  display: block;
-}
-.tr-demo__label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-}
-.tr-demo__field input,
-.tr-demo__field textarea {
-  display: block;
-  width: 100%;
-  min-height: 44px;
-  padding: 10px 14px;
-  font-size: 16px; /* Stops iOS zooming into the field */
-  line-height: 1.4;
-  border: 1.5px solid var(--rule);
-  border-radius: var(--r-m);
-  background: var(--card);
-  color: var(--ink);
-  resize: none;
-}
-.tr-demo__field textarea {
-  min-height: 62px;
-}
-.tr-demo__field input:focus,
-.tr-demo__field textarea:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-  border-color: transparent;
-}
-
-.tr-demo__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.tr-demo__chip {
-  min-height: 44px;
-  padding: 6px 14px;
-  border: 1.5px solid var(--ink);
-  border-radius: 999px;
-  background: transparent;
-  font-size: 0.86rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.tr-demo__chip[aria-pressed="true"] {
+.tr-label {
+  position: absolute;
+  bottom: 4cqh;
+  padding: 0.3em 0.7em;
   background: var(--ink);
   color: var(--paper);
+  font: 600 max(11px, 3.2cqw) / 1.2 var(--font-sans);
 }
 
-/* Pointer targets over the photo, one per object. They are at least 44px
-   square even where the object is smaller; the list below stays the keyboard
-   and screen reader route to the same choices. */
-.tr-demo__hit {
-  position: absolute;
-  z-index: 2;
-  min-width: 44px;
-  min-height: 44px;
-  padding: 0;
-  border: 2px solid transparent;
-  border-radius: 10px;
-  background: transparent;
-  cursor: pointer;
-}
-.tr-demo__hit[aria-pressed="true"] {
-  border-color: var(--accent-ink);
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
-  box-shadow: 0 0 0 2px var(--accent);
+.tr-label--before {
+  left: 4cqw;
 }
 
-.tr-demo__list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.tr-demo__item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  min-height: var(--hit);
-  padding: 6px 12px;
-  border: 1.5px solid var(--rule);
-  border-radius: 14px;
-  background: var(--card);
-  font-size: 0.86rem;
-  font-weight: 500;
-  text-align: left;
-  text-transform: capitalize;
-  cursor: pointer;
-}
-.tr-demo__item span:nth-child(2) {
-  flex: 1;
-}
-.tr-demo__item[aria-pressed="true"] {
-  border-color: var(--brick);
-  background: var(--brick);
-  color: var(--accent-ink);
-  font-weight: 600;
-}
-.tr-demo__swatch {
-  width: 14px;
-  height: 14px;
-  flex: none;
-  border-radius: 50%;
-  background: var(--accent);
-}
-.tr-demo__item[aria-pressed="true"] .tr-demo__swatch {
-  background: var(--accent-ink);
-}
-.tr-demo__tick {
-  font-weight: 700;
-  min-width: 10px;
+.tr-label--after {
+  right: 4cqw;
 }
 
-/* ------------------------------------------------------------ before / after slider */
-
-.tr-demo__compare {
-  touch-action: pan-y;
-  user-select: none;
-  -webkit-user-select: none;
-  cursor: ew-resize;
-  -webkit-touch-callout: none;
-}
-.tr-demo__compare .tr-demo__img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-}
-.tr-demo__before {
-  clip-path: inset(0 calc(100% - var(--pos)) 0 0);
-}
-.tr-demo__handle {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: var(--pos);
-  z-index: 3;
-  width: 2px;
-  margin-left: -1px;
-  background: var(--accent-ink);
-  box-shadow: 0 0 0 1px rgb(43 29 20 / 0.15);
-  pointer-events: none;
-}
-.tr-demo__knob {
-  position: absolute;
-  top: 50%;
-  left: var(--pos);
-  z-index: 4;
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 2px solid var(--accent-ink);
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  box-shadow: 0 4px 14px rgb(0 0 0 / 0.25);
-  cursor: ew-resize;
-  touch-action: pan-y;
-}
-.tr-demo__tag {
-  position: absolute;
-  bottom: 10px;
-  z-index: 2;
-  padding: 4px 11px;
-  border-radius: 999px;
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  pointer-events: none;
-}
-.tr-demo__tag--before {
-  left: 10px;
-  background: var(--ink);
-  color: var(--accent-ink);
-}
-.tr-demo__tag--after {
-  right: 10px;
-  background: var(--accent-ink);
-  color: var(--ink);
+/* Paused: the scene's animations freeze where they are. */
+.tr-demo.is-paused,
+.tr-demo.is-paused * {
+  animation-play-state: paused;
 }
 
-/* ------------------------------------------------------------ first screen: the app's tiles */
-
-.tr-demo__tiles {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.tr-demo__tile {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 2px;
-  min-height: 168px;
-  padding: 14px;
-  border-radius: var(--r-l);
-  background: var(--card);
-  box-shadow: var(--shadow);
-  color: var(--ink);
-  text-align: left;
-  overflow: hidden;
-  cursor: pointer;
-}
-.tr-demo__tile--accent {
-  background: var(--accent);
-  color: var(--accent-ink);
-}
-.tr-demo__tile:active {
-  transform: scale(0.98);
-}
-.tr-demo__icon {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-}
-/* Camera lens: concentric rings. */
-.tr-demo__icon--lens {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--accent-ink) 0 16%, transparent 16% 30%,
-    color-mix(in srgb, var(--accent-ink) 70%, transparent) 30% 44%, transparent 44% 58%,
-    color-mix(in srgb, var(--accent-ink) 40%, transparent) 58% 72%, transparent 72%);
-}
-/* Picture: an arch with a sun. */
-.tr-demo__icon--arch {
-  width: 34px;
-  height: 46px;
-  border-radius: 999px 999px 4px 4px;
-  background: var(--mustard);
-}
-.tr-demo__icon--arch::after {
-  content: "";
-  position: absolute;
-  top: 10px;
-  right: -10px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--brick);
-}
-.tr-demo__tile-label {
-  font-family: var(--font-serif);
-  font-size: 1.2rem;
-  font-weight: 500;
-  line-height: 1.1;
-  font-variation-settings: "opsz" 48, "SOFT" 50;
-}
-.tr-demo__tile-hint {
-  font-size: 0.82rem;
-  opacity: 0.75;
-}
-/* On the picture box the tiles sit over a dimmed copy of the room, at the box's size. */
-/* The room, faded over the frame's paper colour. An opacity rather than a filter,
-   so the step's fade never has to re-filter the picture. */
-.tr-demo__veil {
-  opacity: 0.45;
-}
-.tr-demo__frame .tr-demo__tiles {
-  position: absolute;
-  inset: 10px;
-}
-.tr-demo__frame .tr-demo__tile {
-  height: 100%;
-  min-height: 0;
-  padding: 10px;
-}
-.tr-demo__frame .tr-demo__tile-label {
-  font-size: 1rem;
-}
-.tr-demo__frame .tr-demo__icon {
-  top: 10px;
-  left: 10px;
-  transform: scale(0.65);
-  transform-origin: top left;
-}
-/* Round arrow in the corner, as on the app. */
-.tr-demo__tile::after {
-  content: "";
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: currentColor;
-  -webkit-mask: var(--arrow) center / 15px no-repeat, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: var(--arrow) center / 15px no-repeat exclude, linear-gradient(#000 0 0);
-  opacity: 0.9;
-}
-
-/* ------------------------------------------------------------ dock */
-
-.tr-demo__dock {
-  margin-top: auto;
-  padding: 12px 18px 16px;
-  border-top: 1px solid var(--rule);
-  background: var(--card);
-}
-.tr-demo__cta {
-  display: block;
-  width: 100%;
-  min-height: 48px;
-  padding: 12px 18px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-}
-/* aria-disabled rather than disabled: the button keeps keyboard focus while busy. */
-.tr-demo__cta[aria-disabled="true"] {
-  background: var(--rule);
-  color: var(--ink-2);
-  cursor: default;
-}
-/* The site's fixed bottom bar (about 38px) must not cover the dock when it takes focus. */
-.tr-demo__dock,
-.tr-demo__cta {
-  scroll-margin-bottom: 56px;
-}
-
-/* ------------------------------------------------------------ reduced motion */
-
-/* The shell passes reducedMotion as a class; the media query covers direct use. */
+/* Reduced motion: no animation at all. Each base style is the scene's final state. */
 .tr-demo.is-still *,
 .tr-demo.is-still *::before,
-.tr-demo.is-still *::after,
-.tr-demo__compare.is-still .tr-demo__img {
+.tr-demo.is-still *::after {
   animation: none !important;
   transition: none !important;
-}
-.tr-demo.is-still .tr-demo__sweep {
-  display: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tr-demo *,
-  .tr-demo *::before,
-  .tr-demo *::after {
-    animation: none !important;
-    transition: none !important;
-  }
-  .tr-demo__sweep {
-    display: none;
-  }
-}
-
-/* In a stage of 400px or more, the demo fills the stage's 4:3 frame (set in
-   Featured.css): the phone mock takes the frame's height, and its view scrolls. */
-@container (min-width: 400px) {
-  .tr-demo,
-  .tr-demo__phone {
-    height: 100%;
-  }
-
-  .tr-demo__screen {
-    height: 100%;
-  }
-}
-
-/* ------------------------------------------------------------ phones */
-
-/* On a phone the app fills the frame: no bezel, no rounded screen. */
-@media (max-width: 480px) {
-  .tr-demo__phone {
-    width: 100%;
-    padding: 0;
-    border-radius: 0;
-    background: none;
-    box-shadow: none;
-  }
-  .tr-demo__screen {
-    border-radius: 0;
-    /* Fit below the site's fixed header and status strip, so the dock stays in view. */
-    height: calc(100vh - 158px);
-    height: calc(100dvh - 158px);
-  }
-  .tr-demo__view {
-    gap: 10px;
-  }
-  /* Two rows of chips at phone width, reserved so the step's chips do not change the height. */
-  .tr-demo__chips {
-    min-height: 96px;
-  }
-  /* The compare step's instruction is in its note, which keeps the view short enough to fit. */
-  .tr-demo[data-step="4"] .tr-demo__lede {
-    display: none;
-  }
-}
-
-/* Landscape phones: the screen takes the available height and keeps phone proportions. */
-@media (orientation: landscape) and (max-height: 500px) {
-  .tr-demo__phone {
-    width: auto;
-  }
-  .tr-demo__screen {
-    height: calc(100vh - 66px);
-    height: calc(100dvh - 66px);
-    aspect-ratio: 9 / 16;
-  }
 }

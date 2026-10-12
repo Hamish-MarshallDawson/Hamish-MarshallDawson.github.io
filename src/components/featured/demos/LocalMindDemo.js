@@ -1,97 +1,49 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import "./LocalMindDemo.css";
 
-// The LocalMind walkthrough, simplified to the screens that carry the point:
-// one window that swaps between the chat, the tool loop, the knowledge base
-// and the phone's route (the gateway's page). Every value is made up and local.
-//
-// `tour` drives the cursor (see DemoStage). Each target is a data-tour name
-// rendered inside this demo; a target that is not on screen at the current
-// width is skipped by the tour. A name is used once, and every name is shown at
-// both phone and desktop widths, so each one points at a visible element.
-export const steps = [
-  {
-    id: "ask",
-    title: "Ask",
-    caption: "Paste a job advert and send it, and LocalMind starts the tool loop on this PC.",
-    tour: [
-      { target: "input", label: "Advert pasted", hold: 1000 },
-      { target: "send", label: "Send", click: true },
-    ],
-  },
-  {
-    id: "tools",
-    title: "Tool calls",
-    caption: "The model searches the sections this chat can see, opens cv.tex, writes the new file and compiles it.",
-    tour: [
-      { target: "tool-search", label: "Shared sections only" },
-      { target: "tool-write", label: "Writes the new file" },
-      { target: "tool-compile", label: "Compiles the PDF" },
-    ],
-  },
-  {
-    id: "answer",
-    title: "Answer and PDF",
-    caption: "The answer streams in, and the compiled PDF is offered as a download.",
-    tour: [
-      { target: "answer", label: "Streams in" },
-      { target: "pdf", label: "PDF offered", hold: 1800 },
-    ],
-  },
-  {
-    id: "kb",
-    title: "Knowledge base",
-    caption: "Shared sections reach every chat. A private section is only searchable from chats scoped to it.",
-    tour: [
-      { target: "shared", label: "Any chat can search" },
-      { target: "private", label: "Scoped chats only" },
-    ],
-  },
-  {
-    id: "phone",
-    title: "From my phone",
-    caption:
-      "The PC is asleep. A message from the phone wakes it, the answer streams back, and the PC switches off after ten idle minutes.",
-    tour: [
-      { target: "node-phone", label: "Phone" },
-      { target: "node-pc", label: "Woken on message" },
-      { target: "pc-pill", label: "PC state" },
-    ],
-  },
+// LocalMind as five self-animating scenes in the app's paper, ink and signal look.
+// The player owns the scene index, the caption and the progress dots. Each scene
+// animates itself in CSS: entrance delays are custom properties, and `.is-paused`
+// on the root freezes them. The only JS timer is the streamed answer, which runs
+// only while the demo is playing. With `.is-still` (reduced motion) nothing
+// animates and each scene shows its end state.
+export const scenes = [
+  { id: "ask", caption: "Paste a job advert and send it", ms: 4500 },
+  { id: "search", caption: "It searches only what this chat can see", ms: 4500 },
+  { id: "write", caption: "It writes the CV and compiles it to two pages", ms: 4500 },
+  { id: "answer", caption: "The answer streams back, with the PDF", ms: 4500 },
+  { id: "phone", caption: "Message it from my phone and the PC wakes", ms: 5000 },
 ];
 
-// The GPU status plate in the window's title bar, per step. `short` is the word
-// shown under the 400px container, where the full text would clip the name; the
-// full text stays in the accessibility tree either way.
-const STATUS = [
-  { text: "GPU idle", short: "Idle", busy: false },
-  { text: "Running tools", short: "Tools", busy: true },
-  { text: "Streaming", short: "Streaming", busy: true },
-  { text: "GPU idle", short: "Idle", busy: false },
-];
+const ADVERT = "Graduate Analyst, Data Engineering";
+const REQUEST = "Tailor my CV to this advert.";
+const ANSWER = "Tailored for the graduate analyst role. Pipeline work now leads, and it still fits on two pages.";
 
-const SHARED = ["General CV", "Study notes"];
-const PRIVATE = ["Barclays", "STMicroelectronics"];
-
-const ADVERT =
-  "Graduate Analyst, Data Engineering. You will build and maintain Python pipelines on cloud platforms, write SQL against large datasets, and work with stakeholders to turn requirements into reliable data products.";
-
-const ANSWER =
-  "I've tailored the CV for the graduate analyst role. The summary now leads with the pipeline work, and the STMicroelectronics placement has moved above the dissertation. I've also changed “utilized” to “utilised” throughout to match British spelling. It still fits on two pages, and every new line comes from your CV or the placement notes, so nothing has been invented.";
-
-const PHONE_ANSWER =
-  "Yes. The recruiter's email came in at 09:12 with a 30-minute video interview on Thursday at 14:00. I've added it to your notes in the Barclays section.";
-
-// The answer types out in chunks, as the app streams it. A tick of 33 ms is
-// about 30 renders a second, so the streamed text never costs one per character.
+// About 30 updates a second at most, so the streamed text never costs a render per character.
 const TYPE_TICK_MS = 33;
-const TYPE_CHUNK = 6;
+const TYPE_CHUNK = 2;
 
-// Milliseconds each phone phase lasts: asleep, waking, answering, idle countdown.
-const PHONE_TIMES = [1600, 1800, 2600, 2400];
+const NODES = [
+  { name: "Phone", at: 400 },
+  { name: "Gateway", at: 1400 },
+  { name: "GPU PC", at: 2400 },
+];
 
-// Lucide-style strokes, the same paths theme.py draws as CSS masks.
+const ROWS = [
+  { name: "General CV", tag: "Shared", at: 600 },
+  { name: "Study notes", tag: "Shared", at: 1500 },
+  { name: "Barclays", tag: "This chat", at: 2400 },
+];
+
+// Lucide-style strokes, the same paths the app draws.
 const ICONS = {
+  send: <path d="M12 19V5M5 12l7-7 7 7" />,
+  lock: (
+    <>
+      <rect x="4" y="11" width="16" height="10" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </>
+  ),
   download: (
     <>
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -99,14 +51,7 @@ const ICONS = {
       <path d="M12 15V3" />
     </>
   ),
-  lock: (
-    <>
-      <rect x="4" y="11" width="16" height="10" />
-      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-    </>
-  ),
-  send: <path d="M12 19V5M5 12l7-7 7 7" />,
-  menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+  check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
 };
 
 function Icon({ name }) {
@@ -117,37 +62,27 @@ function Icon({ name }) {
   );
 }
 
-// Types the answer out in chunks, as the app streams it. Starts once `go` is
-// set; with reduced motion the text is simply there.
-function useTyped(text, go, reduced) {
-  const [count, setCount] = useState(reduced ? text.length : 0);
+// Entrance delay for one element, as the CSS custom property the keyframes read.
+const at = (ms) => ({ "--d": `${ms}ms` });
+
+// Streams ANSWER in small chunks while `active`. Pausing stops the timer; playing
+// again resumes from the same character. Reduced motion shows the full text.
+function useStream(active, reduced) {
+  const [count, setCount] = useState(0);
+  const more = active && !reduced && count < ANSWER.length;
 
   useEffect(() => {
-    if (!go || reduced || count >= text.length) return undefined;
-    const timer = setTimeout(() => setCount((n) => Math.min(text.length, n + TYPE_CHUNK)), TYPE_TICK_MS);
-    return () => clearTimeout(timer);
-  }, [go, reduced, count, text]);
+    if (!more) return undefined;
+    const id = setTimeout(() => setCount((n) => Math.min(ANSWER.length, n + TYPE_CHUNK)), TYPE_TICK_MS);
+    return () => clearTimeout(id);
+  }, [more, count]);
 
-  if (!go) return "";
-  return reduced ? text : text.slice(0, count);
-}
-
-// The phone script: asleep, waking, answering, idle countdown, asleep again.
-function usePhoneScript(reduced) {
-  const [phase, setPhase] = useState(reduced ? 4 : 0);
-
-  useEffect(() => {
-    if (reduced || phase >= 4) return undefined;
-    const timer = setTimeout(() => setPhase((p) => p + 1), PHONE_TIMES[phase]);
-    return () => clearTimeout(timer);
-  }, [phase, reduced]);
-
-  return phase;
+  const done = reduced || count >= ANSWER.length;
+  return { typed: reduced ? ANSWER : ANSWER.slice(0, count), done };
 }
 
 // The window's title bar: the mark, the name and one status plate.
-function TitleBar({ step }) {
-  const { text, short, busy } = STATUS[step];
+function TitleBar({ status, busy }) {
   return (
     <div className="lm-titlebar">
       <span className="lm-mark" aria-hidden="true">
@@ -156,254 +91,176 @@ function TitleBar({ step }) {
       <span className="lm-wordmark">LocalMind</span>
       <span className={`lm-status${busy ? " is-busy" : ""}`}>
         <span className="lm-dot" aria-hidden="true" />
-        <span className="lm-status-full">{text}</span>
-        <span className="lm-status-short" aria-hidden="true">
-          {short}
-        </span>
+        {status}
       </span>
     </div>
   );
 }
 
-// One tool call, shown as a single compact row in the thread.
-function ToolRow({ mark, name, meta, tour }) {
+// Scene 1: the advert chip leaves the composer and lands in the user's bubble.
+function AskScene() {
   return (
-    <div className="lm-tool" data-tour={tour}>
-      <span className="lm-tool-mark" aria-hidden="true">
-        {mark}
-      </span>
-      <span className="lm-tool-name">{name}</span>
-      <span className="lm-tool-meta">{meta}</span>
-    </div>
-  );
-}
-
-// The composer is the paste box and Send, nothing else. Send stays focusable
-// when it is not live (aria-disabled), so keyboard focus never drops to the page.
-function Composer({ ready, onSend }) {
-  const send = () => {
-    if (ready) onSend();
-  };
-  return (
-    <div className="lm-composer">
-      <div className="lm-composer-card">
-        <p className="lm-input" data-tour="input">
-          {ready ? ADVERT : <span className="lm-placeholder">Message LocalMind…</span>}
-        </p>
-        <button
-          type="button"
-          className="lm-send"
-          data-tour="send"
-          aria-label={ready ? "Send the advert to tailor the CV" : "Send"}
-          aria-disabled={!ready}
-          onClick={send}
-        >
-          <Icon name="send" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function ChatView({ step, reduced }) {
-  const typed = useTyped(ANSWER, step >= 2, reduced);
-  const sent = step >= 1;
-  const threadRef = useRef(null);
-
-  // In a short frame the thread scrolls, and the newest line (the streamed
-  // answer, or the last tool call) follows to the bottom of the chat area.
-  useEffect(() => {
-    const body = threadRef.current?.parentElement;
-    if (body) body.scrollTop = body.scrollHeight;
-  }, [step, typed.length]);
-
-  return (
-    <div className="lm-thread" ref={threadRef}>
-      <p className="lm-note">{step === 0 ? "New chat · scoped to Barclays" : "Barclays · graduate analyst"}</p>
-      {step === 0 && <p className="lm-note">Advert ready. Send to start the tool loop.</p>}
-      {sent && (
-        <div className="lm-user">
-          <p>Tailor my CV to this advert: two pages, British English, saved as cv-barclays.tex.</p>
-        </div>
-      )}
-      {sent && (
-        <div className="lm-tools">
-          <ToolRow mark="📚" name="knowledge_search · shared sections" meta="0.4 s" tour="tool-search" />
-          <ToolRow mark="📂" name="open_document · cv.tex" meta="214 lines" />
-          <ToolRow mark="✏️" name="write_file · cv-barclays.tex" meta="+2 −2" tour="tool-write" />
-          <ToolRow mark="🧾" name="compile_latex · cv-barclays.tex" meta="2 pages" tour="tool-compile" />
-        </div>
-      )}
-      {step >= 2 && (
-        <div className="lm-bot" data-tour="answer">
-          <p>
-            {typed}
-            {typed.length < ANSWER.length && <span className="lm-caret" aria-hidden="true" />}
-          </p>
-          {typed.length === ANSWER.length && (
-            <span className="lm-file" data-tour="pdf">
-              <Icon name="download" />
-              cv-barclays.pdf · 212 KB
-            </span>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function KnowledgeView() {
-  return (
-    <div className="lm-kb">
-      <p className="lm-note">Knowledge base</p>
-      <section className="lm-section" data-tour="shared" aria-label="Shared sections">
-        <p className="lm-group-head">
-          <span>Shared</span>
-          <span className="lm-muted">every chat</span>
-        </p>
-        {SHARED.map((name) => (
-          <div key={name} className="lm-section-row">
-            <span className="lm-section-name">{name}</span>
-            <span className="lm-badge">Shared</span>
+    <>
+      <TitleBar status="Idle" />
+      <div className="lm-body">
+        <p className="lm-note">New chat · scoped to Barclays</p>
+        <div className="lm-thread">
+          <div className="lm-bubble is-user lm-in" style={at(500)}>
+            <span className="lm-chip">{ADVERT}</span>
+            <span>{REQUEST}</span>
           </div>
-        ))}
-      </section>
-      <section className="lm-section" data-tour="private" aria-label="Private sections">
-        <p className="lm-group-head">
-          <span>Private</span>
-          <span className="lm-muted">scoped chats only</span>
+        </div>
+        <div className="lm-composer">
+          <span className="lm-chip lm-lift" style={at(300)}>
+            {ADVERT}
+          </span>
+          <span className="lm-send">
+            <Icon name="send" />
+            <span className="lm-ring" style={at(1900)} />
+          </span>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// Scene 2: the knowledge rows tick in; the private section stays locked.
+function SearchScene() {
+  return (
+    <>
+      <TitleBar status="Searching" busy />
+      <div className="lm-body">
+        <p className="lm-query lm-in" style={at(200)}>
+          knowledge_search · this chat
         </p>
-        {PRIVATE.map((name) => (
-          <div key={name} className="lm-section-row">
-            <span className="lm-section-name">{name}</span>
+        <ul className="lm-rows">
+          {ROWS.map((row) => (
+            <li key={row.name} className="lm-row lm-in" style={at(row.at)}>
+              <span className="lm-row-name">{row.name}</span>
+              <span className="lm-badge">{row.tag}</span>
+              <span className="lm-tick" style={at(row.at + 300)}>
+                <Icon name="check" />
+              </span>
+            </li>
+          ))}
+          <li className="lm-row is-locked lm-in" style={at(3200)}>
+            <span className="lm-row-name">STMicroelectronics</span>
             <span className="lm-badge is-private">
               <Icon name="lock" />
               Private
             </span>
-          </div>
-        ))}
-      </section>
-    </div>
-  );
-}
-
-function DesktopView({ step, reduced, onAdvance }) {
-  const kb = step === 3;
-  return (
-    <div className="lm-window">
-      <TitleBar step={step} />
-      <div className="lm-body">{kb ? <KnowledgeView /> : <ChatView key={step} step={step} reduced={reduced} />}</div>
-      {!kb && <Composer ready={step === 0} onSend={onAdvance} />}
-    </div>
-  );
-}
-
-// The gateway's phone page: its top bar with the PC pill, the wake card, the
-// chat and the composer. The three route nodes above show where the message is.
-function PhoneView({ reduced }) {
-  const phase = usePhoneScript(reduced);
-  const typed = useTyped(PHONE_ANSWER, phase >= 2, reduced);
-  const pc = [
-    { state: "asleep", label: "PC asleep" },
-    { state: "waking", label: "Waking your PC" },
-    { state: "online", label: "PC online" },
-    { state: "online", label: "PC online" },
-    { state: "asleep", label: "PC asleep" },
-  ][phase];
-
-  const card = [
-    "Asleep · Wake-on-LAN ready",
-    "Wake-on-LAN packet sent",
-    "Answering from the PC",
-    "Turns off after 10 min without activity",
-    "Switched off after 10 min idle",
-  ][phase];
-
-  const node = phase === 0 ? 0 : phase === 1 ? 1 : 2;
-  // Only the phone and the PC are tour targets; the gateway is part of the route.
-  const nodes = [
-    { name: "Phone", tour: "node-phone" },
-    { name: "Gateway" },
-    { name: "GPU PC", tour: "node-pc" },
-  ];
-
-  return (
-    <div className="lm-phone-stage">
-      <ol className="lm-nodes" aria-label="Route to the PC">
-        {nodes.map((item, i) => (
-          <li key={item.name} className={`lm-node${i === node ? " is-active" : ""}`} data-tour={item.tour}>
-            {item.name}
+            <span className="lm-tick is-empty" aria-hidden="true" />
           </li>
-        ))}
-      </ol>
+        </ul>
+      </div>
+    </>
+  );
+}
 
-      <div className="lm-phone">
-        <header className="lm-phone-top">
-          <span className="lm-phone-menu" aria-hidden="true">
-            <Icon name="menu" />
-          </span>
-          <span className="lm-phone-title">Barclays · graduate analyst</span>
-          <span className={`lm-pcpill is-${pc.state}`} data-tour="pc-pill">
-            <span className="lm-dot" aria-hidden="true" />
-            {pc.label}
-          </span>
-        </header>
-
-        <div className={`lm-job is-${pc.state}`}>
-          <span className="lm-job-detail">{card}</span>
-          <span className={`lm-meter-wide${phase === 3 ? "" : " is-off"}`} aria-hidden="true">
-            <span />
-          </span>
-          <ol className={`lm-steps${phase >= 1 && phase <= 2 ? "" : " is-off"}`}>
-            <li className={phase >= 2 ? "is-done" : "is-now"}>Wake PC</li>
-            <li className={phase >= 2 ? "is-now" : ""}>Deliver</li>
-            <li className={phase >= 2 ? "is-now" : ""}>Answer</li>
-          </ol>
+// Scene 3: the tool loop writes cv-barclays.tex, compiles it, and offers the PDF.
+function WriteScene() {
+  return (
+    <>
+      <TitleBar status="Running tools" busy />
+      <div className="lm-body">
+        <div className="lm-bubble is-user lm-wide-only lm-in" style={at(0)}>
+          {REQUEST}
         </div>
-
-        <div className="lm-phone-thread">
-          {phase >= 1 && <div className="lm-user">Any news from Barclays about the interview?</div>}
-          {phase >= 2 && (
-            <div className="lm-bot">
-              {typed}
-              {typed.length < PHONE_ANSWER.length && <span className="lm-caret" aria-hidden="true" />}
-            </div>
-          )}
-        </div>
-
-        <div className="lm-composer lm-composer--phone">
-          <div className="lm-composer-card">
-            <p className="lm-input">
-              {phase === 0 ? "Any news from Barclays about the interview?" : <span className="lm-placeholder">Message LocalMind…</span>}
-            </p>
-            <span className="lm-send" aria-hidden="true">
-              <Icon name="send" />
-            </span>
-          </div>
-          <div className="lm-options" aria-hidden="true">
-            <span className="lm-chip">Model</span>
-            <span className="lm-chip">Web</span>
-            <span className="lm-chip">Knowledge</span>
-            <span className="lm-chip">Queue tasks</span>
-            <span className="lm-chip">Thinking</span>
-          </div>
+        <ol className="lm-calls">
+          <li className="lm-call lm-in" style={at(200)}>
+            <span className="lm-call-name">open_document</span>
+            <span className="lm-call-meta">cv.tex · 214 lines</span>
+          </li>
+          <li className="lm-call lm-in" style={at(1100)}>
+            <span className="lm-call-name">write_file</span>
+            <span className="lm-call-meta">+2 −2</span>
+          </li>
+          <li className="lm-call lm-in" style={at(2000)}>
+            <span className="lm-call-name">compile_latex</span>
+            <span className="lm-call-meta">2 pages</span>
+          </li>
+        </ol>
+        <div className="lm-files">
+          <span className="lm-file lm-in" style={at(1500)}>
+            cv-barclays.tex
+          </span>
+          <span className="lm-file is-pdf lm-in" style={at(3000)}>
+            <Icon name="download" />
+            cv-barclays.pdf · 2 pages
+          </span>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
-// The walkthrough shell passes the step; the demo root carries the palette as
-// its own custom properties, so the site's Colour menu cannot reach it.
-export default function LocalMindDemo({ step, reducedMotion, onAdvance }) {
-  const isPhone = step === steps.length - 1;
+// Scene 4: the answer streams back, and the PDF is offered when it finishes.
+function AnswerScene({ playing, reduced }) {
+  const { typed, done } = useStream(playing, reduced);
   return (
-    <div className="lm-demo" data-step={steps[step].id}>
-      {isPhone ? (
-        <PhoneView reduced={reducedMotion} />
-      ) : (
-        <DesktopView step={step} reduced={reducedMotion} onAdvance={onAdvance} />
-      )}
+    <>
+      <TitleBar status={done ? "Done" : "Streaming"} busy={!done} />
+      <div className="lm-body lm-thread">
+        <div className="lm-bubble is-user lm-in">{REQUEST}</div>
+        <div className="lm-bubble is-bot">
+          <p>
+            {typed}
+            {!done && <span className="lm-caret" aria-hidden="true" />}
+          </p>
+        </div>
+        {done && (
+          <span className="lm-file is-pdf lm-in">
+            <Icon name="download" />
+            cv-barclays.pdf · 2 pages
+          </span>
+        )}
+      </div>
+    </>
+  );
+}
+
+// Scene 5: the phone's message travels phone, gateway, PC; the PC then counts down to sleep.
+function PhoneScene() {
+  return (
+    <>
+      <TitleBar status="Waking PC" busy />
+      <div className="lm-body">
+        <div className="lm-bubble is-user lm-in" style={at(200)}>
+          Any news from Barclays about the interview?
+        </div>
+        <ol className="lm-nodes">
+          {NODES.map((node, i) => (
+            <li key={node.name} className="lm-node-item">
+              {i > 0 && <span className="lm-link" style={at(node.at - 500)} aria-hidden="true" />}
+              <span className="lm-node" style={at(node.at)}>
+                {node.name}
+              </span>
+            </li>
+          ))}
+        </ol>
+        <div className="lm-sleep lm-in" style={at(3600)}>
+          <span>Sleeps after 10 idle minutes</span>
+          <span className="lm-meter" aria-hidden="true">
+            <span className="lm-meter-fill" style={at(3600)} />
+          </span>
+        </div>
+      </div>
+    </>
+  );
+}
+
+const VIEWS = [AskScene, SearchScene, WriteScene, AnswerScene, PhoneScene];
+
+// The player passes the scene index and whether it is playing. Each scene is keyed
+// by its index, so it restarts from its first frame when the player moves on.
+export default function LocalMindDemo({ scene, playing, reducedMotion }) {
+  const View = VIEWS[scene];
+  const classes = ["lm-demo", playing ? "" : "is-paused", reducedMotion ? "is-still" : ""].filter(Boolean).join(" ");
+  return (
+    <div className={classes} data-scene={scenes[scene].id} aria-hidden="true">
+      <div className="lm-window">
+        <View key={scene} playing={playing} reduced={reducedMotion} />
+      </div>
     </div>
   );
 }

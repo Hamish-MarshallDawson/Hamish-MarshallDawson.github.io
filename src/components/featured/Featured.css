@@ -1,7 +1,7 @@
 /* ==========================================================================
-   Featured block (inside #vault): cards, the open stage and the demo
-   controls. Chrome uses the site tokens only, so it follows the Colour menu
-   through --signal. Demo styles live in each demo's own root class.
+   Featured block (inside #vault): the cards, and the demo that plays in each
+   card's picture box. Chrome uses the site tokens only, so it follows the
+   Colour menu through --signal. Demo styles live in each demo's own root class.
    ========================================================================== */
 
 .feat {
@@ -92,20 +92,6 @@
 .feat-media.is-contain img {
   object-fit: contain;
   padding: 12%;
-}
-
-.feat-card.is-open .feat-media {
-  background: var(--signal);
-}
-
-.feat-card.is-open .feat-media img {
-  mix-blend-mode: screen;
-  filter: grayscale(1) contrast(1.3) brightness(1.06);
-}
-
-.feat-card.is-open .schematic {
-  --sch-fg: var(--paper);
-  --sch-bg: var(--signal);
 }
 
 @media (hover: hover) {
@@ -201,530 +187,179 @@
   padding-top: var(--space-2);
 }
 
-/* ---------- the open stage ----------
-   The open demo sits in its card's top slot, where the plate was. The card's
-   border and shadow frame it, so the stage has only a rule under it. The stage
-   is a size container: the demo lays itself out by the width of its card, not
-   the window, so a half-width card gets a stacked demo at every desktop width. */
 
-.fstage {
-  container-type: inline-size;
-  border-bottom: var(--bw-frame) solid var(--line);
-  scroll-margin-top: calc(var(--bar-h) + var(--space-4));
-  scroll-margin-bottom: calc(var(--strip-h) + var(--space-4));
+/* ---------- the demo in the picture box (DemoPlayer) ----------
+   The demo plays over the card's picture, inside the same box, so the box never
+   changes size. The layer fades in when a run starts (an animation on mount) and
+   fades out at the end (a transition on data-show). The band at the bottom holds
+   the caption and the scene dots, and the round control sits in its right corner. */
+
+.feat-media {
+  --fdemo-band: 60px;
 }
 
-.fstage-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  background: var(--line);
-  color: var(--surface);
-  letter-spacing: var(--tr-micro);
-}
-
-.fstage-title {
-  font: inherit;
-  text-transform: uppercase;
-}
-
-.fstage-title:focus {
-  outline: none;
-}
-
-.fstage-title:focus-visible {
-  outline: var(--bw-rule) solid var(--surface);
-  outline-offset: 3px;
-}
-
-.fstage-close {
-  min-height: var(--hit);
-  padding: 0 var(--space-4);
-  border: var(--bw-rule) solid var(--surface);
+.fdemo-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   background: var(--surface);
-  color: var(--line);
-  font: 700 var(--fs-micro) / 1 var(--font-mono);
-  letter-spacing: var(--tr-micro);
-  text-transform: uppercase;
+  transition: opacity 500ms var(--ease-snap), visibility 500ms;
+  animation: fdemo-in 500ms ease-out backwards;
 }
 
-.fstage-close:focus-visible {
-  outline: var(--bw-rule) solid var(--surface);
-  outline-offset: 2px;
-  background: var(--focus-bg);
-  color: var(--focus-fg);
+.fdemo-layer[data-show="false"] {
+  opacity: 0;
+  visibility: hidden;
 }
 
-/* ---------- DemoStage: frame, options, navigation, steps, caption ----------
-   One DOM order everywhere (frame, Play / Restart, Back / count / Next, steps,
-   caption). Play is the main control, under the step buttons; the steps are a
-   quieter secondary row. Phones stack it, so the steps collapse to a row of numbers.
-   Wider stages (by the card's width) show the step titles, and only a wide
-   stage, or a landscape phone, puts the frame beside the controls. */
-
-.fdemo-status {
-  display: grid;
-  place-items: center;
-  min-height: 320px;
-  padding: var(--space-5);
+@keyframes fdemo-in {
+  from {
+    opacity: 0;
+  }
 }
 
-.fdemo-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas:
-    "frame"
-    "nav"
-    "extras"
-    "steps"
-    "caption";
-  gap: var(--space-3);
-  padding: var(--space-3);
-}
-
-.fdemo-frame {
-  grid-area: frame;
-  min-width: 0;
-  border: var(--bw-rule) solid var(--line);
+/* The scene is a size container (named fdemo), so each demo lays itself out by its box. */
+.fdemo-scene {
+  position: absolute;
+  inset: 0 0 var(--fdemo-band) 0;
+  container: fdemo / size;
   overflow: hidden;
 }
 
-.fdemo-nav {
-  grid-area: nav;
+.fdemo-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.fdemo-nav .btn {
-  min-width: 0;
-  min-height: var(--hit);
-  padding: 0 var(--space-4);
-}
-
-.fdemo-count {
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-  letter-spacing: var(--tr-micro);
-}
-
-/* Five equal buttons on one line at every width (numbers only on narrow stages). */
-.fdemo-steps {
-  grid-area: steps;
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  /* 6px, kept exactly; there is no 6px token (--space-1 is 4px). */
-  gap: calc(var(--space-1) * 1.5);
-}
-
-.fdemo-steps li {
-  min-width: 0;
-}
-
-/* Secondary to Play: paper tabs with a hairline frame and no shadow, at the same
-   44px touch target. The current step is marked by a signal rule underneath, not
-   a filled block. */
-.fdemo-step {
-  display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  gap: var(--space-2);
-  width: 100%;
-  min-height: var(--hit);
-  padding: 0 var(--space-1);
-  border: var(--bw-hair) solid var(--line);
+  gap: var(--space-1);
+  height: var(--fdemo-band);
+  padding: 0 76px 0 var(--space-4);
+  border-top: var(--bw-hair) solid var(--line);
   background: var(--surface);
-  color: var(--on-surface);
-  font: 500 var(--fs-micro) / 1.2 var(--font-mono);
-  letter-spacing: var(--tr-micro);
-  text-align: left;
-  text-transform: uppercase;
-}
-
-.fdemo-step[aria-current="step"] {
-  box-shadow: inset 0 -3px 0 var(--signal);
-  color: var(--text-accent);
-}
-
-.fdemo-step:focus-visible {
-  outline: none;
-  background: var(--focus-bg);
-  color: var(--focus-fg);
-  transform: translate(calc(var(--off-1) * -1), calc(var(--off-1) * -1));
-  box-shadow: var(--off-1) var(--off-1) 0 0 var(--line);
-}
-
-.fdemo-num {
-  font-family: var(--font-pixel);
-  font-size: 0.95rem;
-}
-
-.fdemo-step-title {
-  display: none;
 }
 
 .fdemo-caption {
-  grid-area: caption;
-  padding-left: var(--space-4);
-  border-left: var(--bw-frame) solid var(--signal);
-  font: 500 1rem / 1.55 var(--font-grotesk);
+  margin: 0;
+  color: var(--on-surface);
+  font: 500 var(--fs-small) / 1.3 var(--font-grotesk);
   font-variation-settings: "wdth" var(--wdth-normal);
 }
 
-.fdemo-extras {
-  grid-area: extras;
+.fdemo-dots {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.fdemo-extras .btn {
-  min-height: var(--hit);
-  padding: 0 var(--space-4);
-}
-
-/* The main control: Play is the largest thing under the frame. */
-.fdemo-play {
-  flex: 1 1 auto;
-  min-height: calc(var(--hit) + var(--space-2));
-  font-size: var(--fs-small);
-}
-
-.fdemo-note {
-  flex-basis: 100%;
-  letter-spacing: var(--tr-micro);
-}
-
-/* Disabled controls stay focusable (aria-disabled) and read as spent. */
-.fdemo .btn[aria-disabled="true"] {
-  background: var(--surface);
-  color: var(--on-surface);
-  border-style: dashed;
-  box-shadow: none;
-  transform: none;
-  cursor: not-allowed;
-}
-
-.fdemo .btn[aria-pressed="true"] {
+.fdemo-dots li {
+  width: 6px;
+  height: 6px;
   background: var(--line);
-  color: var(--surface);
+  opacity: 0.25;
 }
 
-/* Fixed site chrome (top bar, bottom status strip) must never cover a
-   control when focus scrolls it into view (WCAG 2.4.11). */
-.fdemo .btn,
-.fdemo-step,
-.fdemo-caption {
-  scroll-margin-top: calc(var(--bar-h) + var(--space-4));
-  scroll-margin-bottom: calc(var(--strip-h) + var(--space-4));
+.fdemo-dots li.is-current {
+  background: var(--signal);
+  opacity: 1;
 }
 
-/* ---------- wider stages ----------
-   Breakpoints, in one place. They test the width of the stage (its card), not
-   the window, because a half-width card on a desktop is narrow. Custom
-   properties cannot be used in these conditions, so the literals are repeated
-   on purpose:
-     640px   wider stage: flex step row
-     900px   stage shows step titles, with more padding
-     1000px  two columns, frame beside the controls (a full-row card on desktop)
-     640px   landscape phones (short and wide) also get two columns, by viewport */
-
-@container (min-width: 640px) {
-  .fdemo-grid {
-    padding: var(--space-4);
-  }
-
-  .fdemo-step {
-    gap: var(--space-2);
-    padding: 0 var(--space-3);
-  }
+/* The poster's own picture rules (the contain fit, and the duotone on hover) are for the
+   card's plate. The demo's pictures keep their colours and fill the layer. */
+.feat-card .feat-media .fdemo-layer img {
+  padding: 0;
+  object-fit: cover;
+  filter: none;
+  mix-blend-mode: normal;
 }
 
-/* A stage at least 400px wide (a half-width card on a desktop, or a tablet) takes the
-   demo at its 4:3 shape. The frame is capped there, so the open card stops growing
-   with the stage, and the demo fills the frame. Phones keep the demo's own heights. */
-@container (min-width: 400px) {
-  .fdemo-frame {
-    aspect-ratio: 4 / 3;
-  }
-
-  .fdemo-stage {
-    height: 100%;
-  }
-}
-
-@container (min-width: 900px) {
-  .fdemo-grid {
-    padding: var(--space-5);
-    gap: var(--space-4);
-  }
-
-  .fdemo-step-title {
-    display: inline;
-  }
-}
-
-/* Two columns, frame beside the controls: a wide stage, and landscape phones
-   (wide but short), where the stacked column would not fit. */
-@container (min-width: 1000px) {
-  .fdemo-grid {
-    grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr);
-    grid-template-areas:
-      "frame nav"
-      "frame extras"
-      "frame steps"
-      "frame caption";
-    align-items: start;
-    column-gap: var(--space-5);
-  }
-
-  .fdemo-frame {
-    align-self: start;
-  }
-
-  .fdemo-steps {
-    align-content: flex-start;
-  }
-}
-
-@media (min-width: 640px) and (max-height: 500px) and (orientation: landscape) {
-  .fdemo-grid {
-    grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr);
-    grid-template-areas:
-      "frame nav"
-      "frame extras"
-      "frame steps"
-      "frame caption";
-    align-items: start;
-    column-gap: var(--space-5);
-  }
-
-  .fdemo-frame {
-    align-self: start;
-  }
-
-  .fdemo-steps {
-    align-content: flex-start;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .fdemo-step,
-  .fstage-close {
-    transition: none;
-  }
-}
-
-/* ==========================================================================
-   Tour engine (DemoStage, DemoCursor): step fades, the pointer, the highlight
-   and dim, the label tag, and the tour status with its progress bar.
-   ========================================================================== */
-
-.fdemo-frame {
-  position: relative;
-}
-
-/* Before the tour has been played: the tour is offered over the demo. The scrim is
-   paper-tinted and lets pointers through (pointer-events none), so the demo stays
-   usable beneath it; only the button takes clicks. */
-.fdemo-start {
+/* The round control: the card's one control for the demo. Signal blue with a play,
+   pause, next or replay glyph. It is always in the box, so the box never changes. */
+/* The control's box is 44px, the touch target. The visible disc is 40px inside it. */
+.fdemo-round {
   position: absolute;
-  inset: 0;
-  z-index: 3;
+  right: var(--space-2);
+  bottom: 8px;
+  z-index: 2;
   display: grid;
   place-items: center;
-  padding: var(--space-4);
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
-  pointer-events: none;
+  width: var(--hit);
+  height: var(--hit);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--paper);
 }
 
-.fdemo-start-btn {
-  pointer-events: auto;
-  min-height: calc(var(--hit) + var(--space-3));
-  padding: 0 var(--space-5);
-  font-size: var(--fs-body);
+.fdemo-round::before {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: var(--bw-rule) solid var(--line);
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: var(--off-1) var(--off-1) 0 0 var(--line);
 }
 
-.fdemo-start-glyph {
-  width: 0.9em;
-  height: 0.9em;
+/* The site's press, on the disc: .u-press would shadow the square 44px box instead. */
+.fdemo-round::before {
+  transition: transform var(--dur-1) var(--ease-snap), box-shadow var(--dur-1) var(--ease-snap);
+}
+
+.fdemo-round:active::before {
+  transform: translate(var(--off-1), var(--off-1));
+  box-shadow: 0 0 0 0 var(--line);
+}
+
+.fdemo-round:focus-visible {
+  outline: var(--bw-rule) solid var(--line);
+  outline-offset: 0;
+}
+
+.fdemo-round-glyph {
+  position: relative;
+  width: 18px;
+  height: 18px;
   fill: currentColor;
 }
 
-/* The demo fades between steps. Fading out is ease-in (400 ms) and fading back in
-   is ease-out (550 ms): the base rule runs when is-fading is removed. DemoStage
-   holds the frame blank for 120 ms between the two. */
-.fdemo-stage {
-  transition: opacity 550ms cubic-bezier(0.33, 1, 0.68, 1);
-}
-
-/* A fading frame takes no input: its controls are still there at opacity 0, and a
-   tap on one would act on a step the visitor cannot see. */
-.fdemo-stage.is-fading {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 400ms cubic-bezier(0.32, 0, 0.67, 0);
-}
-
-/* The layer over the demo. It never takes pointer events or focus. */
-.fdemo-tour {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-/* The highlight ring. DemoCursor moves it with transform only (translate and
-   scale), and keeps its own layer (will-change) so it is not repainted with the page. Its box-shadow dims everything
-   outside it. Opacity fades it in and out over 300 ms. */
-.fdemo-hl {
-  position: absolute;
-  left: 0;
-  top: 0;
-  transform-origin: 0 0;
-  outline: var(--bw-rule) solid var(--signal);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 200vmax rgb(0 0 0 / 0.12);
-  opacity: 0;
-  /* Its own layer, always. Without it, the dim (200vmax) is repainted into the page on
-     every repaint underneath, and the ring is repainted on each check of the loop. */
-  will-change: transform, opacity;
-  transition: opacity 300ms ease-in-out;
-}
-
-.fdemo-hl[data-on="true"] {
-  opacity: 1;
-}
-
-.fdemo-hl.is-pulse[data-on="true"] {
-  animation: fdemo-pulse 900ms ease-in-out;
-}
-
-@keyframes fdemo-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.35;
-  }
-}
-
-/* The pointer: a black arrow with a white outline, so it reads on both demos.
-   DemoCursor moves it with transform, and keeps its own layer (will-change). */
-.fdemo-pointer {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 24px;
-  height: 28px;
-  opacity: 0;
-  will-change: transform, opacity;
-  transition: opacity 300ms ease-in-out;
-}
-
-.fdemo-pointer[data-on="true"] {
-  opacity: 1;
-}
-
-/* The press is a dip: 120 ms down, pressed for 240 ms, and 120 ms back up. */
-.fdemo-pointer svg {
-  display: block;
-  transform-origin: 2px 2px;
-  transition: transform 120ms ease-in-out;
-}
-
-.fdemo-pointer[data-press="true"] svg {
-  transform: scale(0.8);
-}
-
-/* Below and right of the tip. DemoCursor moves it with transform and flips it
-   near the edges. */
-/* Hidden until DemoCursor has placed it for the target the pointer has landed on:
-   it is never seen over the target while the pointer is still moving. */
-.fdemo-tag {
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: 0;
-  width: max-content;
-  padding: 3px 7px;
-  border: var(--bw-hair) solid var(--line);
-  background: var(--line);
-  color: var(--surface);
-  font: 600 var(--fs-micro) / 1.2 var(--font-mono);
-  letter-spacing: var(--tr-micro);
-  text-transform: uppercase;
-  overflow-wrap: anywhere;
-  will-change: transform;
-}
-
-.fdemo-tag[data-placed="true"] {
-  opacity: 1;
-}
-
-/* Navigation centre: the step count, then the tour status. The status keeps
-   its height when idle, so the row does not jump when the tour starts. */
-.fdemo-count-wrap {
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-}
-
-.fdemo-tour-status {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  min-height: 2.6em;
-  margin-top: 2px;
-  letter-spacing: var(--tr-micro);
-  opacity: 0;
-  transition: opacity 300ms ease-in-out;
-}
-
-.fdemo-tour-status.is-on {
-  opacity: 1;
-}
-
-.fdemo-tour-bar {
-  display: block;
-  width: 100%;
-  max-width: 180px;
-  height: 6px;
-  border: var(--bw-hair) solid var(--line);
-  background: var(--surface);
-  overflow: hidden;
-}
-
-.fdemo-tour-bar > span {
-  display: block;
-  height: 100%;
-  background: var(--signal);
-  transform-origin: left center;
-  transition: transform 700ms cubic-bezier(0.65, 0, 0.35, 1);
+/* Reduced motion (the OS setting or the site's FX switch): nothing animates, and each
+   scene is drawn in its final state. */
+.fdemo-layer[data-reduced] {
+  transition: none;
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fdemo-stage,
-  .fdemo-stage.is-fading,
-  .fdemo-hl,
-  .fdemo-pointer,
-  .fdemo-pointer svg,
-  .fdemo-tour-status,
-  .fdemo-tour-bar > span {
+  .fdemo-layer {
     transition: none;
-  }
-
-  .fdemo-hl.is-pulse[data-on="true"] {
     animation: none;
   }
+}
+
+/* A poster with a demo keeps the bottom band clear, as the scenes do: the poster is drawn
+   above the band, and the round control sits in the band, so it never covers the picture.
+   The box itself does not change size. */
+.feat-media.has-demo::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--fdemo-band);
+  border-top: var(--bw-hair) solid var(--line);
+  background: var(--surface);
+}
+
+.feat-media.has-demo > img,
+.feat-media.has-demo > .schematic {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - var(--fdemo-band));
 }
