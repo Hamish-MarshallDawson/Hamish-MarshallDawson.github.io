@@ -13,7 +13,6 @@
   --paper: #ffffff;
   --ink: #000000;
   --signal: #1f1fff;
-  --alarm: #e10600;
 
   /* surface contract, as theme.py: light is paper on ink, dark swaps them */
   --lm-surface: var(--paper);
@@ -22,8 +21,6 @@
   --lm-shadow: var(--ink);
   --lm-muted: #4a4a4a;
   --lm-wash: #f2f2f2;
-  --lm-hover: rgba(0, 0, 0, 0.06);
-  --lm-accent-text: var(--signal);
   --lm-user-fill: var(--ink);
   --lm-user-text: var(--paper);
 
@@ -33,7 +30,6 @@
   --bw-heavy: 4px;
   --off-1: 4px;
   --off-2: 8px;
-  --off-3: 12px;
 
   --lm-sans: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --lm-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
@@ -43,6 +39,9 @@
 
   container: lm / inline-size;
   position: relative;
+  /* Phones (a stage under 400px) keep a fixed, readable height: the chat, tool
+     rows and composer fit without the window scrolling much. */
+  width: 100%;
   height: 580px;
   overflow: hidden;
   background: var(--lm-surface);
@@ -63,8 +62,6 @@
     --lm-shadow: var(--signal);
     --lm-muted: #b8b8b8;
     --lm-wash: #141414;
-    --lm-hover: rgba(255, 255, 255, 0.09);
-    --lm-accent-text: var(--paper);
     --lm-user-fill: var(--paper);
     --lm-user-text: var(--ink);
   }
@@ -118,44 +115,35 @@
   outline-offset: 2px;
 }
 
-/* ---------- desktop app: sidebar ----------
-   Always an ink surface, in both schemes, with paper rules and a signal edge. */
+/* ---------- the window ----------
+   One large plate on a signal shadow. It fills the frame, inset so the shadow
+   stays inside the demo's own box. */
 
-.lm-desk {
+.lm-window {
+  position: absolute;
+  inset: 14px 16px 22px 14px;
   display: flex;
   flex-direction: column;
-  height: 100%;
-}
-
-.lm-app {
-  display: grid;
-  grid-template-columns: min(288px, 38%) minmax(0, 1fr);
-  flex: 1;
   min-height: 0;
+  border: var(--bw-frame) solid var(--lm-line);
+  background: var(--lm-surface);
+  box-shadow: var(--off-2) var(--off-2) 0 0 var(--signal);
 }
 
-.lm-sidebar {
-  --lm-surface: var(--ink);
-  --lm-on-surface: var(--paper);
+/* The title bar is always ink, in both schemes, with a signal edge. */
+.lm-titlebar {
   --lm-line: var(--paper);
   --lm-shadow: var(--signal);
   --lm-muted: #b8b8b8;
-  --lm-hover: rgba(255, 255, 255, 0.09);
 
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  padding: 14px 12px 12px;
-  background: var(--ink);
-  color: var(--paper);
-  border-right: var(--bw-frame) solid var(--signal);
-}
-
-.lm-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 2px 0 14px;
+  min-height: 46px;
+  padding: 6px 12px;
+  background: var(--ink);
+  color: var(--paper);
+  border-bottom: var(--bw-frame) solid var(--signal);
 }
 
 .lm-mark {
@@ -172,270 +160,24 @@
   letter-spacing: 0;
 }
 
-.lm-mark--big {
-  width: 54px;
-  height: 54px;
-  font-size: 18px;
-  border-color: var(--lm-line);
-  box-shadow: var(--off-2) var(--off-2) 0 0 var(--signal);
-}
-
-.lm-brand-name {
+.lm-wordmark {
   flex: 1;
-  font: 900 19px / 1 var(--lm-sans);
+  min-width: 0;
+  overflow: hidden;
+  font: 900 16px / 1 var(--lm-sans);
   font-variation-settings: "wdth" 75;
   letter-spacing: -0.02em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.lm-new {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 10px 12px;
-  border: var(--bw-rule) solid var(--paper);
-  background: var(--signal);
-  color: var(--paper);
-  box-shadow: var(--off-1) var(--off-1) 0 0 var(--paper);
-  font: 700 12px / 1.2 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.lm-new svg {
-  width: 15px;
-  height: 15px;
-}
-
-.lm-filter {
-  margin: 12px 0 2px;
-  padding: 7px 10px;
-  border: var(--bw-rule) solid var(--paper);
-  color: rgba(255, 255, 255, 0.5);
-  font: 400 12px / 1.4 var(--lm-mono);
-}
-
-.lm-group-label {
-  padding: 16px 0 6px;
-  border-bottom: var(--bw-rule) solid var(--paper);
-  margin-bottom: 2px;
-  font: 700 10px / 1.2 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.lm-convs {
+.lm-body {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
-}
-
-.lm-conv {
-  padding: 9px 8px;
-  border-bottom: var(--bw-hair) solid rgba(255, 255, 255, 0.22);
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.lm-conv.is-active {
-  background: var(--signal);
-  color: var(--paper);
-  font-weight: 600;
-}
-
-.lm-nav {
-  display: flex;
-  flex-direction: column;
-  padding-top: 10px;
-  margin-top: 10px;
-  border-top: var(--bw-rule) solid var(--paper);
-}
-
-.lm-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 8px;
-  color: rgba(255, 255, 255, 0.8);
-  font: 500 11.5px / 1.2 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.lm-nav-item svg {
-  width: 15px;
-  height: 15px;
-}
-
-.lm-nav-item.is-active {
-  background: var(--signal);
-  color: var(--paper);
-}
-
-/* ---------- main column: readouts, top bar, body, composer ---------- */
-
-.lm-main {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-}
-
-/* The readouts are pinned to the top right, ruled, with numerals in the pixel face. */
-.lm-hud {
-  align-self: flex-end;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  background: var(--lm-surface);
-  border: var(--bw-rule) solid var(--lm-line);
-  border-top: 0;
-  border-right: 0;
-}
-
-.lm-hud-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 7px 11px;
-  border-right: var(--bw-hair) solid var(--lm-line);
-  font: 500 10px / 1 var(--lm-mono);
-  white-space: nowrap;
-  color: var(--lm-on-surface);
-}
-
-.lm-hud-pill:last-child {
-  border-right: 0;
-}
-
-.lm-hud-pill b {
-  color: var(--lm-muted);
-  font-size: 9.5px;
-  font-weight: 700;
-}
-
-.lm-num {
-  font-family: var(--lm-pixel);
-  font-size: 10px;
-  letter-spacing: 0;
-  font-variant-numeric: tabular-nums;
-  /* Readouts change value, never width: each numeral holds the width of its widest value. */
-  display: inline-block;
-  text-align: right;
-}
-
-.lm-hud-gpu .lm-num {
-  min-width: 4ch;
-}
-
-.lm-hud-ctx .lm-num-ctx {
-  min-width: 9ch;
-}
-
-.lm-hud-ctx .lm-num-left {
-  min-width: 6ch;
-}
-
-.lm-hud-warm {
-  background: var(--lm-on-surface);
-  color: var(--lm-surface);
-}
-
-.lm-hud-warm b {
-  color: var(--lm-surface);
-  opacity: 0.75;
-}
-
-.lm-meter {
-  display: inline-block;
-  width: 36px;
-  height: 7px;
-  overflow: hidden;
-  background: var(--lm-wash);
-  border: var(--bw-hair) solid var(--lm-line);
-}
-
-.lm-meter > i {
-  display: block;
-  width: 100%;
-  height: 100%;
-  background: var(--signal);
-  transform-origin: left center;
-  transition: transform 0.4s var(--ease-snap);
-}
-
-.lm-hud-warm .lm-meter {
-  background: transparent;
-  border-color: var(--lm-surface);
-}
-
-.lm-hud-warm .lm-meter > i {
-  background: var(--lm-surface);
-}
-
-/* The top bar: a ruled row of cells, as the app's own topbar. */
-.lm-top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  background: var(--lm-surface);
-  border-top: var(--bw-rule) solid var(--lm-line);
-  border-bottom: var(--bw-rule) solid var(--lm-line);
-}
-
-.lm-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  min-height: 38px;
-  padding: 4px 12px;
-  border-right: var(--bw-rule) solid var(--lm-line);
-  font: 500 11px / 1 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.lm-cell.is-off {
-  visibility: hidden;
-}
-
-.lm-cell-fill {
-  background: var(--lm-on-surface);
-  color: var(--lm-surface);
-  font-weight: 700;
-}
-
-.lm-cell-title {
-  flex: 1 1 0;
-  overflow: hidden;
-  font: 800 15px / 1.2 var(--lm-sans);
-  font-variation-settings: "wdth" 75;
-  letter-spacing: -0.015em;
-  text-transform: none;
-}
-
-.lm-title {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.lm-model {
-  color: var(--lm-muted);
-}
-
-.lm-cell-push {
-  margin-left: auto;
-  border-right: 0;
-  border-left: var(--bw-rule) solid var(--lm-line);
+  padding: 16px;
+  overflow-y: auto;
 }
 
 .lm-badge {
@@ -443,22 +185,24 @@
   padding: 2px 5px;
   border: var(--bw-hair) solid var(--lm-line);
   color: var(--lm-on-surface);
-  font: 700 9.5px / 1 var(--lm-mono);
+  font: 700 11px / 1 var(--lm-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-/* The status plate: signal with paper text, and a blinking square. */
+/* The status plate: signal with paper text. Its square blinks only when busy. */
 .lm-status {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 9px;
-  padding: 5px 10px;
+  padding: 6px 10px;
   background: var(--signal);
   color: var(--paper);
-  font: 700 10.5px / 1 var(--lm-mono);
+  font: 700 11px / 1 var(--lm-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .lm-dot {
@@ -471,16 +215,16 @@
 
 .lm-status .lm-dot {
   background: var(--paper);
-  animation: lm-blink 1s steps(1) infinite;
 }
 
-.lm-body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
-  padding: 16px;
-  overflow-y: auto;
+/* Only one label reads at a time: the full text wide, the short word narrow. When
+   the full text is hidden it is clipped, not removed, so it stays the name. */
+.lm-status-short {
+  display: none;
+}
+
+.lm-status.is-busy .lm-dot {
+  animation: lm-blink 1s steps(1) infinite;
 }
 
 .lm-thread {
@@ -491,39 +235,9 @@
 
 .lm-note {
   color: var(--lm-muted);
-  font: 500 10px / 1.4 var(--lm-mono);
+  font: 500 11px / 1.4 var(--lm-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-}
-
-/* ---------- empty state: the one place the display type runs large ---------- */
-
-.lm-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  max-width: 440px;
-  margin: auto 0;
-  padding: 6% 4px 16px;
-  animation: lm-in 0.35s var(--ease-snap);
-}
-
-.lm-empty h3 {
-  max-width: 14ch;
-  margin-top: 20px;
-  font: 900 clamp(2rem, 1.2rem + 3vw, 3.25rem) / 0.84 var(--lm-sans);
-  font-variation-settings: "wdth" 62;
-  letter-spacing: -0.035em;
-  text-transform: uppercase;
-}
-
-.lm-empty p {
-  width: 100%;
-  margin-top: 18px;
-  padding-top: 12px;
-  border-top: var(--bw-rule) solid var(--lm-line);
-  color: var(--lm-muted);
-  font-size: 13.5px;
 }
 
 /* ---------- messages ----------
@@ -543,15 +257,6 @@
   line-height: 1.55;
   overflow-wrap: anywhere;
   animation: lm-in 0.3s ease-out;
-}
-
-.lm-user p + p {
-  margin-top: 8px;
-}
-
-.lm-advert {
-  opacity: 0.8;
-  font: 400 12px / 1.5 var(--lm-mono);
 }
 
 .lm-bot {
@@ -602,102 +307,59 @@
   height: 14px;
 }
 
-/* Tool calls: Gradio's thought panels, with the open marker and a signal edge. */
-.lm-panel {
-  align-self: flex-start;
-  max-width: 100%;
-  border: var(--bw-rule) solid var(--lm-line);
-  border-left: var(--bw-heavy) solid var(--signal);
-  background: var(--lm-surface);
-  font-size: 13px;
-  animation: lm-in 0.3s ease-out;
+/* Tool calls: one compact row each, with a signal edge, as the app's thought
+   panels. The name truncates before the row grows. */
+.lm-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.lm-panel-head {
+.lm-tool {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 12px;
-  color: var(--lm-on-surface);
-  font: 500 11px / 1.2 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: var(--bw-rule) solid var(--lm-line);
+  border-left: var(--bw-heavy) solid var(--signal);
+  background: var(--lm-surface);
+  font: 500 11px / 1.3 var(--lm-mono);
+  animation: lm-in 0.3s ease-out;
 }
 
-.lm-panel-mark {
-  font-weight: 700;
+.lm-tool-mark {
+  flex: none;
+  width: 16px;
+  font-size: 12px;
+  line-height: 1;
+  text-align: center;
 }
 
-.lm-panel-title {
+.lm-tool-name {
   flex: 1;
   min-width: 0;
   overflow: hidden;
+  color: var(--lm-on-surface);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.lm-panel-dur {
-  margin-left: auto;
-  font: 400 10px / 1 var(--lm-pixel);
+.lm-tool-meta {
+  flex: none;
+  color: var(--lm-muted);
+  font: 400 11px / 1 var(--lm-pixel);
   letter-spacing: 0;
 }
 
-.lm-panel-body {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 8px 12px 10px;
-  border-top: var(--bw-hair) solid var(--lm-line);
-  color: var(--lm-muted);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.lm-panel-body b {
-  color: var(--lm-on-surface);
-  font-weight: 700;
-}
-
-.lm-quote {
-  color: var(--lm-on-surface);
-  font: 400 11px / 1.4 var(--lm-mono);
-}
-
-/* A diff is a code block: a ruled wash, with added lines in the accent and
-   removed lines struck through. */
-.lm-diff {
-  margin: 0;
-  padding: 8px 10px;
-  overflow-x: auto;
-  border: var(--bw-rule) solid var(--lm-line);
-  background: var(--lm-wash);
-  color: var(--lm-on-surface);
-  font: 500 11px / 1.55 var(--lm-mono);
-  white-space: pre-wrap;
-}
-
-.lm-add {
-  color: var(--lm-accent-text);
-  font-weight: 700;
-}
-
-.lm-del {
-  color: var(--lm-muted);
-  text-decoration: line-through;
-}
-
-.lm-ctx {
-  color: var(--lm-muted);
-}
-
 /* ---------- composer ----------
-   One square plate on a hard shadow. The paste box is the plate's text. */
+   The chat bar: the paste box and Send, on one square plate with a hard shadow. */
 
 .lm-composer {
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 6px 16px 12px;
+  padding: 6px 16px 14px;
   background: var(--lm-surface);
 }
 
@@ -748,8 +410,7 @@
   cursor: default;
 }
 
-/* The option row: ruled selects, then the tool chips. Off is a ruled cell;
-   on is a signal plate. */
+/* The phone's option row: ruled chips, as the gateway's own page shows them. */
 .lm-options {
   display: flex;
   flex-wrap: wrap;
@@ -759,55 +420,17 @@
   border-top: var(--bw-hair) solid var(--lm-line);
 }
 
-.lm-select {
-  position: relative;
-  max-width: 190px;
-  padding: 6px 28px 6px 11px;
-  overflow: hidden;
-  border: var(--bw-rule) solid var(--lm-line);
-  color: var(--lm-muted);
-  font: 700 11px / 1 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.lm-select::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  width: 5px;
-  height: 5px;
-  border-right: var(--bw-rule) solid currentColor;
-  border-bottom: var(--bw-rule) solid currentColor;
-  transform: translateY(-75%) rotate(45deg);
-}
-
 .lm-chip {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
   min-height: 34px;
   padding: 6px 11px;
   border: var(--bw-rule) solid var(--lm-line);
   color: var(--lm-on-surface);
-  font: 700 10.5px / 1 var(--lm-mono);
+  font: 700 11px / 1 var(--lm-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
-}
-
-.lm-chip svg {
-  width: 14px;
-  height: 14px;
-}
-
-.lm-chip.is-on {
-  background: var(--signal);
-  color: var(--paper);
-  box-shadow: var(--off-1) var(--off-1) 0 0 var(--lm-shadow);
 }
 
 /* ---------- knowledge base ---------- */
@@ -816,21 +439,6 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-}
-
-.lm-page-head h3 {
-  margin-bottom: 10px;
-  font: 900 clamp(1.6rem, 1.1rem + 1.6vw, 2.6rem) / 0.92 var(--lm-sans);
-  font-variation-settings: "wdth" 75;
-  letter-spacing: -0.03em;
-  text-transform: uppercase;
-}
-
-.lm-page-head p {
-  padding-top: 10px;
-  border-top: var(--bw-rule) solid var(--lm-line);
-  color: var(--lm-muted);
-  font-size: 13px;
 }
 
 .lm-section {
@@ -845,7 +453,7 @@
   gap: 10px;
   padding-bottom: 6px;
   border-bottom: var(--bw-rule) solid var(--lm-line);
-  font: 700 10px / 1.2 var(--lm-mono);
+  font: 700 11px / 1.2 var(--lm-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -857,25 +465,17 @@
 
 .lm-section-row {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 4px 10px;
-  padding: 8px 2px;
+  gap: 10px;
+  padding: 10px 2px;
   border-bottom: var(--bw-hair) solid var(--lm-line);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .lm-section-name {
   flex: 1;
   min-width: 0;
   font-weight: 600;
-}
-
-.lm-section-docs {
-  color: var(--lm-muted);
-  font: 500 10px / 1.3 var(--lm-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
 }
 
 .lm-badge.is-private {
@@ -892,17 +492,6 @@
   height: 11px;
 }
 
-.lm-scope {
-  padding: 10px 12px;
-  border: var(--bw-rule) solid var(--signal);
-  border-left-width: var(--bw-heavy);
-  font-size: 13px;
-}
-
-.lm-scope b {
-  font-weight: 700;
-}
-
 /* ---------- phone: the gateway's own page ----------
    The route sits above a paper handset on an ink stage. */
 
@@ -910,10 +499,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: safe center;
   gap: 14px;
   height: 100%;
   padding: 12px;
+  overflow-y: auto;
   background: var(--ink);
   color: var(--paper);
 }
@@ -929,7 +519,7 @@
   padding: 7px 10px;
   border: var(--bw-rule) solid var(--paper);
   color: var(--paper);
-  font: 700 10.5px / 1 var(--lm-mono);
+  font: 700 11px / 1 var(--lm-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -942,11 +532,9 @@
 
 .lm-phone {
   display: flex;
-  flex: 0 1 440px;
+  flex: none;
   flex-direction: column;
   width: min(300px, 100%);
-  min-height: 0;
-  overflow: hidden;
   border: var(--bw-frame) solid var(--paper);
   background: var(--lm-surface);
   color: var(--lm-on-surface);
@@ -988,7 +576,7 @@
   min-width: 10.5rem;
   padding: 6px 12px;
   border-left: var(--bw-rule) solid var(--lm-line);
-  font: 700 10px / 1 var(--lm-mono);
+  font: 700 11px / 1 var(--lm-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -1031,7 +619,7 @@
   flex-wrap: wrap;
   gap: 6px 14px;
   color: var(--lm-muted);
-  font: 500 10px / 1.2 var(--lm-mono);
+  font: 500 11px / 1.2 var(--lm-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -1114,87 +702,50 @@
   height: 44px;
 }
 
-/* ---------- narrow frames: the desktop UI is simplified, not shrunk ----------
-   Below 640px the sidebar drops away behind the menu icon, the model cell
-   goes, and the readouts wrap under the top bar. */
-
-.lm-menu {
-  display: none;
-}
-
-/* Wide frames: the readouts get a row of their own across the top, at a size
-   that reads, with the meters at the app's proportions. */
-@container lm (min-width: 641px) {
-  .lm-hud {
-    align-self: stretch;
-    border-right: 0;
-    border-left: 0;
-    border-bottom: var(--bw-rule) solid var(--lm-line);
-    background: var(--lm-surface);
+/* ---------- narrow frames ----------
+   Inside a half-width card the window is still a full window; below about
+   400px the padding and the type step down a notch so the chat keeps room. */
+@container lm (max-width: 400px) {
+  .lm-window {
+    inset: 10px 12px 18px 10px;
   }
 
-  .lm-hud-pill {
-    justify-content: center;
-    gap: 8px;
-    padding: 8px 11px;
-    font-size: 11px;
+  .lm-status-full {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
 
-  .lm-hud-pill b {
-    font-size: 10px;
-  }
-
-  .lm-num {
-    font-size: 12px;
-  }
-
-  .lm-meter {
-    width: 56px;
-    height: 9px;
-  }
-}
-
-@container lm (max-width: 640px) {
-  .lm-app {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .lm-hud {
-    align-self: flex-end;
-  }
-
-  .lm-sidebar {
-    display: none;
-  }
-
-  .lm-menu {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    border-right: var(--bw-rule) solid var(--lm-line);
-  }
-
-  .lm-cell-fill,
-  .lm-model {
-    display: none;
-  }
-
-  .lm-cell-title {
-    padding: 0 10px;
-    font-size: 14px;
-  }
-
-  .lm-hud-pill {
-    padding: 6px 8px;
+  .lm-status-short {
+    display: inline;
   }
 
   .lm-body {
     padding: 12px;
   }
 
+  .lm-wordmark {
+    font-size: 14px;
+  }
+
   .lm-user,
   .lm-bot {
     max-width: 94%;
+  }
+
+}
+
+/* A stage at least 400px wide takes the demo at the frame's 4:3 shape (Featured.css
+   gives the frame the same ratio there), so the window fills it. The query reads
+   the open stage, the nearest container above this element. */
+@container (min-width: 400px) {
+  .lm-demo {
+    aspect-ratio: 4 / 3;
+    height: auto;
+    max-height: 640px;
   }
 }
 
@@ -1203,7 +754,7 @@
 @media (max-height: 500px) and (orientation: landscape) {
   .lm-demo {
     /* Leave room for the fixed site header above the frame and a margin below. */
-    height: min(580px, calc(100dvh - var(--bar-h) - 2rem));
+    max-height: min(640px, calc(100dvh - var(--bar-h) - 2rem));
     min-height: 240px;
   }
 }

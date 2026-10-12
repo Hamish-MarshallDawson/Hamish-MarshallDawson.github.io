@@ -702,6 +702,19 @@
   }
 }
 
+/* In a stage of 400px or more, the demo fills the stage's 4:3 frame (set in
+   Featured.css): the phone mock takes the frame's height, and its view scrolls. */
+@container (min-width: 400px) {
+  .tr-demo,
+  .tr-demo__phone {
+    height: 100%;
+  }
+
+  .tr-demo__screen {
+    height: 100%;
+  }
+}
+
 /* ------------------------------------------------------------ phones */
 
 /* On a phone the app fills the frame: no bezel, no rounded screen. */

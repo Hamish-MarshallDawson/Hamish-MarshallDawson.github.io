@@ -14,7 +14,7 @@ The Project vault has a **Featured builds** block: LocalMind and TensoRoom each 
 
 ### Play tour
 
-Press **Play tour** and a pointer walks through each step: it glides to each part of the screen, highlights it, labels it and presses it. Steps fade between each other, and a progress bar shows where the tour is. With reduced motion or the site's FX switch off, the tour is replaced by manual stepping.
+Press **Run the demo** and the demo opens in place of the card's image. Press **Play the tour** and a pointer walks through each step: it glides to each part of the screen, highlights it, labels it and presses it. Steps fade between each other, and a progress bar shows where the tour is. With reduced motion or the site's FX switch off, the tour is replaced by manual stepping.
 
 | | |
 |---|---|
@@ -23,7 +23,7 @@ Press **Play tour** and a pointer walks through each step: it glides to each par
 
 ### LocalMind demo
 
-Styled like the current app, with paper, ink and a blue accent. Six steps: the chat home screen, pasting a job advert, the tool calls, the answer with a PDF, the knowledge base sections, and messaging the PC from a phone.
+Styled like the current app, with paper, ink and a blue accent, and cut down to one chat window with a plain chat bar. Five steps: pasting a job advert, the tool calls, the answer with a PDF, the knowledge base sections, and messaging the PC from a phone.
 
 | | |
 |---|---|

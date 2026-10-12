@@ -6,7 +6,7 @@ import { findTarget } from "./targets";
 // target's live box each frame and paints the pointer, ring and tag from it, so the
 // pointer lands on the target's centre and keeps following it through a resize,
 // a scroll or a target that moves. Painting writes transform and opacity only
-// (the tag's flip and width cap are the only other writes). It is decoration only:
+// (the tag is placed once per landing, and parked while the pointer moves). It is decoration only:
 // aria-hidden, pointer-events off, and it never moves keyboard focus.
 //
 // The frame loop runs only while something is moving. Once the pointer has
@@ -41,24 +41,6 @@ function liveTarget(c) {
   return c.target && c.target.isConnected ? c.target : null;
 }
 
-// The tag sits below and to the right of the tip. In the right half of the frame
-// it moves to the left of the tip, and near the bottom it moves above it. A tip
-// off the left or top edge pushes it in. Its width is capped to the room it has.
-// `x` and `y` are the offsets from the tip on each axis that is not flipped. A flipped
-// axis has none (undefined): paintTag places it from the tag's own measured size.
-export function tagPlacement({ cx = 0, cy = 0, frameW = 0, frameH = 0 }) {
-  const left = frameW > 0 && cx > frameW / 2;
-  const up = frameH > 0 && cy > frameH - 48;
-  const x = left ? undefined : Math.max(20, 8 - cx);
-  const y = up ? undefined : Math.max(22, 8 - cy);
-  if (left || up || frameW <= 0) {
-    const room = left ? cx - 14 : frameW - cx - 28;
-    return { left, up, x, y, maxWidth: frameW > 0 ? Math.max(40, Math.round(room)) : undefined };
-  }
-  const room = frameW - cx - x - 8;
-  return { left, up, x, y, maxWidth: Math.max(40, Math.round(room)) };
-}
-
 // A glide fades the ring out first, holds it still while it is invisible, and fades it back in once
 // the pointer has landed. Otherwise the ring would stretch across the frame on the way, and its dim
 // would leave half the frame grey. Short glides (drag steps) and pulses never fade the ring.
@@ -72,41 +54,116 @@ const near = (a, b) => Math.abs(a - b) < 0.05;
 const sameBox = (a, b) => a && b && near(a.left, b.left) && near(a.top, b.top) && near(a.w, b.w) && near(a.h, b.h);
 const sameAt = (a, b) => near(a.x, b.x) && near(a.y, b.y);
 
-// The tag's width cap moves in steps of this size, so a tip that is moving does
-// not reflow the tag every frame.
-const TAG_STEP = 24;
 
-// The tag's box is moved with a transform. Its flip and width cap change only when
-// the room changes, and its size is read once and kept until then, so a settled or
-// steadily moving frame reads no layout.
-function paintTag(t, at, f, s) {
-  const tag = tagPlacement({ cx: at.x, cy: at.y, frameW: f.clientWidth, frameH: f.clientHeight });
-  const maxWidth = tag.maxWidth === undefined ? undefined : Math.max(40, Math.floor(tag.maxWidth / TAG_STEP) * TAG_STEP);
-  let k = s.tag;
-  if (!k || k.el !== t) {
-    k = { el: t, left: null, up: null, maxWidth: null, w: 0, h: 0, sized: false };
-    s.tag = k;
+// The tag's spot is chosen once per placement, when the pointer lands, and kept relative to the
+// target's box. The candidates, in order: below the target, above it, then right of it and left
+// of it. Each is clamped inside the frame. The first that overlaps neither the target nor any
+// control in the frame wins. If none is clear, there is no spot: the tag is hidden rather than
+// placed over something. Pure, so it can be tested without a layout.
+const TAG_GAP = 6; // between the target's edge and the tag
+const EDGE = 8; // the tag keeps this far inside the frame
+const overlap = (a, b) => Math.max(0, Math.min(a.left + a.w, b.left + b.w) - Math.max(a.left, b.left))
+  * Math.max(0, Math.min(a.top + a.h, b.top + b.h) - Math.max(a.top, b.top));
+export function placeTag({ box, size, frame, avoid }) {
+  const { w, h } = size;
+  const midY = box.top + (box.h - h) / 2;
+  const candidates = [
+    { side: "below", left: box.left, top: box.top + box.h + TAG_GAP },
+    { side: "above", left: box.left, top: box.top - TAG_GAP - h },
+    { side: "below", left: box.left + box.w - w, top: box.top + box.h + TAG_GAP },
+    { side: "above", left: box.left + box.w - w, top: box.top - TAG_GAP - h },
+    { side: "right", left: box.left + box.w + TAG_GAP, top: midY },
+    { side: "left", left: box.left - TAG_GAP - w, top: midY },
+  ];
+  const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), Math.max(lo, hi));
+  for (const c of candidates) {
+    const left = clamp(c.left, EDGE, frame.w - w - EDGE);
+    const top = clamp(c.top, EDGE, frame.h - h - EDGE);
+    const rect = { left, top, w, h };
+    const clear = avoid.every((a) => overlap(rect, a) === 0);
+    if (clear) return { side: c.side, left, top, clear: true };
   }
-  if (k.left !== tag.left || k.up !== tag.up) {
-    t.classList.toggle("is-left", tag.left);
-    t.classList.toggle("is-up", tag.up);
-    k.left = tag.left;
-    k.up = tag.up;
-    k.sized = false;
+  return { clear: false };
+}
+
+// Controls a tag must not cover, as a selector inside the demo frame.
+const CONTROL_SEL = "button, a[href], input, textarea, select, [data-tour]";
+// Where a hidden tag is parked: outside the frame, so it covers nothing while it is not shown.
+const PARKED = "translate3d(-10000px, 0, 0)";
+
+// The part of an element that can be seen inside the frame: its box, cut by every ancestor that
+// clips (a scrolling view, for one). Null when nothing of it is visible.
+function visibleRect(el, f) {
+  const r = el.getBoundingClientRect();
+  let box = { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+  for (let p = el.parentElement; p; p = p.parentElement) {
+    const o = getComputedStyle(p);
+    if (o.overflowX !== "visible" || o.overflowY !== "visible") {
+      const pr = p.getBoundingClientRect();
+      box = {
+        left: Math.max(box.left, pr.left),
+        top: Math.max(box.top, pr.top),
+        right: Math.min(box.right, pr.right),
+        bottom: Math.min(box.bottom, pr.bottom),
+      };
+    }
+    if (p === f) break;
   }
-  if (k.maxWidth !== maxWidth) {
-    k.maxWidth = maxWidth;
-    t.style.maxWidth = maxWidth ? `${maxWidth}px` : "";
-    k.sized = false;
+  return box.right > box.left && box.bottom > box.top ? box : null;
+}
+
+// Reads the tag's size and the controls' boxes, then chooses the tag's spot. Called once per
+// placement (when the pointer lands), never per frame. The spot is kept relative to the target.
+function measureTag(t, f, box) {
+  t.style.maxWidth = `${Math.max(40, f.clientWidth - 2 * EDGE)}px`;
+  const size = { w: t.offsetWidth, h: t.offsetHeight };
+  const fr = f.getBoundingClientRect();
+  const ox = fr.left + f.clientLeft;
+  const oy = fr.top + f.clientTop;
+  const avoid = [box];
+  f.querySelectorAll(CONTROL_SEL).forEach((el) => {
+    if (el.getClientRects().length === 0) return;
+    const r = visibleRect(el, f);
+    if (r) avoid.push({ left: r.left - ox, top: r.top - oy, w: r.right - r.left, h: r.bottom - r.top });
+  });
+  const spot = placeTag({ box, size, frame: { w: f.clientWidth, h: f.clientHeight }, avoid });
+  const boxW = box.w;
+  const boxH = box.h;
+  if (!spot.clear) return { clear: false, boxW, boxH };
+  return { clear: true, side: spot.side, dx: spot.left - box.left, dy: spot.top - box.top, boxW, boxH };
+}
+
+// The tag is hidden (parked and transparent) while the pointer moves, and when no clear spot
+// exists, and placed once it lands on a target that has one. `done` is true once the glide has
+// landed; `drawn` is the target's box as it is drawn; `tip` is where the pointer is. The tag is a
+// child of the pointer, so its transform is relative to the tip.
+function hideTag(t, s) {
+  if (s.tagShown === false) return;
+  t.dataset.placed = "false";
+  t.style.transform = PARKED;
+  s.tagShown = false;
+}
+
+function paintTag(t, done, drawn, f, s, tip) {
+  if (!done) {
+    hideTag(t, s);
+    return;
   }
-  if (!k.sized) {
-    k.w = t.offsetWidth;
-    k.h = t.offsetHeight;
-    k.sized = true;
+  // The spot is measured again whenever the target changes size, so a target that grows (while
+  // text streams in, say) gets a fresh clear check. Between checks the tag keeps its spot.
+  const spot = s.spot;
+  if (!spot || Math.abs(spot.boxW - drawn.w) > 1 || Math.abs(spot.boxH - drawn.h) > 1) {
+    s.spot = measureTag(t, f, drawn);
   }
-  const x = tag.left ? -6 - k.w : tag.x;
-  const y = tag.up ? -4 - k.h : tag.y;
-  t.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+  if (!s.spot.clear) {
+    hideTag(t, s);
+    return;
+  }
+  const at = `translate3d(${drawn.left + s.spot.dx - tip.x}px, ${drawn.top + s.spot.dy - tip.y}px, 0)`;
+  if (t.style.transform !== at) t.style.transform = at;
+  if (t.dataset.placed !== "true") t.dataset.placed = "true";
+  if (t.dataset.side !== s.spot.side) t.dataset.side = s.spot.side;
+  s.tagShown = true;
 }
 
 export function DemoCursor({ cursor, paused = false }) {
@@ -142,6 +199,10 @@ export function DemoCursor({ cursor, paused = false }) {
     s.glide = cursor.glide ?? 0;
     s.ringFade = !cursor.linear && cursor.mode !== "pulse" && s.glide >= 2 * RING_FADE_MS;
     s.glideLeft = 0;
+    // The new cursor's tag is placed afresh once its pointer lands. Until then it is hidden.
+    s.spot = null;
+    s.tagShown = undefined;
+    if (tagEl.current) tagEl.current.dataset.placed = "false";
     wake.current?.();
   }, [cursor]);
 
@@ -218,8 +279,10 @@ export function DemoCursor({ cursor, paused = false }) {
           ring.style.transform = `translate3d(${drawn.left}px, ${drawn.top}px, 0) scale(${drawn.w / s.base.w}, ${drawn.h / s.base.h})`;
         }
         if (pointer && c.mode !== "pulse") pointer.style.transform = `translate3d(${at.x}px, ${at.y}px, 0)`;
-        if (tagEl.current) paintTag(tagEl.current, at, f, s);
       }
+      // A tag that has not been placed yet (a new label, drawn where the pointer already is)
+      // is placed even when nothing moved, so it never shows at the stylesheet's origin.
+      if (tagEl.current) paintTag(tagEl.current, done, drawn, f, s, at);
       // Keep going while the glide runs or the target is still moving. Stop once it has landed.
       return !done || changed;
     };
@@ -246,6 +309,16 @@ export function DemoCursor({ cursor, paused = false }) {
     if (observer && target) observer.observe(target);
     // A check every 300ms, for a target that is re-rendered or grows without a resize of its own.
     const poll = setInterval(onWake, 300);
+    // The demo changes under the pointer (text streams in, a control grows or is re-mounted). A change
+    // in the demo wakes the loop, so the tag is checked against the new box on the next frame, not at
+    // the next 300 ms check. The cursor's own layer is left out, or its writes would wake it.
+    const own = ringEl.current?.parentElement;
+    const mutations = typeof MutationObserver === "function" && observed
+      ? new MutationObserver((records) => {
+        if (records.some((r) => !own?.contains(r.target))) onWake();
+      })
+      : null;
+    mutations?.observe(observed, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ["class", "style", "hidden", "aria-disabled"] });
 
     return () => {
       // Pausing or ending keeps the glide's time left, so a pause mid-glide can finish it.
@@ -254,6 +327,7 @@ export function DemoCursor({ cursor, paused = false }) {
       s.frame = 0;
       clearInterval(poll);
       observer?.disconnect();
+      mutations?.disconnect();
       window.removeEventListener("scroll", onWake, { capture: true });
       window.removeEventListener("resize", onWake);
       wake.current = null;
@@ -286,7 +360,7 @@ export function DemoCursor({ cursor, paused = false }) {
           />
         </svg>
         {cursor?.label && !pulse && (
-          <span ref={tagEl} className="fdemo-tag">
+          <span key={cursor.label} ref={tagEl} className="fdemo-tag">
             {cursor.label}
           </span>
         )}
