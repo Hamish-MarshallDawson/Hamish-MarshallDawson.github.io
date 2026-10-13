@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
-// The demo plays inside the card's picture box, in place of the picture. The box keeps its
-// size: the demo fills a layer on top of it, and nothing else on the page moves.
+// The demo plays in a panel over a featured card: the card it was started from, or the
+// card beside it on a wide screen. The panel is the card's own size (the cell's box), so
+// nothing else on the page moves. The panel has a close button (X) and the round control
+// in its band, which does what the card's own control does.
 //
 // The player owns the timing. A demo owns its scenes (its own look and its own CSS animations).
 // The player tells it which scene to show, and whether it is playing (`playing` is false while
@@ -11,7 +13,7 @@ import { useEffect, useRef, useState } from "react";
 //   scenes:  [{ id, caption, ms }], exported by the demo. `ms` is how long the scene is shown.
 //   Demo:    the demo's default export, rendered with { scene, playing, reducedMotion }.
 //
-// The last scene is held for HOLD_MS more, then the layer fades back to the picture.
+// The last scene is held for HOLD_MS more, then the panel fades back to the card.
 
 export const HOLD_MS = 2000;
 
@@ -39,7 +41,7 @@ const GLYPHS = {
   ),
 };
 
-// What the round control and the card's button say, from the player's phase. One function, so the
+// What the round control and the card's button say, from the run's phase. One function, so the
 // two cannot drift apart. `phase` is "idle", "playing", "paused" or "ended".
 export function controlLabels(phase, reduce, title) {
   if (reduce) {
@@ -51,15 +53,45 @@ export function controlLabels(phase, reduce, title) {
   return { text: "Play demo", aria: `Play the ${title} demo`, glyph: "play" };
 }
 
+// The round control. It is in the card's picture box and in the panel's band, and both
+// call the same press, so they always show and do the same.
+export function RoundControl({ phase, reduce, title, onPress, onPreload }) {
+  const labels = controlLabels(phase, reduce, title);
+  return (
+    <button
+      type="button"
+      className="fdemo-round"
+      aria-label={labels.aria}
+      data-glyph={labels.glyph}
+      onClick={onPress}
+      onMouseEnter={onPreload}
+      onFocus={onPreload}
+    >
+      <svg className="fdemo-round-glyph" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        {GLYPHS[labels.glyph]}
+      </svg>
+    </button>
+  );
+}
+
 const NO_SCENES = [];
 
-export function DemoPlayer({ boxRef, Demo, scenes = NO_SCENES, scene, phase, reduce, title, runKey, onPress, onScene, onEnd, onPreload }) {
+// Scrolls the panel into view only when it is mostly off screen (smooth, or at once with reduced motion).
+function bringIntoView(panel, reduce) {
+  const r = panel.getBoundingClientRect();
+  const seen = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
+  // A panel taller than the screen (a phone held sideways) counts as in view when the screen is mostly filled.
+  if (seen < Math.min(r.height, window.innerHeight) / 2) panel.scrollIntoView?.({ block: "center", behavior: reduce ? "auto" : "smooth" });
+}
+
+export function DemoPanel({ Demo, scenes = NO_SCENES, scene, phase, reduce, title, runKey, focusClose, onPress, onClose, onScene, onEnd, onPreload }) {
   const [away, setAway] = useState(false);
+  const panelRef = useRef(null);
+  const closeRef = useRef(null);
   const count = scenes.length;
   const show = phase === "playing" || phase === "paused";
   const live = Boolean(Demo) && phase === "playing" && !reduce && !away;
   const shown = Math.min(scene, Math.max(0, count - 1));
-  const labels = controlLabels(phase, reduce, title);
   // The timer reads the latest callbacks without restarting when they change identity.
   const callbacks = useRef({});
   callbacks.current = { onScene, onEnd };
@@ -68,8 +100,8 @@ export function DemoPlayer({ boxRef, Demo, scenes = NO_SCENES, scene, phase, red
 
   // Off screen, or in a hidden tab, the demo freezes as if paused. The phase is kept, so it resumes.
   useEffect(() => {
-    const box = boxRef.current;
-    if (!box) return undefined;
+    const panel = panelRef.current;
+    if (!panel) return undefined;
     let outOfView = false;
     const sync = () => {
       const next = outOfView || document.hidden;
@@ -81,18 +113,26 @@ export function DemoPlayer({ boxRef, Demo, scenes = NO_SCENES, scene, phase, red
         sync();
       })
       : null;
-    observer?.observe(box);
+    observer?.observe(panel);
     document.addEventListener("visibilitychange", sync);
     return () => {
       observer?.disconnect();
       document.removeEventListener("visibilitychange", sync);
     };
-  }, [boxRef]);
+  }, []);
 
-  // A new run starts its first scene with no time left over from the last run.
+  // A new run starts its first scene with no time left over from the last run, and comes into view.
   useEffect(() => {
     remain.current = null;
-  }, [runKey]);
+    if (show && panelRef.current) bringIntoView(panelRef.current, reduce);
+  }, [runKey, reduce, show]);
+
+  // The close button takes focus when the panel opens over the card that was pressed (the card's
+  // own button is inert then), and when the panel moves to a new card while it is open.
+  // Focus does not scroll: the page does not move. The X sticks to the top of the screen and the band to the bottom.
+  useEffect(() => {
+    if (focusClose && show) closeRef.current?.focus({ preventScroll: true });
+  }, [runKey, focusClose, show]);
 
   // The scene timer. It runs only while the demo is live, and leaves no timer behind.
   useEffect(() => {
@@ -115,37 +155,40 @@ export function DemoPlayer({ boxRef, Demo, scenes = NO_SCENES, scene, phase, red
   }, [live, shown, count, scenes]);
 
   return (
-    <>
-      {Demo && (
-        <div key={runKey} className="fdemo-layer" data-show={show ? "true" : "false"} data-reduced={reduce ? "true" : undefined}>
-          <div className="fdemo-scene">
-            <Demo scene={shown} playing={live} reducedMotion={reduce} />
-          </div>
-          <div className="fdemo-band">
-            <p className="fdemo-caption" aria-live="polite" aria-atomic="true">
-              {show && scenes[shown] ? scenes[shown].caption : ""}
-            </p>
-            <ol className="fdemo-dots" aria-hidden="true">
-              {scenes.map((item, i) => (
-                <li key={item.id} className={i === shown ? "is-current" : undefined} />
-              ))}
-            </ol>
-          </div>
+    <section
+      ref={panelRef}
+      className="fdemo-overlay"
+      aria-label={`${title} demo`}
+      data-show={show ? "true" : "false"}
+      data-reduced={reduce ? "true" : undefined}
+      inert={show ? undefined : ""}
+    >
+      {/* A closed panel fades out and then stays in the page, hidden and inert: out of the tab order and the accessibility tree. */}
+      {/* The X is first in the panel, in its own sticky row, so it stays under the top bar while any of the panel is below it. */}
+      <div className="fdemo-top">
+        <button ref={closeRef} type="button" className="fdemo-close" aria-label={`Close the ${title} demo`} onClick={onClose}>
+          <svg className="fdemo-close-glyph" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M3 3L13 13M13 3L3 13" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="square" />
+          </svg>
+        </button>
+      </div>
+      {/* The stage holds the scene and the band as one unit. It sticks under the top bar while the panel spans the screen. */}
+      <div className="fdemo-stage">
+        <div className="fdemo-scene">
+          {Demo && <Demo scene={shown} playing={live} reducedMotion={reduce} />}
         </div>
-      )}
-      <button
-        type="button"
-        className="fdemo-round"
-        aria-label={labels.aria}
-        data-glyph={labels.glyph}
-        onClick={onPress}
-        onMouseEnter={onPreload}
-        onFocus={onPreload}
-      >
-        <svg className="fdemo-round-glyph" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-          {GLYPHS[labels.glyph]}
-        </svg>
-      </button>
-    </>
+        <div className="fdemo-band">
+          <p className="fdemo-caption" aria-live="polite" aria-atomic="true">
+            {show && scenes[shown] ? scenes[shown].caption : ""}
+          </p>
+          <ol className="fdemo-dots" aria-hidden="true">
+            {scenes.map((item, i) => (
+              <li key={item.id} className={i === shown ? "is-current" : undefined} />
+            ))}
+          </ol>
+          <RoundControl phase={phase} reduce={reduce} title={title} onPress={onPress} onPreload={onPreload} />
+        </div>
+      </div>
+    </section>
   );
 }

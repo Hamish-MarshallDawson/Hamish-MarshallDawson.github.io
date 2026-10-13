@@ -4,6 +4,11 @@
    shadow plate. The palette is declared on the root, so the site's Colour menu
    cannot reach it: the signal here is always #1F1FFF.
 
+   The scenes fill tall boxes: 326 by 690 up to 828 by 780 (the scene area, which
+   is the overlay minus the caption band). Sizes are container units of the root,
+   so type and rows grow with the box. The top 56px of the box is kept clear: the
+   crumb sits to the left of it, and the player's close button sits in the corner.
+
    Motion rules. Each element's base style is its END state, and an entrance is
    a keyframe that starts hidden and fills forwards. With `.is-still` (reduced
    motion) animations are off, so the scene simply shows its end state. With
@@ -29,8 +34,16 @@
   --lm-pixel: "Silkscreen", "JetBrains Mono", ui-monospace, monospace;
   --ease-snap: cubic-bezier(0.7, 0, 0.2, 1);
 
-  /* The player's box is the size container; this root is one too, so the
-     queries below read the scene's own width and height. */
+  /* Sizes in the box's own units. Every text size is at least 11px. */
+  --fs: clamp(13px, 4.1cqw, 21px);
+  --fs-s: clamp(11px, 3.2cqw, 15px);
+  --fs-hero: clamp(22px, 7cqw, 40px);
+  --fs-answer: clamp(15px, 4.9cqw, 27px);
+  --row: clamp(42px, 7.2cqh, 66px);
+  --ctl: clamp(44px, 7cqh, 64px);
+  --ico: clamp(16px, 4.6cqw, 26px);
+
+  /* The box is the size container, so the queries and cqw/cqh units read the scene's own size. */
   container: lm / size;
   position: relative;
   width: 100%;
@@ -38,7 +51,7 @@
   overflow: hidden;
   background: var(--lm-surface);
   color: var(--lm-on-surface);
-  font: 400 13px / 1.45 var(--lm-sans);
+  font: 400 var(--fs) / 1.4 var(--lm-sans);
   font-variation-settings: "wdth" 100;
   text-align: left;
   -webkit-font-smoothing: antialiased;
@@ -77,8 +90,8 @@
 
 :where(.lm-demo) svg {
   display: block;
-  width: 16px;
-  height: 16px;
+  width: var(--ico);
+  height: var(--ico);
   fill: none;
   stroke: currentColor;
   stroke-width: 2.25;
@@ -116,7 +129,7 @@
   }
   to {
     opacity: 0;
-    transform: translateY(-64px);
+    transform: translateY(-18cqh);
   }
 }
 
@@ -135,6 +148,15 @@
   }
   to {
     transform: scaleX(1);
+  }
+}
+
+@keyframes lm-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
   }
 }
 
@@ -193,14 +215,28 @@
   display: none;
 }
 
-/* ---------- the window ----------
-   One plate on a signal shadow. The demo is the scene area above the player's
-   caption band, so the plate fills it: the inset only leaves room for the
-   6px shadow, which must stay inside the box. */
+/* ---------- the crumb and the window ----------
+   The crumb is the strip above the window, left of the clear corner (56px). The
+   window is the plate under it, with its signal shadow kept inside the box. */
+
+.lm-crumb {
+  position: absolute;
+  left: 14px;
+  right: 64px;
+  top: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 400 var(--fs-s) / 1.2 var(--lm-mono);
+  color: var(--lm-muted);
+}
 
 .lm-window {
   position: absolute;
-  inset: 8px 12px 10px 8px;
+  inset: 56px 12px 10px 8px;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -214,19 +250,19 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 28px;
+  height: clamp(28px, 5cqh, 36px);
   padding: 0 10px;
   background: var(--lm-line);
   color: var(--lm-surface);
   border-bottom: 2px solid var(--signal);
-  font: 400 11px / 1 var(--lm-mono);
+  font: 400 var(--fs-s) / 1 var(--lm-mono);
 }
 
 .lm-mark {
   flex: none;
   padding: 3px 4px;
   border: 1px solid currentColor;
-  font: 400 11px / 1 var(--lm-pixel);
+  font: 400 var(--fs-s) / 1 var(--lm-pixel);
 }
 
 .lm-wordmark {
@@ -234,7 +270,7 @@
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
-  font: 400 12px / 1 var(--lm-pixel);
+  font: 400 var(--fs) / 1 var(--lm-pixel);
   letter-spacing: 0.04em;
 }
 
@@ -244,6 +280,7 @@
   align-items: center;
   gap: 6px;
   white-space: nowrap;
+  font-size: var(--fs-s);
 }
 
 .lm-dot {
@@ -264,35 +301,33 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 14px;
+  gap: clamp(8px, 2.6cqh, 18px);
+  padding: clamp(10px, 3.4cqw, 18px);
   overflow: hidden;
 }
 
-.lm-note,
-.lm-query {
-  font: 400 11px / 1.3 var(--lm-mono);
-  color: var(--lm-muted);
+.lm-hero {
+  font: 400 var(--fs-hero) / 1.05 var(--lm-pixel);
+  letter-spacing: 0.02em;
 }
 
 /* ---------- chat ---------- */
 
-/* The thread clips at its top, so the newest message stays whole: bubbles keep
-   their own height, and older lines scroll out of view. */
+/* The thread takes the free height and keeps its newest message at the bottom. */
 .lm-thread {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 10px;
   overflow: hidden;
 }
 
 .lm-bubble {
   flex: none;
   max-width: 88%;
-  padding: 8px 10px;
+  padding: clamp(8px, 2.4cqh, 14px) clamp(10px, 3.2cqw, 16px);
   border: 2px solid var(--lm-line);
   background: var(--lm-surface);
 }
@@ -301,7 +336,7 @@
   align-self: flex-end;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   background: var(--lm-user-fill);
   color: var(--lm-user-text);
   border-color: var(--lm-user-fill);
@@ -312,9 +347,14 @@
   min-height: 2.6em;
 }
 
+.lm-answer {
+  font-size: var(--fs-answer);
+  line-height: 1.35;
+}
+
 .lm-caret {
   display: inline-block;
-  width: 7px;
+  width: 0.5em;
   height: 0.95em;
   margin-left: 2px;
   vertical-align: -0.15em;
@@ -327,17 +367,39 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 6px;
+  padding: 3px 7px;
   border: 2px solid currentColor;
   background: var(--lm-wash);
   color: var(--lm-on-surface);
-  font: 400 11px / 1.3 var(--lm-mono);
+  font: 400 var(--fs-s) / 1.3 var(--lm-mono);
 }
 
 .lm-bubble.is-user .lm-chip {
   background: var(--lm-user-fill);
   color: var(--lm-user-text);
   border-color: var(--lm-user-text);
+}
+
+/* The advert as a preview card at the top of the chat: the advert the chip is taken from. */
+.lm-advert-card {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: clamp(12px, 3.6cqw, 20px);
+  border: 2px solid var(--lm-line);
+  background: var(--lm-wash);
+}
+
+.lm-advert-kicker,
+.lm-advert-meta {
+  font: 400 var(--fs-s) / 1.3 var(--lm-mono);
+  color: var(--lm-muted);
+}
+
+.lm-advert-title {
+  font: 700 clamp(20px, min(8cqw, 7.5cqh), 48px) / 1.15 var(--lm-sans);
 }
 
 /* The composer: the advert chip sits in it, then Send. */
@@ -347,8 +409,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 40px;
-  padding: 0 6px 0 10px;
+  height: var(--ctl);
+  padding: 0 8px 0 12px;
   border: 2px solid var(--lm-line);
 }
 
@@ -366,8 +428,8 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: calc(var(--ctl) * 0.6);
+  height: calc(var(--ctl) * 0.6);
   margin-left: auto;
   background: var(--lm-line);
   color: var(--lm-surface);
@@ -382,21 +444,25 @@
   animation: lm-ring 700ms ease-out var(--d, 0ms) backwards;
 }
 
-/* ---------- knowledge rows ---------- */
+/* ---------- knowledge rows and the private folder ---------- */
 
 .lm-rows {
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .lm-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 30px;
-  padding: 0 8px;
+  gap: 10px;
+  flex: 1 1 0;
+  min-height: var(--row);
+  padding: 0 clamp(8px, 3cqw, 14px);
   border: 2px solid var(--lm-line);
+  font-size: var(--fs);
 }
 
 .lm-row-name {
@@ -408,18 +474,14 @@
   font-weight: 600;
 }
 
-.lm-row.is-locked .lm-row-name {
-  color: var(--lm-muted);
-}
-
 .lm-badge {
   flex: none;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 5px;
+  padding: 3px 6px;
   border: 1px solid var(--lm-line);
-  font: 400 11px / 1 var(--lm-mono);
+  font: 400 var(--fs-s) / 1 var(--lm-mono);
 }
 
 .lm-badge.is-private {
@@ -427,47 +489,89 @@
   color: var(--lm-surface);
 }
 
+.lm-badge.is-private svg {
+  width: 0.9em;
+  height: 0.9em;
+}
+
 .lm-tick {
   flex: none;
   display: grid;
   place-items: center;
-  width: 18px;
-  height: 18px;
+  width: calc(var(--row) * 0.36);
+  height: calc(var(--row) * 0.36);
   background: var(--signal);
   color: #ffffff;
   animation: lm-pop 320ms var(--ease-snap) var(--d, 0ms) both;
 }
 
 .lm-tick svg {
-  width: 12px;
-  height: 12px;
+  width: 62%;
+  height: 62%;
   stroke-width: 3;
 }
 
-/* ---------- tool calls and files ---------- */
-
-.lm-calls {
+/* The private folder takes the rest of the body: a dashed plate with the lock in it. */
+.lm-vault {
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 3px dashed var(--lm-line);
+  color: var(--lm-muted);
+}
+
+.lm-lock-big {
+  display: grid;
+  place-items: center;
+  color: var(--lm-on-surface);
+}
+
+.lm-lock-big svg {
+  width: clamp(44px, min(18cqw, 14cqh), 120px);
+  height: clamp(44px, min(18cqw, 14cqh), 120px);
+  stroke-width: 1.6;
+}
+
+.lm-vault-name {
+  font-weight: 600;
+  color: var(--lm-on-surface);
+  font-size: clamp(13px, min(6cqw, 5cqh), 30px);
+}
+
+/* ---------- tool calls, files and the page ---------- */
+
+.lm-calls {
+  flex: 2 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .lm-call {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  padding: 6px 8px;
-  border-left: 4px solid var(--signal);
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 0;
+  min-height: var(--row);
+  padding: 0 clamp(8px, 3cqw, 14px);
+  border-left: 5px solid var(--signal);
   background: var(--lm-wash);
-  font: 400 11px / 1.3 var(--lm-mono);
+  font: 400 var(--fs-s) / 1.3 var(--lm-mono);
 }
 
 .lm-call-name {
+  flex: 1;
+  min-width: 0;
   font-weight: 600;
+  font-size: var(--fs);
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  min-width: 0;
 }
 
 .lm-call-meta {
@@ -477,10 +581,11 @@
 }
 
 .lm-files {
+  flex: 3 1 0;
+  min-height: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: auto;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .lm-file {
@@ -488,52 +593,108 @@
   align-items: center;
   gap: 6px;
   align-self: flex-start;
-  padding: 5px 8px;
+  padding: 5px 9px;
   border: 2px solid var(--lm-line);
   background: var(--lm-surface);
-  font: 400 11px / 1.2 var(--lm-mono);
+  font: 400 var(--fs-s) / 1.2 var(--lm-mono);
 }
 
-.lm-file.is-pdf {
+/* The PDF is a sheet: a signal block with its name, its page count and text lines. */
+.lm-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(12px, 4cqw, 20px);
+  border: 2px solid var(--signal);
   background: var(--signal);
-  border-color: var(--signal);
   color: #ffffff;
 }
 
-/* ---------- phone route ---------- */
+.lm-page-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 var(--fs) / 1.2 var(--lm-sans);
+}
+
+.lm-page-meta {
+  font: 400 var(--fs-s) / 1 var(--lm-mono);
+}
+
+.lm-page-lines {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.lm-page-lines i {
+  display: block;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.lm-page-lines i:nth-child(2) {
+  width: 92%;
+}
+
+.lm-page-lines i:nth-child(3) {
+  width: 78%;
+}
+
+.lm-page-lines i:nth-child(4) {
+  width: 86%;
+}
+
+.lm-page-lines i:nth-child(5) {
+  width: 52%;
+}
+
+/* ---------- phone route: the nodes run down the box ---------- */
 
 .lm-nodes {
+  flex: 1;
+  min-height: 0;
   display: flex;
-  align-items: center;
-  margin-top: 6px;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .lm-node-item {
-  display: flex;
-  align-items: center;
   flex: 1 1 0;
-  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .lm-link {
-  flex: 1;
-  min-width: 6px;
-  height: 2px;
-  margin: 0 4px;
+  flex: none;
+  align-self: center;
+  width: 3px;
+  height: clamp(14px, 5cqh, 44px);
   background: var(--lm-line);
-  transform-origin: left center;
-  animation: lm-grow 380ms ease-out var(--d, 0ms) both;
+  transform-origin: top center;
+  animation: lm-grow-y 380ms ease-out var(--d, 0ms) both;
 }
 
 /* A node is ink until it lights: the signal frame and tint fade in over it. */
 .lm-node {
   position: relative;
-  flex: 1;
-  padding: 9px 6px;
+  flex: 1 1 0;
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
   border: 2px solid var(--lm-line);
   background: var(--lm-surface);
-  text-align: center;
-  font: 600 12px / 1 var(--lm-sans);
+  font: 600 var(--fs) / 1 var(--lm-sans);
   white-space: nowrap;
 }
 
@@ -548,16 +709,16 @@
 }
 
 .lm-sleep {
-  margin-top: auto;
+  flex: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font: 400 11px / 1.3 var(--lm-mono);
+  gap: 8px;
+  font: 400 var(--fs-s) / 1.3 var(--lm-mono);
 }
 
 .lm-meter {
   display: block;
-  height: 8px;
+  height: clamp(8px, 2.2cqh, 14px);
   border: 2px solid var(--lm-line);
 }
 
@@ -570,250 +731,90 @@
   animation: lm-drain 1400ms linear var(--d, 0ms) both;
 }
 
-/* ---------- large boxes (582 by 327 and up) fill the plate ----------
-   Bigger rows and type, and one chat line above the tool rows. The chat line
-   is only shown here, since the phone and short boxes have no room for it. */
-
-.lm-demo .lm-bubble.lm-wide-only {
-  display: none;
-}
-
-@container lm (min-width: 420px) and (min-height: 300px) {
-  .lm-demo .lm-bubble.lm-wide-only {
-    display: flex;
+/* Short boxes (the 810 by 240 landscape phone): the same five scenes in a smaller type and row scale,
+   with the hero dropped. The crumb strip and the clear corner stay as they are. */
+@container lm (max-height: 300px) {
+  .lm-window {
+    --fs: 14px;
+    --fs-s: 12px;
+    --fs-answer: 16px;
+    --row: 32px;
+    --ctl: 38px;
+    --ico: 13px;
   }
 
   .lm-titlebar {
-    height: 34px;
-    font-size: 12px;
-  }
-
-  .lm-wordmark {
-    font-size: 14px;
-  }
-
-  .lm-body {
-    gap: 8px;
-    padding: 14px 16px;
-  }
-
-  .lm-note,
-  .lm-query {
-    font-size: 12px;
-  }
-
-  .lm-bubble {
-    font-size: 14px;
-    padding: 9px 12px;
-  }
-
-  .lm-chip,
-  .lm-badge,
-  .lm-file,
-  .lm-sleep {
-    font-size: 12px;
-  }
-
-  /* The rows and calls share the window's free height, so the plate is full at 658 by 310. */
-  .lm-rows,
-  .lm-calls {
-    flex: 1;
-    min-height: 0;
-    gap: 6px;
-  }
-
-  .lm-row {
-    flex: 1 1 0;
-    min-height: 38px;
-    padding: 0 12px;
-    font-size: 14px;
-  }
-
-  .lm-call {
-    flex: 1 1 0;
-    align-items: center;
-  }
-
-  .lm-tick {
-    width: 22px;
-    height: 22px;
-  }
-
-  .lm-call {
-    padding: 7px 10px;
-    font-size: 13px;
-  }
-
-  .lm-composer {
-    height: 46px;
-  }
-
-  .lm-send {
-    width: 32px;
-    height: 32px;
-  }
-
-  .lm-node {
-    padding: 13px 8px;
-    font-size: 14px;
-  }
-
-  .lm-meter {
-    height: 10px;
-  }
-}
-
-/* ---------- short boxes (466 by 262 on a 1024 card) keep the rows inside the body ---------- */
-
-@container lm (max-height: 300px) {
-  .lm-body {
-    gap: 6px;
-    padding: 10px 14px;
-  }
-
-  .lm-rows,
-  .lm-calls {
-    gap: 4px;
-  }
-
-  .lm-row {
     height: 26px;
   }
-}
-
-/* ---------- phones: the same scenes, with room trimmed to the 355px box ---------- */
-
-@container lm (max-width: 420px) {
-  .lm-body {
-    gap: 6px;
-    padding: 10px 12px;
-  }
-
-  .lm-thread {
-    gap: 6px;
-  }
-
-  .lm-bubble,
-  .lm-call,
-  .lm-row-name {
-    font-size: 12px;
-  }
-
-  .lm-composer {
-    height: 36px;
-  }
-
-  .lm-row {
-    height: 28px;
-  }
-
-  .lm-node {
-    padding: 8px 4px;
-    font-size: 11px;
-  }
-
-  .lm-wordmark {
-    font-size: 11px;
-  }
-}
-
-/* ---------- short scene areas (about 180 to 210px: a 320 by 240 or 349 by 261 card) ----------
-   Rows, calls and bubbles are trimmed so each scene's last row sits whole in the body. */
-
-@container lm (max-height: 210px) {
-  .lm-titlebar {
-    height: 24px;
-  }
 
   .lm-body {
+    gap: 6px;
+    padding: 8px 12px;
+  }
+
+  .lm-hero,
+  .lm-advert-kicker,
+  .lm-advert-meta {
+    display: none;
+  }
+
+  .lm-advert-card {
+    padding: 6px 8px;
+  }
+
+  .lm-advert-title {
+    font-size: 14px;
+  }
+
+  .lm-rows,
+  .lm-calls {
     gap: 4px;
+  }
+
+  .lm-page {
     padding: 8px 10px;
   }
 
-  .lm-thread,
-  .lm-calls {
-    gap: 4px;
+  .lm-page-lines,
+  .lm-page-meta {
+    display: none;
   }
 
-  .lm-rows {
-    gap: 3px;
+  /* The request line and the advert preview take the room the scene needs: the chip still says it. */
+  .lm-req,
+  .lm-advert-card {
+    display: none;
   }
 
-  .lm-query,
-  .lm-note {
-    font-size: 11px;
-    line-height: 1.2;
+  .lm-lock-big svg {
+    width: 30px;
+    height: 30px;
   }
 
-  .lm-row {
-    height: 22px;
-    padding: 0 6px;
+  .lm-file:not(.is-pdf) {
+    display: none;
   }
 
-  .lm-row-name {
-    font-size: 11px;
+  /* The folder keeps its name and badge: the lock is dropped, and the route nodes keep their text. */
+  .lm-lock-big {
+    display: none;
   }
 
-  .lm-badge,
-  .lm-tick {
-    font-size: 11px;
-  }
-
-  .lm-tick {
-    width: 14px;
-    height: 14px;
-  }
-
-  .lm-tick svg {
-    width: 9px;
-    height: 9px;
-  }
-
-  .lm-call {
-    padding: 3px 6px;
-    font-size: 11px;
-  }
-
-  .lm-bubble {
-    padding: 4px 7px;
-    font-size: 11px;
-  }
-
-  .lm-files {
-    flex-wrap: nowrap;
-    gap: 6px;
-  }
-
-  .lm-file {
-    padding: 3px 6px;
-    white-space: nowrap;
-  }
-
-  .lm-composer {
-    height: 28px;
-  }
-
-  .lm-send {
-    width: 20px;
-    height: 20px;
+  .lm-link {
+    height: 10px;
   }
 
   .lm-node {
-    padding: 5px 2px;
-    font-size: 11px;
+    min-height: 30px;
   }
 
-  .lm-sleep {
-    gap: 3px;
+  .lm-call {
+    height: 22px;
+    padding: 0 8px;
   }
 
-  .lm-meter {
-    height: 6px;
+  /* One tool call fits beside the PDF sheet. */
+  .lm-call:nth-child(n + 2) {
+    display: none;
   }
-}
-
-/* The locked row has no tick, so its tick slot stays empty: the badges line up with the rows above. */
-.lm-tick.is-empty {
-  background: none;
-  animation: none;
 }
