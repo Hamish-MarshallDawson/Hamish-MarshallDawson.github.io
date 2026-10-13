@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotionConfig } from "framer-motion";
-import { DemoPlayer, controlLabels } from "./DemoPlayer";
+import { DemoPanel, RoundControl, controlLabels } from "./DemoPlayer";
 import { ExternalIcon } from "../shared/Icons";
 import { ProjectMedia } from "../vault/ProjectMedia";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { pad } from "./format";
 import "./Featured.css";
 
@@ -18,11 +19,26 @@ const NO_SCENES = [];
 
 const repoLabel = (url) => (url.includes("github.com") ? "Repo" : "Visit");
 
+// The card that a demo covers on a wide screen: the card beside it in the grid. On a
+// narrow screen (one column), and with one project, it is the card itself.
+const partnerIndex = (index, total) => {
+  const partner = index % 2 === 0 ? index + 1 : index - 1;
+  return partner < total ? partner : index;
+};
+
 // The featured block at the top of the vault: the polished builds, each with a
-// pitch, three facts and a demo. The demo plays inside the card's picture box,
-// and only one card plays at a time: starting one resets the other.
+// pitch, three facts and a demo. One demo plays at a time. It covers a card's whole
+// box: the card beside it on a wide screen, or its own card on a narrow one. Its close
+// button (X) puts the covered card back.
 export function FeaturedProjects({ projects }) {
-  const [activeId, setActiveId] = useState(null);
+  const wide = useMediaQuery("(min-width: 900px)");
+  const reduce = useReducedMotionConfig();
+  // The one run: which card it started from, its phase, its scene, and a key that changes per run.
+  // Phases: "playing", "paused", "ended" (held on the last scene, then the panel fades out) and "idle" (closed).
+  const [run, setRun] = useState(null);
+  // Loaded demo modules, keyed by the demo's name.
+  const [mods, setMods] = useState({});
+  const buttons = useRef({});
 
   // A `featured.demo` that is not in DEMOS shows no button; say so in dev.
   useEffect(() => {
@@ -32,6 +48,81 @@ export function FeaturedProjects({ projects }) {
       if (key && !DEMOS[key]) console.warn(`Featured: "${project.id}" names demo "${key}", which is not in DEMOS.`);
     });
   }, [projects]);
+
+  const runIndex = run ? projects.findIndex((project) => project.id === run.id) : -1;
+  const runProject = runIndex >= 0 ? projects[runIndex] : null;
+  const runId = runProject?.id ?? null;
+  const showing = Boolean(runProject) && (run.phase === "playing" || run.phase === "paused");
+  // The card the panel sits over: its own card when narrow, its partner when wide.
+  const hostId = runProject ? projects[wide ? partnerIndex(runIndex, projects.length) : runIndex].id : null;
+  const covered = showing ? hostId : null;
+  const runDemo = runProject?.featured.demo;
+  const runScenes = (runDemo && mods[runDemo]?.scenes) || NO_SCENES;
+
+  // Fetches a demo's module once. A failed fetch leaves its card on the picture.
+  const preload = useCallback(
+    (project) => {
+      const key = project.featured?.demo;
+      if (!DEMOS[key] || mods[key]) return;
+      DEMOS[key]().then(
+        (mod) => setMods((prev) => ({ ...prev, [key]: mod })),
+        () => setRun((r) => (r && r.id === project.id ? { ...r, phase: "idle" } : r)),
+      );
+    },
+    [mods],
+  );
+
+  const start = (project) => {
+    preload(project);
+    setRun((prev) => ({ id: project.id, phase: "playing", scene: 0, runKey: (prev?.runKey ?? 0) + 1 }));
+  };
+
+  // With reduced motion, a press steps to the next scene; after the last, the panel goes.
+  const advance = (project) => {
+    const count = (mods[project.featured.demo]?.scenes ?? NO_SCENES).length;
+    setRun((r) => (r.scene < count - 1 ? { ...r, scene: r.scene + 1 } : { ...r, phase: "ended" }));
+  };
+
+  // The card's button, the round control on the card and the one in the panel all call this.
+  const press = (project) => {
+    const phase = run?.id === project.id ? run.phase : "idle";
+    if (phase === "idle" || phase === "ended") {
+      start(project);
+      return;
+    }
+    if (reduce) {
+      if (phase === "playing") advance(project);
+      return;
+    }
+    setRun((r) => ({ ...r, phase: r.phase === "playing" ? "paused" : "playing" }));
+  };
+
+  const close = useCallback(() => setRun((r) => (r ? { ...r, phase: "idle" } : r)), []);
+  const onScene = useCallback((scene) => setRun((r) => (r ? { ...r, scene } : r)), []);
+  const onEnd = useCallback(() => setRun((r) => (r ? { ...r, phase: "ended" } : r)), []);
+
+  // Escape closes the panel while focus is in it, or on the card it started from.
+  useEffect(() => {
+    if (!showing) return undefined;
+    const onKey = (event) => {
+      if (event.key !== "Escape") return;
+      const cell = document.activeElement?.closest?.(".feat-cell");
+      if (cell && (cell.dataset.id === runId || cell.dataset.id === hostId)) close();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [showing, runId, hostId, close]);
+
+  // When the panel closes or ends with focus in it, focus goes back to the card's Play button.
+  useEffect(() => {
+    if (showing || !runId) return;
+    if (document.activeElement?.closest?.(".fdemo-overlay")) buttons.current[runId]?.focus({ preventScroll: true });
+  }, [showing, runId]);
+
+  // The panel moved (the screen crossed 900px) and took focus with it: focus its card's button.
+  useEffect(() => {
+    if (showing && document.activeElement === document.body) buttons.current[runId]?.focus({ preventScroll: true });
+  }, [wide, showing, runId]);
 
   if (!projects.length) return null;
 
@@ -45,87 +136,54 @@ export function FeaturedProjects({ projects }) {
       </div>
 
       <ul className="feat-grid" aria-label="Featured projects">
-        {projects.map((project, index) => (
-          <li key={project.id} className="feat-cell">
-            <FeaturedCard
-              project={project}
-              index={index}
-              total={projects.length}
-              active={project.id === activeId}
-              onStart={() => setActiveId(project.id)}
-            />
-          </li>
-        ))}
+        {projects.map((project, index) => {
+          const hosts = hostId === project.id && runProject;
+          return (
+            <li key={project.id} className="feat-cell" data-id={project.id}>
+              <FeaturedCard
+                project={project}
+                index={index}
+                total={projects.length}
+                phase={run?.id === project.id ? run.phase : "idle"}
+                reduce={reduce}
+                inert={covered === project.id}
+                buttonRef={(el) => {
+                  buttons.current[project.id] = el;
+                }}
+                onPress={() => press(project)}
+                onPreload={() => preload(project)}
+              />
+              {hosts && (
+                <DemoPanel
+                  key={run.runKey}
+                  Demo={mods[runDemo]?.default ?? null}
+                  scenes={runScenes}
+                  scene={run.scene}
+                  phase={run.phase}
+                  reduce={reduce}
+                  title={runProject.name}
+                  runKey={run.runKey}
+                  focusClose={hostId === runId}
+                  onPress={() => press(runProject)}
+                  onClose={close}
+                  onScene={onScene}
+                  onEnd={onEnd}
+                  onPreload={() => preload(runProject)}
+                />
+              )}
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
 }
 
-// One card. It owns its demo's run: the phase (idle, playing, paused or ended) and the scene.
-// The picture box keeps its size: the poster is the card's picture, and the demo plays over it.
-function FeaturedCard({ project, index, total, active, onStart }) {
+// One card: its picture, its pitch and facts, and its Play button. The demo itself plays in a
+// panel over a card (see FeaturedProjects), so the picture box keeps its size.
+function FeaturedCard({ project, index, total, phase, reduce, inert, buttonRef, onPress, onPreload }) {
   const { pitch, facts = [], demo } = project.featured;
-  const loader = DEMOS[demo];
-  const reduce = useReducedMotionConfig();
-  const boxRef = useRef(null);
-  const [mod, setMod] = useState(null);
-  const [phase, setPhase] = useState("idle");
-  const [scene, setScene] = useState(0);
-  const [runKey, setRunKey] = useState(0);
-  const scenes = mod?.scenes ?? NO_SCENES;
-  const count = scenes.length;
-
-  // Fetches the demo's module once. A failed fetch leaves the card on its picture.
-  const preload = useCallback(() => {
-    if (!loader || mod) return;
-    loader().then(setMod, () => setPhase("idle"));
-  }, [loader, mod]);
-
-  // Another card took the box: this one goes back to its picture.
-  useEffect(() => {
-    if (!active && phase !== "idle") {
-      setPhase("idle");
-      setScene(0);
-    }
-  }, [active, phase]);
-
-  // Scrolls only when the box is mostly off screen (smooth, or at once with reduced motion).
-  const bringIntoView = () => {
-    const box = boxRef.current;
-    if (!box) return;
-    const r = box.getBoundingClientRect();
-    const seen = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
-    if (seen < r.height / 2) box.scrollIntoView?.({ block: "center", behavior: reduce ? "auto" : "smooth" });
-  };
-
-  const start = () => {
-    preload();
-    onStart();
-    setScene(0);
-    setRunKey((k) => k + 1);
-    setPhase("playing");
-    bringIntoView();
-  };
-
-  // With reduced motion, a press steps to the next scene; after the last, it returns to the picture.
-  const advance = () => {
-    if (scene < count - 1) setScene(scene + 1);
-    else setPhase("ended");
-  };
-
-  // The card's button and the round control both call this, so they always do the same thing.
-  const press = () => {
-    if (phase === "idle" || phase === "ended") {
-      start();
-      return;
-    }
-    if (reduce) {
-      if (phase === "playing") advance();
-      return;
-    }
-    setPhase(phase === "playing" ? "paused" : "playing");
-  };
-
+  const hasDemo = Boolean(DEMOS[demo]);
   const labels = controlLabels(phase, reduce, project.name);
 
   return (
@@ -133,26 +191,12 @@ function FeaturedCard({ project, index, total, active, onStart }) {
       className="feat-card surface-paper"
       aria-labelledby={`feat-${project.id}`}
       data-category={project.categories[0]}
+      inert={inert ? "" : undefined}
     >
-      <div ref={boxRef} className={`feat-media${project.fit === "contain" ? " is-contain" : ""}${loader ? " has-demo" : ""}`}>
+      <div className={`feat-media${project.fit === "contain" ? " is-contain" : ""}${hasDemo ? " has-demo" : ""}`}>
         {/* The vault's own plate, decorative here: the heading names the project. */}
         <ProjectMedia project={project} decorative lazy />
-        {loader && (
-          <DemoPlayer
-            boxRef={boxRef}
-            Demo={mod?.default ?? null}
-            scenes={scenes}
-            scene={scene}
-            phase={phase}
-            reduce={reduce}
-            title={project.name}
-            runKey={runKey}
-            onPress={press}
-            onScene={setScene}
-            onEnd={() => setPhase("ended")}
-            onPreload={preload}
-          />
-        )}
+        {hasDemo && <RoundControl phase={phase} reduce={reduce} title={project.name} onPress={onPress} onPreload={onPreload} />}
       </div>
 
       <div className="feat-body">
@@ -181,8 +225,8 @@ function FeaturedCard({ project, index, total, active, onStart }) {
         </ul>
 
         <div className="feat-actions">
-          {loader && (
-            <button type="button" className="btn btn--signal u-press" onClick={press} onMouseEnter={preload} onFocus={preload}>
+          {hasDemo && (
+            <button ref={buttonRef} type="button" className="btn btn--signal u-press" onClick={onPress} onMouseEnter={onPreload} onFocus={onPreload}>
               {labels.text}
               <span className="sr-only"> for {project.name}</span>
             </button>

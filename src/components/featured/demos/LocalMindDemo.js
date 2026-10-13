@@ -7,12 +7,23 @@ import "./LocalMindDemo.css";
 // on the root freezes them. The only JS timer is the streamed answer, which runs
 // only while the demo is playing. With `.is-still` (reduced motion) nothing
 // animates and each scene shows its end state.
+// The scene fills a tall box (a phone card, or the overlay over a 1024 to 1920 card).
+// The top-right corner stays clear for the player's close button.
 export const scenes = [
   { id: "ask", caption: "Paste a job advert and send it", ms: 4500 },
   { id: "search", caption: "It searches only what this chat can see", ms: 4500 },
   { id: "write", caption: "It writes the CV and compiles it to two pages", ms: 4500 },
   { id: "answer", caption: "The answer streams back, with the PDF", ms: 4500 },
   { id: "phone", caption: "Message it from my phone and the PC wakes", ms: 5000 },
+];
+
+// The line above the window, to the left of the clear corner.
+const CRUMBS = [
+  "New chat · scoped to Barclays",
+  "knowledge_search · this chat",
+  "tool loop · cv-barclays",
+  "Barclays · this chat",
+  "Home PC · via gateway",
 ];
 
 const ADVERT = "Graduate Analyst, Data Engineering";
@@ -33,6 +44,12 @@ const ROWS = [
   { name: "General CV", tag: "Shared", at: 600 },
   { name: "Study notes", tag: "Shared", at: 1500 },
   { name: "Barclays", tag: "This chat", at: 2400 },
+];
+
+const CALLS = [
+  { name: "open_document", meta: "cv.tex · 214 lines", at: 200 },
+  { name: "write_file", meta: "+2 −2", at: 1100 },
+  { name: "compile_latex", meta: "2 pages", at: 2000 },
 ];
 
 // Lucide-style strokes, the same paths the app draws.
@@ -97,14 +114,41 @@ function TitleBar({ status, busy }) {
   );
 }
 
+// The finished CV, as a page: the PDF chip, drawn as a sheet with its text lines.
+function Page({ style }) {
+  return (
+    <div className="lm-page lm-in" style={style}>
+      <span className="lm-page-head">
+        <Icon name="download" />
+        cv-barclays.pdf
+      </span>
+      <span className="lm-page-meta">2 pages</span>
+      <span className="lm-page-lines" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+        <i />
+        <i />
+      </span>
+    </div>
+  );
+}
+
 // Scene 1: the advert chip leaves the composer and lands in the user's bubble.
 function AskScene() {
   return (
     <>
       <TitleBar status="Idle" />
       <div className="lm-body">
-        <p className="lm-note">New chat · scoped to Barclays</p>
+        <p className="lm-hero lm-in" style={at(0)}>
+          Ask about this job
+        </p>
         <div className="lm-thread">
+          <div className="lm-advert-card lm-in">
+            <span className="lm-advert-kicker">Job advert</span>
+            <span className="lm-advert-title">{ADVERT}</span>
+            <span className="lm-advert-meta">Barclays · graduate scheme</span>
+          </div>
           <div className="lm-bubble is-user lm-in" style={at(500)}>
             <span className="lm-chip">{ADVERT}</span>
             <span>{REQUEST}</span>
@@ -124,15 +168,12 @@ function AskScene() {
   );
 }
 
-// Scene 2: the knowledge rows tick in; the private section stays locked.
+// Scene 2: the knowledge rows tick in; the private folder below them stays locked.
 function SearchScene() {
   return (
     <>
       <TitleBar status="Searching" busy />
       <div className="lm-body">
-        <p className="lm-query lm-in" style={at(200)}>
-          knowledge_search · this chat
-        </p>
         <ul className="lm-rows">
           {ROWS.map((row) => (
             <li key={row.name} className="lm-row lm-in" style={at(row.at)}>
@@ -143,15 +184,17 @@ function SearchScene() {
               </span>
             </li>
           ))}
-          <li className="lm-row is-locked lm-in" style={at(3200)}>
-            <span className="lm-row-name">STMicroelectronics</span>
-            <span className="lm-badge is-private">
-              <Icon name="lock" />
-              Private
-            </span>
-            <span className="lm-tick is-empty" aria-hidden="true" />
-          </li>
         </ul>
+        <div className="lm-vault lm-in" style={at(3200)}>
+          <span className="lm-lock-big" aria-hidden="true">
+            <Icon name="lock" />
+          </span>
+          <span className="lm-vault-name">STMicroelectronics</span>
+          <span className="lm-badge is-private">
+            <Icon name="lock" />
+            Private
+          </span>
+        </div>
       </div>
     </>
   );
@@ -163,31 +206,22 @@ function WriteScene() {
     <>
       <TitleBar status="Running tools" busy />
       <div className="lm-body">
-        <div className="lm-bubble is-user lm-wide-only lm-in" style={at(0)}>
+        <div className="lm-bubble is-user lm-req lm-in" style={at(0)}>
           {REQUEST}
         </div>
         <ol className="lm-calls">
-          <li className="lm-call lm-in" style={at(200)}>
-            <span className="lm-call-name">open_document</span>
-            <span className="lm-call-meta">cv.tex · 214 lines</span>
-          </li>
-          <li className="lm-call lm-in" style={at(1100)}>
-            <span className="lm-call-name">write_file</span>
-            <span className="lm-call-meta">+2 −2</span>
-          </li>
-          <li className="lm-call lm-in" style={at(2000)}>
-            <span className="lm-call-name">compile_latex</span>
-            <span className="lm-call-meta">2 pages</span>
-          </li>
+          {CALLS.map((call) => (
+            <li key={call.name} className="lm-call lm-in" style={at(call.at)}>
+              <span className="lm-call-name">{call.name}</span>
+              <span className="lm-call-meta">{call.meta}</span>
+            </li>
+          ))}
         </ol>
         <div className="lm-files">
           <span className="lm-file lm-in" style={at(1500)}>
             cv-barclays.tex
           </span>
-          <span className="lm-file is-pdf lm-in" style={at(3000)}>
-            <Icon name="download" />
-            cv-barclays.pdf · 2 pages
-          </span>
+          <Page style={at(3000)} />
         </div>
       </div>
     </>
@@ -200,26 +234,21 @@ function AnswerScene({ playing, reduced }) {
   return (
     <>
       <TitleBar status={done ? "Done" : "Streaming"} busy={!done} />
-      <div className="lm-body lm-thread">
-        <div className="lm-bubble is-user lm-in">{REQUEST}</div>
-        <div className="lm-bubble is-bot">
+      <div className="lm-body">
+        <div className="lm-bubble is-user lm-req lm-in">{REQUEST}</div>
+        <div className="lm-bubble is-bot lm-answer">
           <p>
             {typed}
             {!done && <span className="lm-caret" aria-hidden="true" />}
           </p>
         </div>
-        {done && (
-          <span className="lm-file is-pdf lm-in">
-            <Icon name="download" />
-            cv-barclays.pdf · 2 pages
-          </span>
-        )}
+        {done && <Page />}
       </div>
     </>
   );
 }
 
-// Scene 5: the phone's message travels phone, gateway, PC; the PC then counts down to sleep.
+// Scene 5: the phone's message travels down phone, gateway, PC; the PC then counts down to sleep.
 function PhoneScene() {
   return (
     <>
@@ -258,6 +287,7 @@ export default function LocalMindDemo({ scene, playing, reducedMotion }) {
   const classes = ["lm-demo", playing ? "" : "is-paused", reducedMotion ? "is-still" : ""].filter(Boolean).join(" ");
   return (
     <div className={classes} data-scene={scenes[scene].id} aria-hidden="true">
+      <p className="lm-crumb">{CRUMBS[scene]}</p>
       <div className="lm-window">
         <View key={scene} playing={playing} reduced={reducedMotion} />
       </div>

@@ -45,9 +45,20 @@
   }
 }
 
+/* The cell is the box a demo panel covers: the panel is inset 0 in it, so it is the card's size. */
 .feat-cell {
+  position: relative;
   display: flex;
   min-width: 0;
+  --fdemo-band: 60px;
+  --fdemo-strip: var(--strip-h);
+}
+
+/* The status strip is hidden on phones and on short screens, so the band sticks to the bottom edge there. */
+@media (max-width: 767px), (max-height: 500px) {
+  .feat-cell {
+    --fdemo-strip: 0px;
+  }
 }
 
 .feat-card {
@@ -194,20 +205,23 @@
    fades out at the end (a transition on data-show). The band at the bottom holds
    the caption and the scene dots, and the round control sits in its right corner. */
 
-.feat-media {
-  --fdemo-band: 60px;
-}
-
-.fdemo-layer {
+/* The panel: the card's own frame and offset shadow, in the card's colour, over the card it covers.
+   It fades in when a run starts (an animation on mount) and out at the end or on close (a transition on
+   data-show). Hidden, it is also taken out of the layout's hit testing and the accessibility tree. */
+.fdemo-overlay {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  border: var(--bw-frame) solid var(--line);
+  box-shadow: var(--off-2) var(--off-2) 0 0 var(--line);
   background: var(--surface);
   transition: opacity 500ms var(--ease-snap), visibility 500ms;
   animation: fdemo-in 500ms ease-out backwards;
 }
 
-.fdemo-layer[data-show="false"] {
+.fdemo-overlay[data-show="false"] {
   opacity: 0;
   visibility: hidden;
 }
@@ -218,19 +232,81 @@
   }
 }
 
-/* The scene is a size container (named fdemo), so each demo lays itself out by its box. */
-.fdemo-scene {
+/* The panel is taller than a phone screen. Its stage holds the X, the scene and the band as one unit: the
+   stage is at most the screen (less the top bar, the status strip, a small gap and the panel's frame, which
+   sits above the stage at rest), and it sticks under the top bar. While the panel spans the screen, the whole stage stays in view. Otherwise it scrolls like the rest of
+   the page. Anything below the stage is plain surface. The scene and the band are in flow, so they never
+   overlap. */
+.fdemo-stage {
+  position: sticky;
+  top: var(--bar-h);
+  z-index: 1;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  height: min(100%, calc(100vh - var(--bar-h) - var(--fdemo-strip) - var(--space-2) - var(--bw-frame)));
+  height: min(100%, calc(100svh - var(--bar-h) - var(--fdemo-strip) - var(--space-2) - var(--bw-frame)));
+}
+
+/* The X's row: a sticky row with no height in the flow, so it takes no space at rest. Its 52px box
+   (the X and its 8px inset) is pulled back by its own bottom margin, and the panel's bottom edge limits
+   its sticky range, so the X never leaves the panel. The row passes clicks through, except on the X. */
+.fdemo-top {
+  position: sticky;
+  top: var(--bar-h);
+  z-index: 2;
+  flex: none;
+  height: 52px;
+  margin-bottom: -52px;
+  pointer-events: none;
+}
+
+/* The X sits at the top right of its row, 8px in from the edges. */
+.fdemo-close {
+  pointer-events: auto;
   position: absolute;
-  inset: 0 0 var(--fdemo-band) 0;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: grid;
+  place-items: center;
+  width: var(--hit);
+  height: var(--hit);
+  padding: 0;
+  border: var(--bw-rule) solid var(--line);
+  background: var(--surface);
+  color: var(--line);
+  box-shadow: var(--off-1) var(--off-1) 0 0 var(--line);
+  transition: transform var(--dur-1) var(--ease-snap), box-shadow var(--dur-1) var(--ease-snap);
+}
+
+.fdemo-close:active {
+  transform: translate(var(--off-1), var(--off-1));
+  box-shadow: 0 0 0 0 var(--line);
+}
+
+.fdemo-close:focus-visible {
+  outline: var(--bw-rule) solid var(--line);
+  outline-offset: 2px;
+}
+
+.fdemo-close-glyph {
+  width: 18px;
+  height: 18px;
+}
+
+/* The scene is a size container (named fdemo), so each demo lays itself out by its box. It fills what the
+   stage leaves above the band. */
+.fdemo-scene {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
   container: fdemo / size;
   overflow: hidden;
 }
 
 .fdemo-band {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
+  flex: none;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -268,17 +344,8 @@
   opacity: 1;
 }
 
-/* The poster's own picture rules (the contain fit, and the duotone on hover) are for the
-   card's plate. The demo's pictures keep their colours and fill the layer. */
-.feat-card .feat-media .fdemo-layer img {
-  padding: 0;
-  object-fit: cover;
-  filter: none;
-  mix-blend-mode: normal;
-}
-
-/* The round control: the card's one control for the demo. Signal blue with a play,
-   pause, next or replay glyph. It is always in the box, so the box never changes. */
+/* The round control: the card's control for the demo, in its picture box and in the panel's band.
+   Signal blue with a play, pause, next or replay glyph. It is always in its box, so the box never changes. */
 /* The control's box is 44px, the touch target. The visible disc is 40px inside it. */
 .fdemo-round {
   position: absolute;
@@ -329,21 +396,20 @@
 
 /* Reduced motion (the OS setting or the site's FX switch): nothing animates, and each
    scene is drawn in its final state. */
-.fdemo-layer[data-reduced] {
+.fdemo-overlay[data-reduced] {
   transition: none;
   animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fdemo-layer {
+  .fdemo-overlay {
     transition: none;
     animation: none;
   }
 }
 
-/* A poster with a demo keeps the bottom band clear, as the scenes do: the poster is drawn
-   above the band, and the round control sits in the band, so it never covers the picture.
-   The box itself does not change size. */
+/* A poster with a demo keeps the bottom band clear, as the panel's scenes do: the round control sits in
+   the band, so it never covers the picture. The box itself does not change size. */
 .feat-media.has-demo::after {
   content: "";
   position: absolute;
