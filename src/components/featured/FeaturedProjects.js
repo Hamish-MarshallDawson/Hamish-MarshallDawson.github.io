@@ -20,12 +20,9 @@ const NO_SCENES = [];
 
 const repoLabel = (url) => (url.includes("github.com") ? "Repo" : "Visit");
 
-// The card that a demo covers on a wide screen: the other card of the visible pair (start and
-// start + 1). On a narrow screen (one column), and with a lone visible card, it is the card itself.
-const partnerIndex = (index, start, total) => {
-  const partner = index === start ? start + 1 : start;
-  return partner < total ? partner : index;
-};
+// The card that a demo covers on a wide screen: the other card of the visible pair (start and the
+// card after it, wrapping round). With a lone card it is the card itself.
+const partnerIndex = (index, start, total) => (index === start ? (start + 1) % total : start);
 
 // The featured block at the top of the vault: the polished builds, each with a
 // pitch, three facts and a demo. One demo plays at a time. It covers a card's whole
@@ -39,9 +36,11 @@ export function FeaturedProjects({ projects }) {
   const [run, setRun] = useState(null);
   // Loaded demo modules, keyed by the demo's name.
   const [mods, setMods] = useState({});
-  // The first visible card of the pair on a wide screen. More than two projects make a carousel.
+  // The first visible card of the pair on a wide screen. More than two projects make a carousel,
+  // which wraps round: before the first pair comes the last card beside the first.
   const [from, setFrom] = useState(0);
   const buttons = useRef({});
+  const track = useRef(null);
 
   // A `featured.demo` that is not in DEMOS shows no button; say so in dev.
   useEffect(() => {
@@ -53,8 +52,9 @@ export function FeaturedProjects({ projects }) {
   }, [projects]);
 
   const carousel = wide && projects.length > 2;
-  const first = Math.min(from, Math.max(projects.length - 2, 0));
-  const visible = (index) => !carousel || index === first || index === first + 1;
+  const first = carousel ? from % projects.length : 0;
+  const second = carousel ? (first + 1) % projects.length : 1;
+  const visible = (index) => !carousel || index === first || index === second;
   const runIndex = run ? projects.findIndex((project) => project.id === run.id) : -1;
   const runProject = runIndex >= 0 ? projects[runIndex] : null;
   const runId = runProject?.id ?? null;
@@ -104,9 +104,16 @@ export function FeaturedProjects({ projects }) {
   };
 
   const close = useCallback(() => setRun((r) => (r ? { ...r, phase: "idle" } : r)), []);
-  const slide = (to) => {
-    setFrom(to);
+  // `step` is -1 or 1. The cards are reordered, so the track slides in from that side instead of moving.
+  const slide = (step) => {
+    setFrom((first + step + projects.length) % projects.length);
     close();
+    if (!reduce) {
+      track.current?.animate?.([{ transform: `translateX(${step * 12}%)`, opacity: 0 }, { transform: "none", opacity: 1 }], {
+        duration: 260,
+        easing: "cubic-bezier(0.2, 0, 0, 1)",
+      });
+    }
   };
   const onScene = useCallback((scene) => setRun((r) => (r ? { ...r, scene } : r)), []);
   const onEnd = useCallback(() => setRun((r) => (r ? { ...r, phase: "ended" } : r)), []);
@@ -145,28 +152,18 @@ export function FeaturedProjects({ projects }) {
         <p className="feat-note u-micro">Walkthroughs built into this page. No downloads, no network calls.</p>
       </div>
 
-      {carousel && (
-        <div className="feat-nav" role="group" aria-label="Featured projects navigation">
-          <button type="button" className="btn btn--paper u-press" aria-disabled={first === 0} onClick={() => first > 0 && slide(first - 1)}>
-            <ArrowIcon direction="left" className="btn-glyph" />
-            <span className="sr-only">Previous projects</span>
-          </button>
-          <span className="feat-pos u-micro" aria-live="polite">
-            {pad(first + 1)}–{pad(first + 2)} / {pad(projects.length)}
-          </span>
-          <button type="button" className="btn btn--paper u-press" aria-disabled={first + 2 >= projects.length} onClick={() => first + 2 < projects.length && slide(first + 1)}>
-            <ArrowIcon className="btn-glyph" />
-            <span className="sr-only">Next projects</span>
-          </button>
-        </div>
-      )}
-
       <div className={carousel ? "feat-viewport" : undefined}>
-      <ul className={`feat-grid${carousel ? " is-carousel" : ""}${carousel && reduce ? " is-still" : ""}`} aria-label="Featured projects" style={carousel ? { "--feat-start": first } : undefined}>
+      <ul className={`feat-grid${carousel ? " is-carousel" : ""}`} aria-label="Featured projects" ref={track}>
         {projects.map((project, index) => {
           const hosts = hostId === project.id && runProject;
           return (
-            <li key={project.id} className="feat-cell" data-id={project.id} inert={visible(index) ? undefined : ""}>
+            <li
+              key={project.id}
+              className="feat-cell"
+              data-id={project.id}
+              inert={visible(index) ? undefined : ""}
+              style={carousel ? { order: (index - first + projects.length) % projects.length } : undefined}
+            >
               <FeaturedCard
                 project={project}
                 index={index}
@@ -203,6 +200,22 @@ export function FeaturedProjects({ projects }) {
         })}
       </ul>
       </div>
+
+      {carousel && (
+        <div className="feat-nav" role="group" aria-label="Featured projects navigation">
+          <button type="button" className="btn btn--signal u-press feat-nav-prev" onClick={() => slide(-1)}>
+            <ArrowIcon direction="left" className="btn-glyph" />
+            Previous<span className="sr-only"> projects</span>
+          </button>
+          <span className="feat-pos u-micro" aria-live="polite">
+            {pad(first + 1)}–{pad(second + 1)} / {pad(projects.length)}
+          </span>
+          <button type="button" className="btn btn--signal u-press feat-nav-next" onClick={() => slide(1)}>
+            Next<span className="sr-only"> projects</span>
+            <ArrowIcon className="btn-glyph" />
+          </button>
+        </div>
+      )}
     </section>
   );
 }

@@ -436,21 +436,35 @@ test("on a narrow screen there is no carousel, even with three projects", async 
   expect(cell("gamma")).not.toHaveAttribute("inert");
 });
 
-test("the carousel shows two cards, and next and previous move the pair", async () => {
+test("the carousel shows two cards, and next and previous move the pair, wrapping round", async () => {
   await renderFeatured(three);
   expect(screen.getByText("01–02 / 03")).toBeInTheDocument();
   expect(cell("alpha")).not.toHaveAttribute("inert");
   expect(cell("gamma")).toHaveAttribute("inert");
-  expect(screen.getByRole("button", { name: "Previous projects" })).toHaveAttribute("aria-disabled", "true");
 
   fireEvent.click(screen.getByRole("button", { name: "Next projects" }));
   expect(screen.getByText("02–03 / 03")).toBeInTheDocument();
   expect(cell("alpha")).toHaveAttribute("inert");
   expect(cell("gamma")).not.toHaveAttribute("inert");
-  expect(screen.getByRole("button", { name: "Next projects" })).toHaveAttribute("aria-disabled", "true");
 
+  // Next from the last pair wraps: the last card on the left, the first on the right.
+  fireEvent.click(screen.getByRole("button", { name: "Next projects" }));
+  expect(screen.getByText("03–01 / 03")).toBeInTheDocument();
+  expect(cell("gamma").style.order).toBe("0");
+  expect(cell("alpha").style.order).toBe("1");
+  expect(cell("beta")).toHaveAttribute("inert");
+
+  fireEvent.click(screen.getByRole("button", { name: "Next projects" }));
+  expect(screen.getByText("01–02 / 03")).toBeInTheDocument();
+});
+
+test("previous from the first pair skips to the end", async () => {
+  await renderFeatured(three);
   fireEvent.click(screen.getByRole("button", { name: "Previous projects" }));
+  expect(screen.getByText("03–01 / 03")).toBeInTheDocument();
+  expect(cell("gamma")).not.toHaveAttribute("inert");
   expect(cell("alpha")).not.toHaveAttribute("inert");
+  expect(cell("beta")).toHaveAttribute("inert");
 });
 
 test("in the carousel a demo covers the visible partner, and changing slide closes it", async () => {
@@ -466,20 +480,8 @@ test("in the carousel a demo covers the visible partner, and changing slide clos
   expect(playCard("TensoRoom")).toHaveTextContent("Play demo");
 });
 
-test("focus stays on a control when Previous or Next stops being usable", async () => {
+test("the carousel nav sits under the cards", async () => {
   await renderFeatured(three);
-  const next = screen.getByRole("button", { name: "Next projects" });
-  act(() => next.focus());
-  fireEvent.click(next);
-  expect(next).toHaveFocus();
-  expect(next).toHaveAttribute("aria-disabled", "true");
-  // A press on the spent control does nothing.
-  fireEvent.click(next);
-  expect(screen.getByText("02–03 / 03")).toBeInTheDocument();
-
-  const prev = screen.getByRole("button", { name: "Previous projects" });
-  act(() => prev.focus());
-  fireEvent.click(prev);
-  expect(prev).toHaveFocus();
-  expect(prev).toHaveAttribute("aria-disabled", "true");
+  const nav = screen.getByRole("group", { name: "Featured projects navigation" });
+  expect(screen.getByRole("list", { name: "Featured projects" }).compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });

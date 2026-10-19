@@ -45,32 +45,52 @@
   }
 }
 
-/* The carousel (900px and up, more than two projects): the grid is a track of cards two wide, and the
-   viewport shows two. A step moves the track by one card plus a gap. The padding leaves room for the
-   cards' offset shadow and hover lift, which the viewport would otherwise clip. */
+/* The carousel (900px and up, more than two projects): the viewport shows two cards. The cards are
+   reordered (order) so the visible pair comes first, which lets the carousel wrap round. The padding
+   leaves room for the cards' offset shadow and hover lift, which the viewport would otherwise clip.
+   The nav sits under the cards on the category tabs' grid: Previous over "All", the position over the
+   middle tab, Next over the last. */
 .feat-nav {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 1280px) {
+  .feat-nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 
 .feat-nav .btn {
-  padding: 0;
-  width: 48px;
+  width: calc(100% - var(--space-4));
+  min-height: 64px;
+  justify-content: center;
+  gap: var(--space-3);
+  font-size: 1rem;
 }
 
-/* aria-disabled, not disabled: a disabled button would drop the keyboard focus it has. */
-.feat-nav .btn[aria-disabled="true"] {
-  opacity: 0.35;
-  cursor: default;
+.feat-nav-prev {
+  grid-column: 1;
+}
+
+.feat-nav-next {
+  grid-column: -2;
+  justify-self: end;
 }
 
 .feat-pos {
-  min-width: 9ch;
+  grid-column: 2;
   text-align: center;
   letter-spacing: var(--tr-micro);
+  font-size: 1.5rem;
+}
+
+@media (min-width: 1280px) {
+  .feat-pos {
+    grid-column: 3;
+  }
 }
 
 .feat-viewport {
@@ -84,34 +104,15 @@
     display: flex;
     gap: var(--space-5);
     margin-top: 0;
-    transform: translateX(calc(var(--feat-start, 0) * (-50% - var(--space-5) / 2)));
-    transition: transform var(--dur-3) var(--ease-snap);
-  }
-
-  .feat-grid.is-carousel.is-still {
-    transition: none;
   }
 
   .feat-grid.is-carousel .feat-cell {
     flex: 0 0 calc((100% - var(--space-5)) / 2);
   }
 
-  /* A card that has slid out is hidden once the slide ends, so its offset shadow
-     does not show in the viewport's padding. */
+  /* Cards out of view are hidden, so their offset shadow does not show in the viewport's padding. */
   .feat-grid.is-carousel .feat-cell[inert] {
     visibility: hidden;
-    transition: visibility 0s linear var(--dur-3);
-  }
-
-  .feat-grid.is-carousel.is-still .feat-cell[inert] {
-    transition: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .feat-grid.is-carousel,
-  .feat-grid.is-carousel .feat-cell[inert] {
-    transition: none;
   }
 }
 
