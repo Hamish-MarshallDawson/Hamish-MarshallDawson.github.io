@@ -1,14 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import GyminitDemo, { scenes } from "./GyminitDemo";
+import { BUDDY_SEAT, BUDDY_STAND } from "./gyminitBuddy";
 
 // One text each scene shows and no other scene does.
 const MARKERS = [
   "Start workout",
-  "Add to workout",
-  "Rest 1:30",
+  "Add (1)",
+  "1:30",
   "170 kg",
-  "Name this workout",
-  /6,240 kg/,
+  "Nice session!",
+  /2 PRs/,
   "Backed up · 2 min ago",
 ];
 
@@ -37,4 +38,11 @@ test("the demo is hidden from assistive tech and carries its mode classes", () =
   expect(root).toHaveAttribute("aria-hidden", "true");
   expect(root).toHaveAttribute("data-scene", "start");
   expect(root).toHaveClass("is-paused", "is-still");
+});
+
+test("the buddy art is the apps drawing, with its own gradient ids per pose", () => {
+  expect(BUDDY_SEAT.html).toContain("bd2");
+  expect(BUDDY_STAND.html).toContain("bd2");
+  expect(BUDDY_SEAT.html).not.toContain("gmb1");
+  expect(BUDDY_STAND.html).not.toContain("gmb0");
 });
