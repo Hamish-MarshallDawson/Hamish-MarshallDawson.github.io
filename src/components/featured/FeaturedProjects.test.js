@@ -33,6 +33,17 @@ jest.mock("./demos/TensoRoomDemo", () => {
   };
 });
 
+jest.mock("./demos/GyminitDemo", () => {
+  const h = require("react").createElement;
+  return {
+    __esModule: true,
+    scenes: [{ id: "g", caption: "Gym one", ms: 4000 }],
+    default: function FakeGym() {
+      return h("div", { "data-testid": "gym-demo" });
+    },
+  };
+});
+
 const projects = [
   {
     id: "alpha",
@@ -55,6 +66,19 @@ const projects = [
     featured: { pitch: "Another pitch.", facts: ["Two"], demo: "tensoroom" },
   },
 ];
+
+const gyminit = {
+  id: "gamma",
+  name: "Gyminit",
+  category: "Personal",
+  categories: ["performance"],
+  tags: ["React"],
+  image: "gamma.png",
+  alt: "Gamma icon",
+  url: "https://gyminit.example.workers.dev",
+  featured: { pitch: "Third pitch.", facts: ["Three"], demo: "gyminit" },
+};
+const three = [...projects, gyminit];
 
 // jsdom has no layout, so "wide" is decided by a matchMedia stand-in: the default in setupTests
 // is a wide screen; narrow() makes it one column (under 900px).
@@ -392,4 +416,70 @@ test("the Play controls preload the demo on hover, so the first play has no wait
   // The module is in: the first play shows the scene at once, with no further flush.
   fireEvent.click(playCard("LocalMind"));
   expect(demoOf(panel("LocalMind"), "local-demo")).toHaveAttribute("data-scene", "0");
+});
+
+test("the Gyminit card links to the live app and reads Visit", async () => {
+  await renderFeatured(three);
+  const link = within(screen.getByRole("article", { name: "Gyminit" })).getByRole("link", { name: /^Visit/ });
+  expect(link).toHaveAttribute("href", "https://gyminit.example.workers.dev");
+});
+
+test("with two projects there is no carousel", async () => {
+  await renderFeatured();
+  expect(screen.queryByRole("button", { name: "Next projects" })).toBeNull();
+});
+
+test("on a narrow screen there is no carousel, even with three projects", async () => {
+  narrow();
+  await renderFeatured(three);
+  expect(screen.queryByRole("button", { name: "Next projects" })).toBeNull();
+  expect(cell("gamma")).not.toHaveAttribute("inert");
+});
+
+test("the carousel shows two cards, and next and previous move the pair", async () => {
+  await renderFeatured(three);
+  expect(screen.getByText("01–02 / 03")).toBeInTheDocument();
+  expect(cell("alpha")).not.toHaveAttribute("inert");
+  expect(cell("gamma")).toHaveAttribute("inert");
+  expect(screen.getByRole("button", { name: "Previous projects" })).toHaveAttribute("aria-disabled", "true");
+
+  fireEvent.click(screen.getByRole("button", { name: "Next projects" }));
+  expect(screen.getByText("02–03 / 03")).toBeInTheDocument();
+  expect(cell("alpha")).toHaveAttribute("inert");
+  expect(cell("gamma")).not.toHaveAttribute("inert");
+  expect(screen.getByRole("button", { name: "Next projects" })).toHaveAttribute("aria-disabled", "true");
+
+  fireEvent.click(screen.getByRole("button", { name: "Previous projects" }));
+  expect(cell("alpha")).not.toHaveAttribute("inert");
+});
+
+test("in the carousel a demo covers the visible partner, and changing slide closes it", async () => {
+  await renderFeatured(three);
+  fireEvent.click(screen.getByRole("button", { name: "Next projects" }));
+  fireEvent.click(playCard("TensoRoom"));
+  await flush();
+  // The visible pair is TensoRoom and Gyminit, so the panel sits over Gyminit.
+  expect(within(cell("gamma")).getByRole("region", { name: "TensoRoom demo" })).toBe(panel("TensoRoom"));
+
+  fireEvent.click(screen.getByRole("button", { name: "Previous projects" }));
+  expect(shownOf(panel("TensoRoom"))).toBe("false");
+  expect(playCard("TensoRoom")).toHaveTextContent("Play demo");
+});
+
+test("focus stays on a control when Previous or Next stops being usable", async () => {
+  await renderFeatured(three);
+  const next = screen.getByRole("button", { name: "Next projects" });
+  act(() => next.focus());
+  fireEvent.click(next);
+  expect(next).toHaveFocus();
+  expect(next).toHaveAttribute("aria-disabled", "true");
+  // A press on the spent control does nothing.
+  fireEvent.click(next);
+  expect(screen.getByText("02–03 / 03")).toBeInTheDocument();
+
+  const prev = screen.getByRole("button", { name: "Previous projects" });
+  act(() => prev.focus());
+  fireEvent.click(prev);
+  expect(prev).toHaveFocus();
+  expect(prev).toHaveAttribute("aria-disabled", "true");
 });

@@ -148,6 +148,28 @@ export const vaultProjects = [
     fit: "contain",
   },
   {
+    id: "gyminit",
+    name: "Gyminit",
+    category: "Personal · 2026",
+    description:
+      "A free, ad-free gym tracker I built for a small group of friends. It installs on a phone like an app and logs strength and cardio quickly, even with no signal. Your data lives on the phone; signing in with an emailed code adds an optional cloud backup. It was also a practice in multi-agent orchestration: a team of AI coding agents built it.",
+    url: "https://gyminit.hamishmdawson.workers.dev",
+    tags: ["React", "TypeScript", "PWA", "Offline-first", "Supabase", "Cloudflare Workers"],
+    categories: ["performance"],
+    featured: {
+      pitch: "A free, ad-free gym tracker for my friends that installs on a phone and logs a workout even with no signal. Signed out, nothing leaves the device.",
+      facts: [
+        "Data lives on the phone; sign in with an emailed code to back it up",
+        "A practice in multi-agent orchestration: how effective is it for building a traditional serverless web app?",
+        "260+ unit tests, plus end-to-end checks at phone sizes",
+      ],
+      demo: "gyminit",
+    },
+    image: img("gyminit.png"),
+    alt: "Gyminit app icon",
+    fit: "contain",
+  },
+  {
     id: "bus",
     repo: "Lothian-Api-Bus-Display",
     name: "Lothian Bus Display",

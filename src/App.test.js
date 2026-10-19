@@ -293,15 +293,16 @@ test("the contact form speaks plainly", () => {
   expect(reachOut.textContent).not.toMatch(/ident|payload|transmit|firewall|intercept/i);
 });
 
-test("the featured block shows LocalMind and TensoRoom, each with a demo", () => {
+test("the featured block shows LocalMind, TensoRoom and Gyminit, each with a demo", () => {
   render(<App />);
   const grid = screen.getByRole("list", { name: "Featured projects" });
   const cards = within(grid).getAllByRole("article");
   expect(cards.map((card) => within(card).getByRole("heading", { level: 4 }).textContent)).toEqual([
     "LocalMind",
     "TensoRoom",
+    "Gyminit",
   ]);
-  expect(within(grid).getAllByRole("button", { name: /^play demo/i })).toHaveLength(2);
+  expect(within(grid).getAllByRole("button", { name: /^play demo/i })).toHaveLength(3);
 });
 
 test("Play demo plays LocalMind's scenes in its own picture box, with no stage", async () => {

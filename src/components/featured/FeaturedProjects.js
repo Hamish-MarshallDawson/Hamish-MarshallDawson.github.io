@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotionConfig } from "framer-motion";
 import { DemoPanel, RoundControl, controlLabels } from "./DemoPlayer";
-import { ExternalIcon } from "../shared/Icons";
+import { ArrowIcon, ExternalIcon } from "../shared/Icons";
 import { ProjectMedia } from "../vault/ProjectMedia";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { pad } from "./format";
@@ -10,19 +10,20 @@ import "./Featured.css";
 // Demo loaders, keyed by the `featured.demo` value in projectdata.js. Each is
 // a stable reference, and a demo's module is fetched on its first Play (or on hover
 // or focus of its Play control).
-const DEMOS = {
+export const DEMOS = {
   localmind: () => import("./demos/LocalMindDemo"),
   tensoroom: () => import("./demos/TensoRoomDemo"),
+  gyminit: () => import("./demos/GyminitDemo"),
 };
 
 const NO_SCENES = [];
 
 const repoLabel = (url) => (url.includes("github.com") ? "Repo" : "Visit");
 
-// The card that a demo covers on a wide screen: the card beside it in the grid. On a
-// narrow screen (one column), and with one project, it is the card itself.
-const partnerIndex = (index, total) => {
-  const partner = index % 2 === 0 ? index + 1 : index - 1;
+// The card that a demo covers on a wide screen: the other card of the visible pair (start and
+// start + 1). On a narrow screen (one column), and with a lone visible card, it is the card itself.
+const partnerIndex = (index, start, total) => {
+  const partner = index === start ? start + 1 : start;
   return partner < total ? partner : index;
 };
 
@@ -38,6 +39,8 @@ export function FeaturedProjects({ projects }) {
   const [run, setRun] = useState(null);
   // Loaded demo modules, keyed by the demo's name.
   const [mods, setMods] = useState({});
+  // The first visible card of the pair on a wide screen. More than two projects make a carousel.
+  const [from, setFrom] = useState(0);
   const buttons = useRef({});
 
   // A `featured.demo` that is not in DEMOS shows no button; say so in dev.
@@ -49,12 +52,15 @@ export function FeaturedProjects({ projects }) {
     });
   }, [projects]);
 
+  const carousel = wide && projects.length > 2;
+  const first = Math.min(from, Math.max(projects.length - 2, 0));
+  const visible = (index) => !carousel || index === first || index === first + 1;
   const runIndex = run ? projects.findIndex((project) => project.id === run.id) : -1;
   const runProject = runIndex >= 0 ? projects[runIndex] : null;
   const runId = runProject?.id ?? null;
   const showing = Boolean(runProject) && (run.phase === "playing" || run.phase === "paused");
   // The card the panel sits over: its own card when narrow, its partner when wide.
-  const hostId = runProject ? projects[wide ? partnerIndex(runIndex, projects.length) : runIndex].id : null;
+  const hostId = runProject ? projects[wide ? partnerIndex(runIndex, carousel ? first : runIndex - (runIndex % 2), projects.length) : runIndex].id : null;
   const covered = showing ? hostId : null;
   const runDemo = runProject?.featured.demo;
   const runScenes = (runDemo && mods[runDemo]?.scenes) || NO_SCENES;
@@ -98,6 +104,10 @@ export function FeaturedProjects({ projects }) {
   };
 
   const close = useCallback(() => setRun((r) => (r ? { ...r, phase: "idle" } : r)), []);
+  const slide = (to) => {
+    setFrom(to);
+    close();
+  };
   const onScene = useCallback((scene) => setRun((r) => (r ? { ...r, scene } : r)), []);
   const onEnd = useCallback(() => setRun((r) => (r ? { ...r, phase: "ended" } : r)), []);
 
@@ -127,7 +137,7 @@ export function FeaturedProjects({ projects }) {
   if (!projects.length) return null;
 
   return (
-    <section className="feat" aria-labelledby="feat-title">
+    <section className="feat" aria-labelledby="feat-title" aria-roledescription={carousel ? "carousel" : undefined}>
       <div className="feat-bar">
         <h3 id="feat-title" className="feat-title">
           Featured builds
@@ -135,11 +145,28 @@ export function FeaturedProjects({ projects }) {
         <p className="feat-note u-micro">Walkthroughs built into this page. No downloads, no network calls.</p>
       </div>
 
-      <ul className="feat-grid" aria-label="Featured projects">
+      {carousel && (
+        <div className="feat-nav" role="group" aria-label="Featured projects navigation">
+          <button type="button" className="btn btn--paper u-press" aria-disabled={first === 0} onClick={() => first > 0 && slide(first - 1)}>
+            <ArrowIcon direction="left" className="btn-glyph" />
+            <span className="sr-only">Previous projects</span>
+          </button>
+          <span className="feat-pos u-micro" aria-live="polite">
+            {pad(first + 1)}–{pad(first + 2)} / {pad(projects.length)}
+          </span>
+          <button type="button" className="btn btn--paper u-press" aria-disabled={first + 2 >= projects.length} onClick={() => first + 2 < projects.length && slide(first + 1)}>
+            <ArrowIcon className="btn-glyph" />
+            <span className="sr-only">Next projects</span>
+          </button>
+        </div>
+      )}
+
+      <div className={carousel ? "feat-viewport" : undefined}>
+      <ul className={`feat-grid${carousel ? " is-carousel" : ""}${carousel && reduce ? " is-still" : ""}`} aria-label="Featured projects" style={carousel ? { "--feat-start": first } : undefined}>
         {projects.map((project, index) => {
           const hosts = hostId === project.id && runProject;
           return (
-            <li key={project.id} className="feat-cell" data-id={project.id}>
+            <li key={project.id} className="feat-cell" data-id={project.id} inert={visible(index) ? undefined : ""}>
               <FeaturedCard
                 project={project}
                 index={index}
@@ -175,6 +202,7 @@ export function FeaturedProjects({ projects }) {
           );
         })}
       </ul>
+      </div>
     </section>
   );
 }

@@ -45,6 +45,76 @@
   }
 }
 
+/* The carousel (900px and up, more than two projects): the grid is a track of cards two wide, and the
+   viewport shows two. A step moves the track by one card plus a gap. The padding leaves room for the
+   cards' offset shadow and hover lift, which the viewport would otherwise clip. */
+.feat-nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.feat-nav .btn {
+  padding: 0;
+  width: 48px;
+}
+
+/* aria-disabled, not disabled: a disabled button would drop the keyboard focus it has. */
+.feat-nav .btn[aria-disabled="true"] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.feat-pos {
+  min-width: 9ch;
+  text-align: center;
+  letter-spacing: var(--tr-micro);
+}
+
+.feat-viewport {
+  overflow: hidden;
+  margin: 0 calc(var(--space-5) * -1);
+  padding: var(--space-6) var(--space-5) var(--space-5);
+}
+
+@media (min-width: 900px) {
+  .feat-grid.is-carousel {
+    display: flex;
+    gap: var(--space-5);
+    margin-top: 0;
+    transform: translateX(calc(var(--feat-start, 0) * (-50% - var(--space-5) / 2)));
+    transition: transform var(--dur-3) var(--ease-snap);
+  }
+
+  .feat-grid.is-carousel.is-still {
+    transition: none;
+  }
+
+  .feat-grid.is-carousel .feat-cell {
+    flex: 0 0 calc((100% - var(--space-5)) / 2);
+  }
+
+  /* A card that has slid out is hidden once the slide ends, so its offset shadow
+     does not show in the viewport's padding. */
+  .feat-grid.is-carousel .feat-cell[inert] {
+    visibility: hidden;
+    transition: visibility 0s linear var(--dur-3);
+  }
+
+  .feat-grid.is-carousel.is-still .feat-cell[inert] {
+    transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feat-grid.is-carousel,
+  .feat-grid.is-carousel .feat-cell[inert] {
+    transition: none;
+  }
+}
+
 /* The cell is the box a demo panel covers: the panel is inset 0 in it, so it is the card's size. */
 .feat-cell {
   position: relative;
