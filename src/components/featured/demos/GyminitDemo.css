@@ -1,0 +1,649 @@
+/* ==========================================================================
+   Gyminit scenes, in the app's Frutiger Aero look: a deep-water sky, glossy
+   pills, aqua for the selected row and orange for a PR. The palette is declared
+   on the root, so the site's Colour menu cannot reach it.
+
+   The scenes fill tall boxes (326 by 690 up to 828 by 780). Sizes are container
+   units of the root. The top 56px of the box is kept clear: the crumb sits to
+   the left of it, and the player's close button sits in the corner.
+
+   Motion rules are the same as the other demos. Each element's base style is its
+   END state, and an entrance is a keyframe that starts hidden and fills forwards.
+   With `.is-still` animations are off; with `.is-paused` they hold. Only
+   transform, opacity and clip-path move.
+   ========================================================================== */
+
+.gm-demo {
+  --gm-sky: #031225;
+  --gm-sea: #06294a;
+  --gm-deep: #06403f;
+  --gm-green: #6fe58f;
+  --gm-green-2: #3ecb68;
+  --gm-aqua: #6fd8f7;
+  --gm-aqua-2: #3cb8e6;
+  --gm-text: #eaf7ff;
+  --gm-muted: #9cc3d9;
+  --gm-pr: #ff9b3d;
+  --gm-glass: rgba(234, 247, 255, 0.09);
+  --gm-edge: rgba(234, 247, 255, 0.22);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --fs: clamp(13px, 4.1cqw, 21px);
+  --fs-s: clamp(13px, 3.4cqw, 16px);
+  --fs-hero: clamp(22px, 7cqw, 38px);
+  --row: clamp(42px, 7cqh, 64px);
+  --ico: clamp(16px, 4.6cqw, 26px);
+
+  container: gm / size;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--gm-sky), var(--gm-sea) 60%, var(--gm-deep));
+  color: var(--gm-text);
+  font: 400 var(--fs) / 1.35 "Segoe UI", "Frutiger", "Trebuchet MS", system-ui, sans-serif;
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+}
+
+:where(.gm-demo) *,
+:where(.gm-demo) *::before,
+:where(.gm-demo) *::after {
+  box-sizing: border-box;
+}
+
+:where(.gm-demo) p,
+:where(.gm-demo) ul,
+:where(.gm-demo) li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: inherit;
+  color: inherit;
+}
+
+:where(.gm-demo) svg {
+  display: block;
+  width: var(--ico);
+  height: var(--ico);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: none;
+}
+
+/* ---------- motion ---------- */
+
+@keyframes gm-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes gm-rise {
+  from {
+    opacity: 0;
+    transform: translateY(40cqh);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes gm-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes gm-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes gm-press {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: scale(0.94);
+  }
+}
+
+@keyframes gm-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes gm-run {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0.35);
+  }
+}
+
+.gm-in {
+  animation: gm-in 400ms var(--ease-out) var(--d, 0ms) both;
+}
+
+.gm-rise {
+  animation: gm-rise 600ms var(--ease-out) var(--d, 0ms) both;
+}
+
+/* The pill is there from the start, then pressed once. */
+.gm-press {
+  animation: gm-press 360ms ease-in-out var(--d, 0ms) both;
+}
+
+.gm-demo.is-paused *,
+.gm-demo.is-paused *::before,
+.gm-demo.is-paused *::after {
+  animation-play-state: paused !important;
+}
+
+.gm-demo.is-still *,
+.gm-demo.is-still *::before,
+.gm-demo.is-still *::after {
+  animation: none !important;
+}
+
+/* ---------- the crumb and the phone ---------- */
+
+.gm-crumb {
+  position: absolute;
+  left: 14px;
+  right: 64px;
+  top: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--fs-s);
+  color: var(--gm-muted);
+}
+
+.gm-phone {
+  position: absolute;
+  inset: 56px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--gm-edge);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(111, 216, 247, 0.16), rgba(3, 18, 37, 0.5));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.gm-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(10px, 3cqh, 24px);
+  padding: clamp(12px, 4cqw, 22px);
+  overflow: hidden;
+}
+
+.gm-tabs {
+  flex: none;
+  display: flex;
+  border-top: 1px solid var(--gm-edge);
+  background: rgba(3, 18, 37, 0.55);
+  font-size: var(--fs-s);
+  color: var(--gm-muted);
+}
+
+.gm-tabs li {
+  flex: 1;
+  padding: clamp(10px, 2.2cqh, 16px) 0;
+  text-align: center;
+}
+
+.gm-tabs li.is-lit {
+  color: var(--gm-aqua);
+  font-weight: 700;
+}
+
+/* ---------- shared parts ---------- */
+
+.gm-hero {
+  font-size: var(--fs-hero);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.gm-sub,
+.gm-ex-meta {
+  font-size: var(--fs-s);
+  color: var(--gm-muted);
+}
+
+.gm-ex-title {
+  font-size: calc(var(--fs) * 1.2);
+  font-weight: 700;
+}
+
+/* The glossy green pill; aqua for a selected state. */
+.gm-pill {
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  min-height: var(--row);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--gm-green), var(--gm-green-2));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.55), 0 6px 14px rgba(62, 203, 104, 0.35);
+  color: #03230f;
+  font-weight: 700;
+}
+
+.gm-pill.is-aqua {
+  background: linear-gradient(180deg, var(--gm-aqua), var(--gm-aqua-2));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.55), 0 6px 14px rgba(60, 184, 230, 0.35);
+  color: #02253a;
+}
+
+.gm-card,
+.gm-ex,
+.gm-search,
+.gm-field {
+  border: 1px solid var(--gm-edge);
+  border-radius: 14px;
+  background: var(--gm-glass);
+}
+
+.gm-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(12px, 3.6cqw, 20px);
+}
+
+.gm-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.gm-add {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--gm-glass);
+  border: 1px solid var(--gm-aqua);
+  color: var(--gm-aqua);
+  font-weight: 600;
+}
+
+.gm-field {
+  display: block;
+  padding: 10px 14px;
+}
+
+/* ---------- picker ---------- */
+
+.gm-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--row);
+  padding: 0 14px;
+}
+
+.gm-typed {
+  animation: gm-type 1200ms steps(8) var(--d, 300ms) both;
+}
+
+.gm-ex {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+}
+
+.gm-ex-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gm-ex-name {
+  font-weight: 700;
+}
+
+/* A tiny machine drawing: a stack of weight plates and a bar. */
+.gm-art {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: clamp(44px, 14cqw, 70px);
+  height: clamp(44px, 14cqw, 70px);
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(3, 18, 37, 0.55);
+}
+
+.gm-art i {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--gm-aqua);
+}
+
+.gm-art i:nth-child(2) {
+  width: 70%;
+}
+
+/* ---------- set rows ---------- */
+
+.gm-sets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gm-set {
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.6fr 1.4fr 1fr 1fr 0.8fr;
+  align-items: center;
+  min-height: var(--row);
+  padding: 0 10px;
+  border-radius: 12px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.gm-set.is-head {
+  min-height: 0;
+  font-size: var(--fs-s);
+  color: var(--gm-muted);
+}
+
+.gm-set > span {
+  position: relative;
+}
+
+/* The row turns aqua when its tick lands. */
+.gm-set-fill {
+  position: absolute !important;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(111, 216, 247, 0.55), rgba(60, 184, 230, 0.4));
+  animation: gm-fade 360ms ease-out var(--d, 0ms) both;
+}
+
+.gm-ok {
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: calc(var(--row) * 0.6);
+  height: calc(var(--row) * 0.6);
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--gm-green), var(--gm-green-2));
+  color: #03230f;
+  animation: gm-pop 320ms var(--ease-out) var(--d, 0ms) both;
+}
+
+.gm-ok svg {
+  width: 62%;
+  height: 62%;
+  stroke-width: 3;
+}
+
+.gm-rest {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: var(--fs-s);
+}
+
+.gm-meter {
+  display: block;
+  height: clamp(8px, 2cqh, 14px);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--gm-glass);
+  border: 1px solid var(--gm-edge);
+}
+
+.gm-meter-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(180deg, var(--gm-aqua), var(--gm-aqua-2));
+  transform-origin: left center;
+  animation: gm-run 2000ms linear var(--d, 0ms) both;
+}
+
+/* ---------- plates ---------- */
+
+.gm-bar {
+  display: flex;
+  align-items: center;
+  height: clamp(60px, 14cqh, 120px);
+  gap: 5px;
+  padding: 0 8px;
+  border-radius: 14px;
+  background: var(--gm-glass);
+  border: 1px solid var(--gm-edge);
+}
+
+.gm-bar i {
+  display: block;
+  width: 10%;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--gm-aqua), var(--gm-aqua-2));
+  animation: gm-pop 320ms var(--ease-out) var(--d, 0ms) both;
+}
+
+.gm-bar i.is-p25 {
+  height: 100%;
+}
+
+.gm-bar i.is-p20 {
+  height: 78%;
+}
+
+.gm-bar i.is-p5 {
+  height: 46%;
+  width: 6%;
+}
+
+.gm-bar b {
+  flex: 1;
+  height: 10px;
+  margin-left: 4px;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #ffffff, var(--gm-muted));
+}
+
+.gm-sum {
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--gm-glass);
+  border: 1px solid var(--gm-edge);
+  font-size: calc(var(--fs) * 1.1);
+}
+
+.gm-sum strong {
+  color: var(--gm-green);
+}
+
+/* ---------- finish sheet ---------- */
+
+.gm-sheet {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 2.6cqh, 18px);
+  padding: clamp(14px, 4cqw, 24px);
+  border: 1px solid var(--gm-edge);
+  border-radius: 22px 22px 14px 14px;
+  background: linear-gradient(180deg, rgba(111, 216, 247, 0.28), rgba(6, 41, 74, 0.9));
+}
+
+.gm-sheet-title {
+  font-size: calc(var(--fs) * 1.2);
+  font-weight: 700;
+}
+
+.gm-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gm-chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--gm-edge);
+  background: var(--gm-glass);
+  font-size: var(--fs-s);
+}
+
+.gm-chip.is-on {
+  border-color: var(--gm-aqua);
+  color: var(--gm-aqua);
+}
+
+/* ---------- history heatmap ---------- */
+
+.gm-heat {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: clamp(4px, 1.4cqw, 8px);
+}
+
+.gm-cell {
+  display: block;
+  aspect-ratio: 1;
+  max-height: clamp(18px, 6cqh, 44px);
+  width: 100%;
+  border-radius: 6px;
+  background: var(--gm-glass);
+  animation: gm-pop 260ms var(--ease-out) var(--d, 0ms) both;
+}
+
+.gm-cell.is-l1 {
+  background: rgba(111, 216, 247, 0.4);
+}
+
+.gm-cell.is-l2 {
+  background: var(--gm-aqua-2);
+}
+
+.gm-cell.is-l3 {
+  background: var(--gm-pr);
+}
+
+.gm-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--gm-edge);
+  background: var(--gm-glass);
+}
+
+.gm-log-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.gm-log-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gm-pr);
+}
+
+.gm-log-meta {
+  font-size: var(--fs-s);
+  color: var(--gm-muted);
+}
+
+/* ---------- backup ---------- */
+
+.gm-backed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gm-green);
+  font-weight: 700;
+}
+
+/* Short boxes (the 810 by 240 landscape phone): the same scenes in a smaller scale. */
+@container gm (max-height: 300px) {
+  .gm-phone {
+    --fs: 14px;
+    --fs-s: 12px;
+    --row: 30px;
+    --ico: 14px;
+  }
+
+  .gm-body {
+    gap: 6px;
+    padding: 8px 12px;
+  }
+
+  .gm-tabs li {
+    padding: 6px 0;
+  }
+
+  .gm-hero,
+  .gm-sub,
+  .gm-ex-meta,
+  .gm-art,
+  .gm-bar {
+    display: none;
+  }
+
+  .gm-cell {
+    max-height: 12px;
+  }
+
+  .gm-heat {
+    gap: 3px;
+  }
+
+  .gm-sheet {
+    gap: 6px;
+    padding: 8px 12px;
+  }
+}
