@@ -10,5 +10,5 @@ test("Gyminit links to the live app and says it practised multi-agent orchestrat
 });
 
 test("every featured demo names a loader in DEMOS", () => {
-  featured.forEach((project) => expect(Object.keys(DEMOS)).toContain(project.featured.demo));
+  featured.filter((project) => project.featured.demo).forEach((project) => expect(Object.keys(DEMOS)).toContain(project.featured.demo));
 });

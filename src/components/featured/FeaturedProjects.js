@@ -14,6 +14,7 @@ export const DEMOS = {
   localmind: () => import("./demos/LocalMindDemo"),
   tensoroom: () => import("./demos/TensoRoomDemo"),
   gyminit: () => import("./demos/GyminitDemo"),
+  codeforgood: () => import("./demos/CodeForGoodDemo"),
 };
 
 const NO_SCENES = [];
@@ -275,6 +276,13 @@ function FeaturedCard({ project, index, total, phase, reduce, inert, buttonRef, 
           {project.url && (
             <a className="btn btn--paper u-press" href={project.url} target="_blank" rel="noopener noreferrer">
               {repoLabel(project.url)}
+              <span className="sr-only"> (opens in a new tab)</span>
+              <ExternalIcon className="btn-glyph" />
+            </a>
+          )}
+          {project.charity && (
+            <a className="btn btn--paper u-press" href={project.charity.url} target="_blank" rel="noopener noreferrer">
+              Visit charity
               <span className="sr-only"> (opens in a new tab)</span>
               <ExternalIcon className="btn-glyph" />
             </a>

@@ -29,12 +29,12 @@
   letter-spacing: var(--tr-micro);
 }
 
-/* Each card keeps its own height: an open card is taller than its neighbour, and
-   the closed one should not be stretched to match it (align-items: start). */
+/* Cards in a row share its height (align-items: stretch), so their buttons sit level.
+   The demo panel is inset 0 in its cell, so it covers the whole card. */
 .feat-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  align-items: start;
+  align-items: stretch;
   gap: var(--space-6) var(--space-5);
   margin-top: var(--space-6);
 }

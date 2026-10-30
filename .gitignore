@@ -21,3 +21,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# agent briefs and reports (herdr fleet)
+/.agents
+/.playwright-mcp

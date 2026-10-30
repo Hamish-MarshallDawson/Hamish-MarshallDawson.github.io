@@ -109,13 +109,9 @@ export const vaultProjects = [
       ],
       demo: "localmind",
     },
-    schematic: {
-      nodes: ["Phone", "Gateway", "GPU PC"],
-      links: ["Tailscale", "Wake-on-LAN"],
-      notes: ["Qwen3-VL 8B", "LanceDB · RAG", "Voice · tools"],
-      footer: ["Idle 10 min", "→ sleep"],
-    },
-    alt: "Diagram: a phone reaches an always-on gateway over Tailscale, and the gateway wakes the GPU PC with Wake-on-LAN",
+    image: img("localmind.svg"),
+    alt: "LocalMind mark: an LM monogram on a square plate",
+    fit: "contain",
   },
   {
     id: "tensoroom",
@@ -160,13 +156,36 @@ export const vaultProjects = [
       pitch: "A free, ad-free gym tracker for my friends that installs on a phone and logs a workout even with no signal. Signed out, nothing leaves the device.",
       facts: [
         "Data lives on the phone; sign in with an emailed code to back it up",
-        "A practice in multi-agent orchestration: how effective is it for building a traditional serverless web app?",
+        "A practice in multi-agent orchestration for a traditional serverless web app",
         "260+ unit tests, plus end-to-end checks at phone sizes",
       ],
       demo: "gyminit",
     },
     image: img("gyminit.png"),
     alt: "Gyminit app icon",
+    fit: "contain",
+  },
+  {
+    id: "code-for-good",
+    name: "50+ Network impact platform",
+    category: "Code for Good · JPMorganChase · Oct 2026",
+    description:
+      "A feedback and impact platform for the West Lothian 50+ Network, built in under 24 hours from brief to demo. Our team of five had never met before the hackathon, and I was lead front-end developer. We built it to the charity's own brief.",
+    url: "https://github.com/glasgow26/Team-2",
+    charity: { name: "West Lothian 50+ Network", url: "https://westlothian50plusnetwork.co.uk/" },
+    tags: ["Next.js 16", "React 19", "TypeScript", "PostgreSQL + Drizzle", "OpenRouter AI"],
+    categories: ["ml"],
+    featured: {
+      pitch: "A feedback and impact platform for a charity that supports people aged 50 and over. Members answer a short survey online, on paper or in a recorded conversation.",
+      facts: [
+        "Built in under 24 hours, brief to demo",
+        "Lead front-end developer in a team of five strangers",
+        "Built for West Lothian 50+ Network, to the charity's own brief",
+      ],
+      demo: "codeforgood",
+    },
+    image: img("codeforgood.jpg"),
+    alt: "West Lothian 50+ Network logo",
     fit: "contain",
   },
   {
@@ -229,6 +248,7 @@ export const experience = [
   {
     role: "AI and Machine Learning Engineer Intern",
     org: "STMicroelectronics",
+    mark: "st.svg",
     period: "May 2026 – December 2026",
     starts: "2026-05",
     ends: "2026-12",
@@ -243,12 +263,48 @@ export const experience = [
   {
     role: "Research Intern — Human-Robot Interaction",
     org: "Heriot-Watt University",
+    mark: "robotarium.png",
     period: "Summer 2025",
     location: "Trust in Teleoperation Robotics",
     points: [
       "Designed and ran a 12-participant study on how input latency affects trust in a teleoperated robot; the research has been accepted for publication at British HCI 2026.",
       "De-risked real-world deployment of a TIAGo dual-arm robot by engineering a Linux and ROS simulation environment for controlled delay testing, validated across variable latency and network conditions.",
       "Presented the findings at the EPSRC Executive Showcase, which secured continuation funding for further placements.",
+    ],
+  },
+];
+
+// Hackathons, newest first. Not dated contracts: they are not in `experience`,
+// so they never count as an active role. `mark` is a file in public/projects/marks.
+export const hackathons = [
+  {
+    id: "hacktheburgh-xiii",
+    event: "HackTheBurgh XIII",
+    where: "Edinburgh",
+    when: "Sat 7 – Sun 8 Nov 2026",
+    status: "upcoming",
+    link: { label: "hacktheburgh.com", url: "https://hacktheburgh.com/" },
+  },
+  {
+    id: "code-for-good",
+    event: "Code for Good",
+    org: "JPMorganChase",
+    where: "Glasgow",
+    when: "Fri 23 – Sat 24 Oct 2026",
+    hours: 24,
+    status: "attended",
+    mark: "jpmc.png",
+    points: [
+      "A working feedback and impact platform for West Lothian 50+ Network, a charity that has to show its funders that walking groups and coffee mornings make older members less lonely. Shipped in 24 hours and deployed on AWS.",
+      "I led the front end and the overnight build to the 9am deadline: eleven parallel coding agents working against Figma and Playwright, each with a scoped brief, and nothing merged until lint, type checks, tests and a person had passed it.",
+      "Privacy by design: names and phone numbers encrypted in a separate database from anything members told us, and no figure shown that rests on fewer than five people.",
+      "180 TypeScript modules and 46 test suites later, the technical judges singled out the engineering and our JPMC supervisors called it one of the most polished products they had seen. We did not win.",
+      "A team of five who met that morning. I stayed up for the whole thing, powered through, and had a great time.",
+    ],
+    links: [
+      { label: "See the project", url: "#vault", internal: true },
+      { label: "Visit charity", url: "https://westlothian50plusnetwork.co.uk/" },
+      { label: "Repo", url: "https://github.com/glasgow26/Team-2" },
     ],
   },
 ];
@@ -260,6 +316,7 @@ export const education = [
   {
     qualification: "MEng Software Engineering",
     org: "Heriot-Watt University",
+    mark: "heriot-watt.svg",
     period: "Sept 2022 – Jun 2027",
     starts: "2022-09",
     ends: "2027-06",
@@ -274,6 +331,7 @@ export const education = [
   {
     qualification: "Secondary school",
     org: "Alford Academy",
+    mark: "alford-bull.png",
     period: "2016 – 2022",
     location: "Alford, Aberdeenshire",
     points: [
@@ -343,6 +401,10 @@ export const toolkit = [
   {
     key: "Systems & tools",
     items: ["Linux", "Git", "Docker", "PostgreSQL", "ROS1/ROS2", "Proxmox", "Tailscale", "Vercel", "Unity"],
+  },
+  {
+    key: "Agents & workflow",
+    items: ["Claude Code", "Codex", "Herdr", "Multi-agent orchestration", "MCP servers", "Playwright", "Obsidian"],
   },
 ];
 

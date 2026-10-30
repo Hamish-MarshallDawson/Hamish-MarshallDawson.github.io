@@ -4,6 +4,7 @@ import {
   education,
   experience,
   extracurricular,
+  hackathons,
   isActiveRole,
   personal,
   roleProgress,
@@ -77,6 +78,7 @@ function RecordSheet({ record, title, kind, number, delay, heading: Heading = "h
             <Heading id={id} className="contract-role">
               {title}
             </Heading>
+            {record.mark && <img className="contract-mark" src={`${process.env.PUBLIC_URL}/projects/marks/${record.mark}`} alt="" />}
             <p className="contract-meta u-micro">
               {record.period} · {record.location}
             </p>
@@ -123,6 +125,92 @@ function RecordSheet({ record, title, kind, number, delay, heading: Heading = "h
   );
 }
 
+// A hackathon you attended, on the same sheet: no progress bar, a status row
+// instead. The mark is a black-and-white file, so it prints in ink.
+function HackathonSheet({ event, number, delay }) {
+  const id = `hackathon-${number}`;
+  return (
+    <Reveal className="contract" delay={delay}>
+      <article className="contract-sheet surface-paper" aria-labelledby={id}>
+        <header className="contract-bar surface-signal u-micro">
+          <span>{`Hackathon 0x${number} // ${event.org}`}</span>
+          <span className="contract-state is-active">Attended</span>
+        </header>
+
+        <div className="contract-body">
+          <div className="contract-head">
+            <h4 id={id} className="contract-role">
+              {event.event}
+            </h4>
+            <img className="contract-mark" src={`${process.env.PUBLIC_URL}/projects/marks/${event.mark}`} alt="" />
+            <p className="contract-meta u-micro">
+              {event.when} · {event.where} · {event.hours} hours
+            </p>
+            <p className="contract-org" aria-hidden="true">
+              {event.org}
+            </p>
+          </div>
+
+          <div className="contract-objectives">
+            <p className="contract-objectives-title u-micro">
+              Facts [{event.points.length}/{event.points.length}]
+            </p>
+            <ol>
+              {event.points.map((point, n) => (
+                <li key={point}>
+                  <span className="contract-n num" aria-hidden="true">
+                    {pad(n + 1)}
+                  </span>
+                  <span>{point}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="contract-progress hack-foot">
+            <span className="contract-progress-label u-micro">
+              Attended · {event.hours} hours, no sleep
+            </span>
+            <ul className="hack-links">
+              {event.links.map((link, n) => (
+                <li key={link.url}>
+                  <a
+                    className={`btn u-press ${n === 0 ? "btn--signal" : "btn--paper"}`}
+                    href={link.url}
+                    {...(link.internal ? {} : { target: "_blank", rel: "noopener noreferrer" })}
+                  >
+                    {link.label}
+                    {link.internal ? " ↑" : " ↗"}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </article>
+    </Reveal>
+  );
+}
+
+// An event still to come: a hatched, outlined strip rather than a sheet.
+function UpcomingStrip({ event }) {
+  return (
+    <Reveal as="div">
+      <div className="hack-next u-hatch">
+        <p className="hack-next-text u-micro">
+          Upcoming · {event.event} · {event.where} · {event.when}
+        </p>
+        <a className="btn btn--paper u-press" href={event.link.url} target="_blank" rel="noopener noreferrer">
+          {event.link.label} ↗
+        </a>
+      </div>
+    </Reveal>
+  );
+}
+
+const attended = hackathons.filter((e) => e.status === "attended");
+const upcoming = hackathons.filter((e) => e.status === "upcoming");
+
 const subheading = {
   hidden: {},
   show: { transition: { staggerChildren: 0.055 } },
@@ -139,7 +227,7 @@ export function ServiceLog() {
           kicker="Work log"
           title="Where I've worked."
           titleId="logs-title"
-          aside={[`${experience.length} contracts on record`, `${education.length} places of study`]}
+          aside={[`${experience.length} contracts on record`, `${education.length} places of study`, `${hackathons.length} hackathons`]}
         />
 
         <ol className="contracts">
@@ -185,6 +273,33 @@ export function ServiceLog() {
               />
             ))}
           </ol>
+        </div>
+
+        <div className="study">
+          <div className="cells u-micro study-cells">
+            <span className="cell cell--fill">(02·c)</span>
+            <span className="cell">Hackathons</span>
+            <span className="cell cell--push">{hackathons.length} events</span>
+          </div>
+          <motion.h3
+            id="hackathon-title"
+            className="study-title"
+            variants={subheading}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            <MaskedWords text="Where I've hacked." />
+          </motion.h3>
+
+          <ol className="contracts" aria-labelledby="hackathon-title">
+            {attended.map((event) => (
+              <HackathonSheet key={event.id} event={event} number={pad(attended.length)} delay={0} />
+            ))}
+          </ol>
+          {upcoming.map((event) => (
+            <UpcomingStrip key={event.id} event={event} />
+          ))}
         </div>
 
         <Reveal as="div" className="toolkit">

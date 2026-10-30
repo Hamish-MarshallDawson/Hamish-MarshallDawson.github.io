@@ -152,6 +152,13 @@ export function ProjectDossier({ projects, index, onClose, onStep }) {
                     <ExternalIcon className="btn-glyph" />
                   </a>
                 )}
+                {project.charity && (
+                  <a className="btn btn--paper u-press" href={project.charity.url} target="_blank" rel="noopener noreferrer">
+                    Visit charity
+                    <span className="sr-only"> (opens in a new tab)</span>
+                    <ExternalIcon className="btn-glyph" />
+                  </a>
+                )}
                 {canStep && (
                   <p className="dossier-hint u-micro" aria-hidden="true">
                     {isTouch ? "Swipe the image to step through files" : "← → keys or swipe the image to step through files"}

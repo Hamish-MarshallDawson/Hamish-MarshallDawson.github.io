@@ -1,0 +1,1253 @@
+/* ==========================================================================
+   Code for Good scenes: miniatures of the West Lothian 50+ Network platform, in its own tokens
+   (app/globals.css and the staff CSS of the team's repo): navy #073e8c, cream page, 2px #5f6b76
+   lines, 0.4em radius, 3px radio rings, 4px selected rows with the yellow focus ring, pale-blue
+   help strip. The palette is declared on the root, so the site's Colour menu cannot reach it.
+
+   The scenes fill tall boxes (326 by 690 up to 828 by 780). Sizes are em of the root, whose font
+   size follows the box. Under 560px wide the staff screens take the app's phone layout (Menu bar,
+   no left navigation) and the member scenes drop the side note. The top 56px of the box is kept
+   clear: the crumb sits to the left of it, and the player's close button sits in the corner.
+
+   Motion rules are the same as the other demos. Each element's base style is its END state, and
+   an entrance is a keyframe that starts hidden and fills forwards. A later screen is a layer over
+   the earlier one, so with `.is-still` (no animation) the last screen shows. With `.is-paused`
+   animations hold. Only transform, opacity and clip-path move.
+   ========================================================================== */
+
+.cg-demo {
+  --navy: #073e8c;
+  --navy-dark: #042e69;
+  --cream: #f6f6f1;
+  --text: #1f1f1f;
+  --muted: #4a4a4a;
+  --link: #015a9e;
+  --border: #5f6b76;
+  --selected: #e6eef9;
+  --help: #e3ecf7;
+  --concern-bg: #fcedeb;
+  --concern-fg: #8c1d18;
+  --ok-bg: #e7f3ea;
+  --ok-fg: #164f1a;
+  --draft-bg: #fff1d6;
+  --draft-fg: #5c3b00;
+  --draft-line: #8a5a00;
+  --radius: 0.4em;
+  --focus: 0 0 0 2px var(--cream), 0 0 0 4px #0b0c0c, 0 0 0 7px #ffdd00;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  container: cg / size;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--navy-dark);
+  color: var(--text);
+  font: 400 clamp(10px, 1.6cqw, 13px) / 1.45 Inter, system-ui, sans-serif;
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+}
+
+:where(.cg-demo) *,
+:where(.cg-demo) *::before,
+:where(.cg-demo) *::after {
+  box-sizing: border-box;
+}
+
+:where(.cg-demo) :is(p, ul, li, h3, h4, dl, dt, dd, hr) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: inherit;
+  color: inherit;
+}
+
+.cg-i {
+  flex: none;
+  width: 1.2em;
+  height: 1.2em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- motion ---------- */
+
+@keyframes cg-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cg-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cg-down {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes cg-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes cg-press {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: scale(0.95);
+  }
+}
+
+.cg-in {
+  animation: cg-in 400ms var(--ease-out) var(--d, 0ms) both;
+}
+
+.cg-fade {
+  animation: cg-fade 450ms ease-out var(--d, 0ms) both;
+}
+
+.cg-down {
+  animation: cg-down 1800ms steps(5, end) var(--d, 0ms) both;
+}
+
+.cg-grow {
+  transform-origin: 0 50%;
+  animation: cg-grow 700ms var(--ease-out) var(--d, 0ms) both;
+}
+
+/* Continue is pressed once its row has come in; Approve is pressed at its own delay. */
+.cg-press {
+  animation: cg-in 400ms var(--ease-out) var(--d, 0ms) both, cg-press 360ms ease-in-out 3000ms both;
+}
+
+.cg-row .cg-press {
+  animation: cg-press 360ms ease-in-out var(--d, 0ms) both;
+}
+
+.cg-demo.is-paused *,
+.cg-demo.is-paused *::before,
+.cg-demo.is-paused *::after {
+  animation-play-state: paused !important;
+}
+
+.cg-demo.is-still *,
+.cg-demo.is-still *::before,
+.cg-demo.is-still *::after {
+  animation: none !important;
+}
+
+/* ---------- the crumb and the screen ---------- */
+
+.cg-crumb {
+  position: absolute;
+  left: 14px;
+  right: 64px;
+  top: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  color: #cfdcf3;
+}
+
+.cg-screen {
+  position: absolute;
+  inset: 56px 8px 8px;
+  overflow: hidden;
+  background: var(--cream);
+  border-radius: 6px;
+}
+
+.cg-member,
+.cg-staff,
+.cg-report {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--cream);
+}
+
+/* ---------- shared parts ---------- */
+
+.cg-logo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--navy);
+  font-size: 0.8em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.cg-help {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.6em 0.9em;
+  background: var(--help);
+  border-top: 3px solid var(--navy);
+  color: var(--navy);
+  font-weight: 700;
+  line-height: 1.27;
+}
+
+.cg-hbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.3em 0.6em;
+  border: 2px solid #fff;
+  border-radius: var(--radius);
+  color: #fff;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cg-strong,
+.cg-pt,
+.cg-h1 {
+  font-weight: 700;
+}
+
+.cg-muted {
+  color: var(--muted);
+}
+
+.cg-navy {
+  color: var(--navy);
+}
+
+.cg-link {
+  color: var(--navy);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.cg-h1 {
+  font-size: 1.75em;
+  line-height: 1.25;
+}
+
+.cg-h1 .cg-badge {
+  font-size: 0.45em;
+  vertical-align: middle;
+}
+
+.cg-pt {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 1.3em;
+  line-height: 1.3;
+}
+
+.cg-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+  min-width: 0;
+  padding: 1em;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.cg-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.cg-cols {
+  display: grid;
+  gap: 0.9em;
+}
+
+.cg-btnp,
+.cg-btns {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  min-height: 2.6em;
+  padding: 0.4em 1em;
+  border: 2px solid var(--navy);
+  border-radius: var(--radius);
+  font-weight: 700;
+  line-height: 1.27;
+}
+
+.cg-btnp {
+  background: var(--navy);
+  color: #fff;
+}
+
+.cg-btns {
+  background: #fff;
+  color: var(--navy);
+}
+
+.cg-sm {
+  min-height: 2.2em;
+  padding: 0.25em 0.7em;
+}
+
+.cg-btns.cg-on {
+  background: var(--selected);
+  border-width: 4px;
+  padding: calc(0.25em - 2px) calc(0.7em - 2px);
+}
+
+.cg-wide {
+  align-self: stretch;
+}
+
+.cg-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.1em 0.7em;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.cg-badge--ok {
+  background: var(--ok-bg);
+  color: var(--ok-fg);
+}
+
+.cg-badge--info {
+  background: var(--selected);
+  color: var(--navy);
+}
+
+.cg-badge--concern {
+  background: var(--concern-bg);
+  color: var(--concern-fg);
+}
+
+.cg-badge--draft {
+  background: var(--draft-bg);
+  border-color: var(--draft-line);
+  color: var(--draft-fg);
+}
+
+.cg-badge--draft .cg-i {
+  color: var(--draft-line);
+}
+
+.cg-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6em;
+  padding: 0.7em 0.9em;
+  background: var(--selected);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.cg-info > .cg-i {
+  color: var(--navy);
+  margin-top: 0.1em;
+}
+
+/* ---------- radio rows ---------- */
+
+.cg-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+}
+
+.cg-choice,
+.cg-choice-on {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.55em 0.8em;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  line-height: 1.35;
+}
+
+.cg-choice {
+  position: relative;
+  min-height: 3.2em;
+}
+
+/* The selected row: 4px navy line, pale fill, bold, and the focus ring. */
+.cg-choice-on {
+  position: absolute;
+  inset: -2px;
+  background: var(--selected);
+  border: 4px solid var(--navy);
+  box-shadow: var(--focus);
+  font-weight: 700;
+}
+
+.cg-rf {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.5em;
+  height: 1.5em;
+  background: #fff;
+  border: 3px solid var(--border);
+  border-radius: 50%;
+}
+
+.cg-choice-on .cg-rf {
+  border-color: var(--navy);
+}
+
+.cg-choice-on .cg-rf::after {
+  content: "";
+  width: 0.65em;
+  height: 0.65em;
+  border-radius: 50%;
+  background: var(--navy);
+}
+
+.cg-choices--staff .cg-choice {
+  min-height: 2.7em;
+  padding-block: 0.35em;
+}
+
+/* ---------- the member side: header bar, phone, side note ---------- */
+
+.cg-mhead {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.6em 1em;
+  background: var(--navy);
+  color: #fff;
+  font-size: 1.15em;
+  font-weight: 700;
+}
+
+.cg-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3em;
+  padding: 1em;
+  background: radial-gradient(ellipse at 60% 50%, #fbfbf8, #ecece6);
+}
+
+.cg-phone {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 100%;
+  aspect-ratio: 9 / 18.5;
+  overflow: hidden;
+  background: var(--cream);
+  border: 0.55em solid #2b2b2b;
+  border-radius: 2em;
+  box-shadow: 0 1.2em 2.4em rgba(0, 0, 0, 0.18);
+  font-size: clamp(10px, 1.7cqh, 13px);
+}
+
+.cg-phead {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 0.7em;
+  background: var(--navy);
+  color: #fff;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.cg-phead > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+
+.cg-phead .cg-hbtn {
+  font-size: 0.9em;
+}
+
+.cg-pbody {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+  padding: 0.8em 0.8em 1em;
+  line-height: 1.4;
+}
+
+.cg-phone .cg-help {
+  font-size: 0.85em;
+  padding: 0.5em 0.7em;
+}
+
+.cg-back {
+  display: flex;
+  align-items: center;
+  gap: 0.2em;
+  color: var(--link);
+  text-decoration: underline;
+  margin-bottom: -0.6em;
+}
+
+.cg-track {
+  width: 60%;
+  height: 0.8em;
+  margin-top: -0.6em;
+  overflow: hidden;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 0.4em;
+}
+
+.cg-track i {
+  display: block;
+  width: 18%;
+  height: 100%;
+  background: var(--navy);
+}
+
+.cg-qt {
+  font-size: 1.6em;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.cg-privacy {
+  padding: 0.7em 0.9em;
+  background: var(--selected);
+  border: 2px solid var(--navy);
+  border-radius: 0.35em;
+  font-weight: 700;
+}
+
+.cg-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  padding: 0.9em 1em;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 0.35em;
+}
+
+.cg-hub b:first-child {
+  font-size: 1.15em;
+  margin-bottom: 0.3em;
+}
+
+.cg-side {
+  display: none;
+  flex: 0 1 26em;
+  flex-direction: column;
+  gap: 0.4em;
+  color: var(--muted);
+  font-size: 1.15em;
+}
+
+.cg-side-t {
+  color: var(--text);
+  font-size: 1.7em;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+/* ---------- the staff side: header, left navigation, main ---------- */
+
+.cg-shead {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em 0.8em;
+  padding: 0.6em 0.9em;
+  background: var(--navy);
+  color: #fff;
+}
+
+.cg-brand {
+  flex: 1 1 16em;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.cg-acts {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.cg-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.25em 0.8em;
+  background: #fff;
+  border-radius: 999px;
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.cg-frame {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cg-nav {
+  display: none;
+  flex: none;
+  width: 14.5em;
+  padding-top: 0.5em;
+  background: #fff;
+  border-right: 2px solid var(--border);
+}
+
+.cg-nav li {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  min-height: 2.65em;
+  padding: 0.3em 0.6em 0.3em 0.9em;
+  border-left: 5px solid transparent;
+  line-height: 1.25;
+}
+
+.cg-nav .cg-i {
+  color: var(--navy);
+}
+
+.cg-nav .is-group {
+  padding-left: 0.6em;
+  font-weight: 700;
+}
+
+.cg-nav .is-sub {
+  min-height: 2.45em;
+  padding-left: 2em;
+}
+
+.cg-nav .is-here {
+  background: var(--selected);
+  border-left-color: var(--navy);
+  color: var(--navy);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.cg-menu {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  padding: 0.5em 0.9em;
+  background: #fff;
+  border-bottom: 2px solid var(--border);
+  font-weight: 700;
+}
+
+.cg-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  padding: 1.1em 1em;
+}
+
+@container cg (min-width: 560px) {
+  .cg-side {
+    display: flex;
+  }
+
+  .cg-frame {
+    flex-direction: row;
+  }
+
+  .cg-nav {
+    display: block;
+  }
+
+  .cg-menu {
+    display: none;
+  }
+
+  .cg-main {
+    padding: 1.4em 1.5em;
+  }
+
+  .cg-cols {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---------- scene 3: paper surveys ---------- */
+
+.cg-photo {
+  padding: 1.2em 1.4em;
+  background: radial-gradient(circle at 30% 30%, #8a7058, #5b4634 70%);
+  border-radius: 2px;
+}
+
+.cg-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55em;
+  padding: 0.5em 0.7em 0.8em;
+  background: #fbfbf7;
+  box-shadow: 0 0.3em 0.8em rgba(0, 0, 0, 0.35);
+  transform: rotate(-1.5deg);
+}
+
+.cg-sheet-id {
+  height: 1.4em;
+  margin: -0.5em -0.7em 0;
+  background: #111;
+}
+
+.cg-sheet-head {
+  display: flex;
+  align-items: center;
+  height: 1.3em;
+  padding: 0 0.3em;
+  background: var(--navy);
+  font-size: 0.7em;
+}
+
+.cg-sheet-head .cg-logo {
+  width: 1.4em;
+  height: 1.4em;
+  font-size: 0.5em;
+}
+
+/* Ticked three-way questions, then 0-10 rows of boxes, drawn as stripes. */
+.cg-ticks,
+.cg-boxes {
+  display: block;
+  height: 0.8em;
+  background:
+    linear-gradient(#9a9a9a, #9a9a9a) 0 0 / 55% 2px no-repeat,
+    repeating-linear-gradient(90deg, #555 0 1px, transparent 1px 0.55em, #555 0.55em calc(0.55em + 1px), transparent 0 2.6em) 0 100% / 100% 0.45em no-repeat;
+}
+
+.cg-boxes {
+  background:
+    linear-gradient(#9a9a9a, #9a9a9a) 0 0 / 65% 2px no-repeat,
+    repeating-linear-gradient(90deg, #555 0 1px, transparent 1px 0.8em) 0 100% / 8.8em 0.45em no-repeat;
+}
+
+.cg-sheet-note {
+  height: 2.2em;
+  border: 1px solid #555;
+  background: repeating-linear-gradient(#fbfbf7 0 0.7em, #1d3d7a 0.7em calc(0.7em + 1px)) 0.4em 0.2em / 80% 100% no-repeat;
+}
+
+.cg-scaleq {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  line-height: 1.3;
+}
+
+.cg-scale {
+  display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cg-scale span {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 2.3em;
+  border-left: 1px solid var(--border);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cg-scale span:first-child {
+  border-left: 0;
+}
+
+.cg-cell {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--navy);
+  color: #fff;
+}
+
+.cg-saved {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  max-width: 34em;
+  padding: 1em 1.1em;
+  background: var(--ok-bg);
+  border: 2px solid var(--ok-fg);
+  border-radius: var(--radius);
+}
+
+.cg-saved-t {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  color: var(--ok-fg);
+  font-size: 1.6em;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+/* ---------- scene 4: conversations ---------- */
+
+.cg-transcript {
+  padding: 0.6em 0.8em;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+}
+
+.cg-listen {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-style: italic;
+}
+
+.cg-listen .cg-rf,
+.cg-gcard .cg-rf {
+  width: 1.1em;
+  height: 1.1em;
+  border-width: 2px;
+}
+
+.cg-gcard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  padding: 0.7em 0.8em;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.cg-gcard i {
+  line-height: 1.35;
+}
+
+.cg-gcard .cg-rf {
+  border-color: var(--navy);
+}
+
+.cg-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em 2.2em;
+  padding: 0.8em 1em;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.cg-meta dt,
+.cg-reading dt {
+  color: var(--muted);
+}
+
+.cg-meta dd {
+  font-weight: 700;
+}
+
+.cg-safe {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  padding: 1em 1.1em;
+  background: var(--concern-bg);
+  border: 4px solid var(--concern-fg);
+  border-radius: var(--radius);
+}
+
+.cg-safe-t {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  color: var(--concern-fg);
+  font-size: 1.3em;
+  font-weight: 700;
+}
+
+/* ---------- scene 5: feedback ---------- */
+
+.cg-db {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  padding: 0.7em 0.9em;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.cg-db b {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 1.1em;
+  font-weight: 400;
+}
+
+.cg-db .cg-i {
+  color: var(--navy);
+}
+
+.cg-db span {
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.cg-db.cg-on {
+  background: var(--selected);
+  border: 4px solid var(--navy);
+  padding: calc(0.7em - 2px) calc(0.9em - 2px);
+}
+
+.cg-db.cg-on b {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.cg-db.cg-on b .cg-i:last-child {
+  margin-left: auto;
+}
+
+.cg-quote {
+  padding-left: 0.7em;
+  border-left: 4px solid var(--navy);
+  font-size: 1.1em;
+}
+
+.cg-reading {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7em 1.4em;
+}
+
+.cg-reading dd {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.cg-meter {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.cg-meter i {
+  width: 0.65em;
+  height: 1em;
+  border: 2px solid var(--navy);
+}
+
+.cg-meter i.is-on {
+  background: var(--navy);
+}
+
+/* ---------- scene 6: insights ---------- */
+
+.cg-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5em), 1fr));
+  gap: 0.7em;
+}
+
+.cg-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  padding: 0.7em 0.8em;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  line-height: 1.35;
+}
+
+.cg-tile b {
+  display: flex;
+  align-items: center;
+  gap: 0.2em;
+  color: var(--navy);
+  font-size: 1.8em;
+  line-height: 1.2;
+}
+
+.cg-tile b .cg-i {
+  width: 0.7em;
+  height: 0.7em;
+  fill: currentColor;
+}
+
+.cg-tile span:last-child {
+  color: var(--muted);
+}
+
+.cg-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14em, 1fr));
+  gap: 1em 1.6em;
+}
+
+.cg-compare > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+}
+
+.cg-cbar {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cg-cbar i {
+  flex: none;
+  width: calc(var(--v) * 5.5%);
+  height: 1.6em;
+}
+
+.cg-cbar .is-s0 {
+  background: var(--border);
+}
+
+.cg-cbar .is-s1 {
+  background: var(--navy);
+}
+
+.cg-cbar .is-s2 {
+  background: #cfdcf0;
+  border: 2px solid var(--navy);
+}
+
+/* A Leaflet-style map: land, the Forth, the council area outline, clusters and the zoom control. */
+.cg-map {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  max-height: 24em;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 34% 7% at 66% 10%, #aad3df 97%, transparent 100%),
+    radial-gradient(ellipse 22% 16% at 100% 0, #aad3df 97%, transparent 100%),
+    radial-gradient(ellipse 12% 9% at 80% 74%, #cfe3c1 97%, transparent 100%),
+    radial-gradient(ellipse 9% 7% at 16% 66%, #d6e8c8 97%, transparent 100%),
+    repeating-linear-gradient(-55deg, transparent 0 3.6em, rgba(240, 200, 120, 0.7) 3.6em calc(3.6em + 2px)),
+    repeating-linear-gradient(35deg, transparent 0 2.4em, rgba(255, 255, 255, 0.7) 2.4em calc(2.4em + 2px)),
+    #eef0e6;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.cg-area {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 62, 140, 0.28);
+  clip-path: polygon(33% 46%, 42% 33%, 52% 28%, 60% 36%, 70% 40%, 74% 55%, 66% 70%, 56% 74%, 46% 82%, 38% 72%, 30% 60%);
+}
+
+.cg-zoom {
+  position: absolute;
+  top: 0.6em;
+  left: 0.6em;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.cg-zoom span {
+  display: grid;
+  place-items: center;
+  width: 1.7em;
+  height: 1.7em;
+}
+
+.cg-zoom span + span {
+  border-top: 1px solid #ccc;
+}
+
+.cg-cluster {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.15em 0.5em;
+  background: var(--navy);
+  border: 2px solid #fff;
+  border-radius: 4px;
+  color: #fff;
+  line-height: 1.2;
+  translate: -50% -50%;
+}
+
+.cg-cluster b {
+  font-size: 1.2em;
+}
+
+.cg-cluster small {
+  font-size: 0.7em;
+  white-space: nowrap;
+}
+
+.cg-attr {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 0.1em 0.4em;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 0.7em;
+}
+
+/* ---------- scene 7: the report and the end card ---------- */
+
+.cg-rtop {
+  flex: none;
+  height: 0.6em;
+  background: var(--navy);
+}
+
+.cg-rbar {
+  flex: none;
+  padding: 0.6em 1em;
+  background: #fff;
+  border-block: 2px solid var(--navy);
+  color: var(--navy);
+  font-size: 1.1em;
+  font-weight: 700;
+  text-align: center;
+}
+
+.cg-rbar--p {
+  margin-top: 1.4em;
+  background: var(--navy);
+  color: #fff;
+}
+
+.cg-doc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  width: calc(100% - 2em);
+  max-width: 46em;
+  margin: 1.4em auto 0;
+  padding: 1.2em 1.3em;
+  background: #fff;
+}
+
+.cg-doc h3 {
+  font-size: 1.6em;
+  line-height: 1.2;
+}
+
+.cg-doc h3 + p {
+  margin-top: -0.5em;
+}
+
+.cg-doc hr {
+  border-top: 2px solid var(--border);
+}
+
+.cg-doc h4 {
+  font-size: 1.25em;
+  margin-bottom: -0.5em;
+}
+
+.cg-lead {
+  font-size: 1.2em;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.cg-endc {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8em;
+  padding: 1em;
+  text-align: center;
+}
+
+.cg-end-t {
+  font-size: 2em;
+  line-height: 1.2;
+  font-weight: 700;
+}

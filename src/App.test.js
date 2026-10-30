@@ -59,11 +59,11 @@ test("arrow keys move between category tabs", () => {
   expect(research).toHaveFocus();
 });
 
-test("LocalMind is in the vault, drawn as a schematic rather than a photo", () => {
+test("LocalMind is in the vault with its LM mark as the plate", () => {
   render(<App />);
   const slot = screen.getByRole("button", { name: /^LocalMind\./ });
-  expect(slot.querySelector("svg.schematic")).not.toBeNull();
-  expect(slot.querySelector("img")).toBeNull();
+  expect(slot.querySelector("svg.schematic")).toBeNull();
+  expect(slot.querySelector("img")).toHaveAttribute("src", expect.stringContaining("localmind.svg"));
 });
 
 test("no Marathon faction names are left anywhere on the page", () => {
@@ -275,6 +275,26 @@ test("the work log has a Where I've studied section: Heriot-Watt, then Alford Ac
   expect(within(studies).getByText(/2016 – 2022/)).toBeInTheDocument();
 });
 
+test("the work log lists two contracts and a Hackathons block with both events, their status and links", () => {
+  render(<App />);
+  const work = document.getElementById("work"); // eslint-disable-line testing-library/no-node-access
+  expect(within(work).getByText("2 contracts on record")).toBeInTheDocument();
+  expect(within(work).getByText("2 hackathons")).toBeInTheDocument();
+  expect(within(work).getByText(/Contract 0x02/)).toBeInTheDocument();
+  expect(within(work).queryByText(/Contract 0x03/)).not.toBeInTheDocument();
+
+  const events = within(work).getByRole("list", { name: "Where I've hacked." });
+  expect(within(events).getAllByRole("heading", { level: 4 }).map((h) => h.textContent)).toEqual(["Code for Good"]);
+  expect(within(events).getByText("Attended")).toBeInTheDocument();
+  expect(within(events).getByText(/Fri 23 – Sat 24 Oct 2026/)).toBeInTheDocument();
+  expect(within(events).getAllByRole("listitem").length).toBeGreaterThanOrEqual(5);
+  expect(within(work).getByText(/Upcoming · HackTheBurgh XIII · Edinburgh · Sat 7 – Sun 8 Nov 2026/)).toBeInTheDocument();
+  expect(within(events).getByRole("link", { name: /^See the project/ })).toHaveAttribute("href", "#vault");
+  expect(within(events).getByRole("link", { name: /^Visit charity/ })).toHaveAttribute("href", "https://westlothian50plusnetwork.co.uk/");
+  expect(within(events).getByRole("link", { name: /^Repo/ })).toHaveAttribute("href", "https://github.com/glasgow26/Team-2");
+  expect(within(work).getByRole("link", { name: /^hacktheburgh\.com/ })).toHaveAttribute("href", "https://hacktheburgh.com/");
+});
+
 test("the contact section opens with a plain invitation to talk", () => {
   render(<App />);
   const reachOut = document.getElementById("reach-out");
@@ -293,7 +313,7 @@ test("the contact form speaks plainly", () => {
   expect(reachOut.textContent).not.toMatch(/ident|payload|transmit|firewall|intercept/i);
 });
 
-test("the featured block shows LocalMind, TensoRoom and Gyminit, each with a demo", () => {
+test("the featured block shows LocalMind, TensoRoom, Gyminit and Code for Good; all have a demo", () => {
   render(<App />);
   const grid = screen.getByRole("list", { name: "Featured projects" });
   const cards = within(grid).getAllByRole("article");
@@ -301,8 +321,10 @@ test("the featured block shows LocalMind, TensoRoom and Gyminit, each with a dem
     "LocalMind",
     "TensoRoom",
     "Gyminit",
+    "50+ Network impact platform",
   ]);
-  expect(within(grid).getAllByRole("button", { name: /^play demo/i })).toHaveLength(3);
+  expect(within(grid).getAllByRole("button", { name: /^play demo/i })).toHaveLength(4);
+  expect(within(cards[3]).getByRole("link", { name: /^Visit charity/ })).toHaveAttribute("href", "https://westlothian50plusnetwork.co.uk/");
 });
 
 test("Play demo plays LocalMind's scenes in its own picture box, with no stage", async () => {

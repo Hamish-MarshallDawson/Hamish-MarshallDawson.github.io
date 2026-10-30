@@ -424,6 +424,13 @@ test("the Gyminit card links to the live app and reads Visit", async () => {
   expect(link).toHaveAttribute("href", "https://gyminit.example.workers.dev");
 });
 
+test("a card with a charity shows a Visit charity link to it", async () => {
+  const charityCard = { ...gyminit, id: "delta", name: "Delta", url: undefined, charity: { name: "Charity", url: "https://charity.example.org/" } };
+  await renderFeatured([charityCard]);
+  const link = within(screen.getByRole("article", { name: "Delta" })).getByRole("link", { name: /^Visit charity/ });
+  expect(link).toHaveAttribute("href", "https://charity.example.org/");
+});
+
 test("with two projects there is no carousel", async () => {
   await renderFeatured();
   expect(screen.queryByRole("button", { name: "Next projects" })).toBeNull();
