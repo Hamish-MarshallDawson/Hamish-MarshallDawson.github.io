@@ -1,0 +1,15 @@
+{
+  "short_name": "HMD",
+  "name": "Hamish Marshall Dawson — AI & Software Engineer",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1f1fff",
+  "background_color": "#ffffff"
+}
