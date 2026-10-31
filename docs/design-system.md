@@ -237,7 +237,7 @@ NeuralLattice), the demos' inner scenes, glitch/wipe effects. They exist as draw
 ### Adding a project
 
 Projects live in `src/components/projectdata.js`. A featured project gets a Featured card (carousel order: LocalMind,
-TensoRoom, Gyminit, Code for Good) and every project gets a Vault slot and a dossier. The featured index tag reads
+TensoRoom, Gyminit, Code for Good, Lothian Bus Display) and every project gets a Vault slot and a dossier. The featured index tag reads
 "Featured NN/NN"; the dossier bar reads "File NN/NN · Category". Action labels: "Play demo" (signal, only when there
 is a demo), then "Repo" for GitHub URLs or "Visit" otherwise (paper, external glyph, opens a new tab). An extra
 action such as "Visit charity" is another paper button in the same row.
@@ -247,7 +247,7 @@ show it). Its entry in `projectdata.js` is `code-for-good`.
 
 - Name "50+ Network impact platform" (full title "West Lothian 50+ Network: feedback and impact platform").
 - Category line "Code for Good · JPMorganChase · Oct 2026"; vault category `ml` (ML & web).
-- Position: "Featured 04/04" in the carousel; vault file 06/10 (order: dissertation, hri, localmind, tensoroom,
+- Position: "Featured 04/05" in the carousel; vault file 06/10 (order: dissertation, hri, localmind, tensoroom,
   gyminit, code-for-good, bus, iteration-inc, minecraft-agent, bonin-loot), so the slot reads [06] and the dossier
   bar "File 06/10 · ML & web".
 - Pitch: "A feedback and impact platform for the charity West Lothian 50+ Network, built in under 24 hours by a team
@@ -340,6 +340,10 @@ File: https://www.figma.com/design/vsPXcDB3SKkWlrRkdN18Zu
 | Foundations | Colour (primitives, Colour-menu modes), Surfaces (the contract per mode), Rules, Type, Space/borders/shadows (incl. the press model), Layout (tokens, breakpoints, motion, z-index). |
 | Components | The one library: every component in §7, with variants, properties and descriptions (page-level ones in frame 6:2). |
 | Reference, Screens - Desktop 1440, Screens - Phone 390, Flow | The screens and the route/flow map, built from the Components page. Desktop frames: Lobby 10:116, Project vault 11:126, Work log 12:465, Volunteer work 13:654, Off-duty 13:711, Reach out 13:770. |
+| Lothian Bus Display | The bus project's Featured card (desktop pair 04–05 / 05 and phone), Vault slot (default,
+selected) and Dossier dialog, with a notes column. |
+| Demo - Lothian Bus Display | The seven scenes of the bus demo as 656 × 861 panels with the band, a 390 phone panel, the
+screen parts as local components and per-scene animation notes. `BusDisplayDemo.css` is the source of truth. |
 | Demo - Code for Good | The seven scenes of the Code for Good demo as 656 × 861 panels with the band. Each scene box holds a 1440 screenshot of the built demo's end state (`.agents/shots/demo2/1440-dN-<id>.png`); two-screen scenes (2, 3, 4, 6, 7) show their first screen as a smaller frame under the panel. Each notes column names the matching video still. |
 
 Variables:
@@ -453,7 +457,10 @@ with a Section header. Figma frames listed are on "Screens - Desktop 1440".
 A featured card's demo plays in a panel over its partner card: the panel is the card's size (about 656 × 861 at
 1440), the scene fills it above the 60px Demo band (caption, seven dots, round control), and the close button owns
 the top-right 52 × 52, so nothing in a scene sits there. A demo wears the product's own look, not the site's: the
-Gyminit demo is Gyminit's Frutiger Aero, and the Code for Good demo copies the platform's real tokens from its
+Gyminit demo is Gyminit's Frutiger Aero, and the Lothian Bus Display demo draws the board's 320 × 480 screen in its own theme (`gfx/theme.h` of the bus repo:
+white, Lothian maroon #8C1713, route pills in the routes' own colours, Nunito Sans) inside a rounded black bezel,
+with every size a multiple of one screen pixel (`--u`); every stop and destination in it is city centre. The
+Code for Good demo copies the platform's real tokens from its
 source CSS (navy #073e8c, cream #f6f6f1, text #1f1f1f, Inter, 2px lines, 0.4em radius, and the GOV.UK-style focus
 ring: cream, then black, then #ffdd00). Its spec is the set of scene screenshots in `.agents/shots/demo2/`
 (`1440-` and `390-`, each scene's end state, plus `-first` for the earlier screen of a two-screen scene), shown on

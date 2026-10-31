@@ -192,14 +192,26 @@ export const vaultProjects = [
     id: "bus",
     repo: "Lothian-Api-Bus-Display",
     name: "Lothian Bus Display",
-    category: "Open source · 2025 – ongoing",
+    category: "Open source · C++ · Completed 2026",
     description:
-      "Live Edinburgh bus times on an e-ink panel, with the whole system running on a single Raspberry Pi 5. Written in C++ and tuned so the rendering and data handling stay smooth on low-power hardware. It hangs on my wall and tells me when to leave.",
-    tags: ["C++", "Raspberry Pi", "E-ink", "REST APIs"],
+      "A bus board for Edinburgh: live Lothian departures on a 3.5-inch touchscreen, from a Raspberry Pi 5 running C++17. I replaced the vendor's paint library with my own graphics layer: a canvas over an RGB565 frame buffer, anti-aliased text from fonts baked at build time, rounded shapes and alpha blending. Departures, timetables and live bus positions come from the Lothian open data API. Tap a departure to follow the bus on an OpenStreetMap map, with its lateness worked out from where it is against the timetable. A snapshot mode renders any screen to PNG from test data, so the screens were built and tested without the hardware.",
+    url: "https://github.com/Hamish-MarshallDawson/Lothian-Api-Bus-Display",
+    tags: ["C++17", "Raspberry Pi 5", "SPI display", "Novus API", "OpenStreetMap", "Embedded"],
     categories: ["performance", "robotics"],
-    image: img("bus.jpg"),
-    alt: "Wall-mounted display listing live Edinburgh bus departures, wired to a Raspberry Pi below",
-    focus: "50% 55%",
+    featured: {
+      pitch: "Live Edinburgh bus times on a 3.5-inch touchscreen, run by my own C++ on a Raspberry Pi 5. Tap a bus to follow it on a map, or tap a route to hide it.",
+      facts: [
+        "C++17 with my own graphics layer: anti-aliased text and fonts baked at build time",
+        "Into or out of city, worked out from the operator's own timetables",
+        "Researched and chose the Pi 5 and 3.5\" touch LCD myself, then wrote C++ to fit them",
+      ],
+      demo: "bus",
+    },
+    // A snapshot-mode render from city-centre test data, not a photo: the old photo showed a stop near home.
+    // The served copy is that 320x480 screen at 1:1 in a black bezel on a 1280x720 white plate, so a
+    // cover crop keeps the device whole in both the 16:9 and 4:3 boxes (source in assets-src/projects).
+    image: img("bus-board.png"),
+    alt: "The bus board: live departures from Princes Street, into city",
   },
   {
     id: "iteration-inc",

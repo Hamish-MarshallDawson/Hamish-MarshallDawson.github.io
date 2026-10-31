@@ -313,7 +313,7 @@ test("the contact form speaks plainly", () => {
   expect(reachOut.textContent).not.toMatch(/ident|payload|transmit|firewall|intercept/i);
 });
 
-test("the featured block shows LocalMind, TensoRoom, Gyminit and Code for Good; all have a demo", () => {
+test("the featured block shows LocalMind, TensoRoom, Gyminit, Code for Good and the bus display; all have a demo", () => {
   render(<App />);
   const grid = screen.getByRole("list", { name: "Featured projects" });
   const cards = within(grid).getAllByRole("article");
@@ -322,8 +322,9 @@ test("the featured block shows LocalMind, TensoRoom, Gyminit and Code for Good; 
     "TensoRoom",
     "Gyminit",
     "50+ Network impact platform",
+    "Lothian Bus Display",
   ]);
-  expect(within(grid).getAllByRole("button", { name: /^play demo/i })).toHaveLength(4);
+  expect(within(grid).getAllByRole("button", { name: /^play demo/i })).toHaveLength(5);
   expect(within(cards[3]).getByRole("link", { name: /^Visit charity/ })).toHaveAttribute("href", "https://westlothian50plusnetwork.co.uk/");
 });
 

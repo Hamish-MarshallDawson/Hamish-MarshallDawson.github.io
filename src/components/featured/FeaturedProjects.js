@@ -15,6 +15,7 @@ export const DEMOS = {
   tensoroom: () => import("./demos/TensoRoomDemo"),
   gyminit: () => import("./demos/GyminitDemo"),
   codeforgood: () => import("./demos/CodeForGoodDemo"),
+  bus: () => import("./demos/BusDisplayDemo"),
 };
 
 const NO_SCENES = [];
