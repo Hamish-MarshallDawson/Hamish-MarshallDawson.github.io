@@ -314,10 +314,24 @@ export const hackathons = [
   {
     id: "hacktheburgh-xiii",
     event: "HackTheBurgh XIII",
+    org: "University of Edinburgh CompSoc",
     where: "Edinburgh",
     when: "Sat 7 – Sun 8 Nov 2026",
-    status: "upcoming",
-    link: { label: "hacktheburgh.com", url: "https://hacktheburgh.com/" },
+    hours: 24,
+    status: "attended",
+    mark: "hacktheburgh.svg",
+    points: [
+      "Poseidon: live ship tracking that flags ships going quiet while other ships in the same area keep reporting, so an analyst gets a short list to check. A flag is a prompt to review, not an accusation.",
+      "I led a team of four, each of us directing a coding agent in one repository. A pinned GitHub issue was the agents' message board, where each claimed its folders so no two edited the same files at once.",
+      "Two live AIS feeds merged so a ship heard twice is stored once, every ship drawn on one GPU layer, and a replay of the stored history at up to 300× speed.",
+      "Replayed over one evening's log of 1.65 million messages, the gap detector found 2,326 silences across 24,615 ships: 654 looked deliberate and 1,097 were coverage gaps.",
+      "We trained route and go-dark models and published the results, weak ones included: the go-dark ranking scored an AUC of 0.59 at 1 hour and 0.63 at 6.",
+    ],
+    links: [
+      { label: "See the project", url: "#vault", internal: true },
+      { label: "hacktheburgh.com", url: "https://hacktheburgh.com/" },
+      { label: "Repo", url: "https://github.com/Hamish-MarshallDawson/Poseidon" },
+    ],
   },
   {
     id: "code-for-good",
@@ -326,6 +340,7 @@ export const hackathons = [
     where: "Glasgow",
     when: "Fri 23 – Sat 24 Oct 2026",
     hours: 24,
+    noSleep: true,
     status: "attended",
     mark: "jpmc.png",
     points: [

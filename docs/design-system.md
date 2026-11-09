@@ -438,7 +438,7 @@ with a Section header. Figma frames listed are on "Screens - Desktop 1440".
     mark slot (`Mark=JPMC tile`, Size=Desktop/Phone), "date · city · length", and the org stamp "JPMorganChase"
     at the foot. The facts (cols 6–12) are Record point rows under "Facts [n/n]". The progress row becomes a status row:
     "Status", an ink tag with paper text, then the links pushed right as Buttons: Signal for an in-page jump ("See
-    the project ↑", to the featured card / vault file 06), Paper with ↗ for external links. Code for Good 0x01:
+    the project ↑", to the featured card / vault file 06), Paper with ↗ for external links. HackTheBurgh XIII 0x02: the ink hexagon `hacktheburgh.svg` from the event's site, "Sat 7 – Sun 8 Nov 2026 · Edinburgh · 24 hours", status "Attended · 24 hours", Facts [5/5], links "See the project ↑" / "hacktheburgh.com ↗" / "Repo ↗". The Upcoming strip below stays for future events. Code for Good 0x01:
     "Fri 23 – Sat 24 Oct 2026 · Glasgow · 24 hours", status "Attended · 24 hours, no sleep", Facts [5/5] (copy in
     `projectdata.js` `hackathons`), links "See the project ↑" / "Visit charity ↗" / "Repo ↗".
   - **Upcoming strip** (Status=Upcoming): no bar, mark, facts or numbered rows. One row: a paper frame with a 3px

@@ -169,7 +169,7 @@ function HackathonSheet({ event, number, delay }) {
 
           <div className="contract-progress hack-foot">
             <span className="contract-progress-label u-micro">
-              Attended · {event.hours} hours, no sleep
+              Attended · {event.hours} hours{event.noSleep ? ", no sleep" : ""}
             </span>
             <ul className="hack-links">
               {event.links.map((link, n) => (
@@ -293,8 +293,8 @@ export function ServiceLog() {
           </motion.h3>
 
           <ol className="contracts" aria-labelledby="hackathon-title">
-            {attended.map((event) => (
-              <HackathonSheet key={event.id} event={event} number={pad(attended.length)} delay={0} />
+            {attended.map((event, i) => (
+              <HackathonSheet key={event.id} event={event} number={pad(attended.length - i)} delay={i * 0.09} />
             ))}
           </ol>
           {upcoming.map((event) => (

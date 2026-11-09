@@ -284,15 +284,23 @@ test("the work log lists two contracts and a Hackathons block with both events, 
   expect(within(work).queryByText(/Contract 0x03/)).not.toBeInTheDocument();
 
   const events = within(work).getByRole("list", { name: "Where I've hacked." });
-  expect(within(events).getAllByRole("heading", { level: 4 }).map((h) => h.textContent)).toEqual(["Code for Good"]);
-  expect(within(events).getByText("Attended")).toBeInTheDocument();
+  expect(within(events).getAllByRole("heading", { level: 4 }).map((h) => h.textContent)).toEqual(["HackTheBurgh XIII", "Code for Good"]);
+  expect(within(events).getAllByText("Attended")).toHaveLength(2);
+  expect(within(events).getByText(/Hackathon 0x02/)).toHaveTextContent("University of Edinburgh CompSoc");
+  expect(within(events).getByText(/Hackathon 0x01/)).toHaveTextContent("JPMorganChase");
+  expect(within(events).getByText(/Sat 7 – Sun 8 Nov 2026 · Edinburgh · 24 hours/)).toBeInTheDocument();
   expect(within(events).getByText(/Fri 23 – Sat 24 Oct 2026/)).toBeInTheDocument();
-  expect(within(events).getAllByRole("listitem").length).toBeGreaterThanOrEqual(5);
-  expect(within(work).getByText(/Upcoming · HackTheBurgh XIII · Edinburgh · Sat 7 – Sun 8 Nov 2026/)).toBeInTheDocument();
-  expect(within(events).getByRole("link", { name: /^See the project/ })).toHaveAttribute("href", "#vault");
+  expect(within(events).getAllByRole("listitem").length).toBeGreaterThanOrEqual(10);
+  expect(within(events).getByText(/^Attended · 24 hours$/)).toBeInTheDocument();
+  expect(within(events).getByText(/^Attended · 24 hours, no sleep$/)).toBeInTheDocument();
+  expect(within(work).queryByText(/^Upcoming/)).not.toBeInTheDocument();
+  within(events).getAllByRole("link", { name: /^See the project/ }).forEach((link) => expect(link).toHaveAttribute("href", "#vault"));
   expect(within(events).getByRole("link", { name: /^Visit charity/ })).toHaveAttribute("href", "https://westlothian50plusnetwork.co.uk/");
-  expect(within(events).getByRole("link", { name: /^Repo/ })).toHaveAttribute("href", "https://github.com/glasgow26/Team-2");
-  expect(within(work).getByRole("link", { name: /^hacktheburgh\.com/ })).toHaveAttribute("href", "https://hacktheburgh.com/");
+  expect(within(events).getAllByRole("link", { name: /^Repo/ }).map((link) => link.getAttribute("href"))).toEqual([
+    "https://github.com/Hamish-MarshallDawson/Poseidon",
+    "https://github.com/glasgow26/Team-2",
+  ]);
+  expect(within(events).getByRole("link", { name: /^hacktheburgh\.com/ })).toHaveAttribute("href", "https://hacktheburgh.com/");
 });
 
 test("the contact section opens with a plain invitation to talk", () => {
