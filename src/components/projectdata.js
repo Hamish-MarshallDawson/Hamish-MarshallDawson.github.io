@@ -61,12 +61,34 @@ export const categories = [
   },
 ];
 
-// Order is deliberate: dissertation and the HRI study first, then current
-// builds, then coursework. The first category listed is the project's primary.
-// `fit: "contain"` is for logos/illustrations that shouldn't be cropped;
-// `focus` is an object-position so crops keep the subject in frame. A project
-// with a `schematic` instead of an `image` gets a drawn diagram as its plate.
+// Order is deliberate: Poseidon leads, then the dissertation and the HRI study,
+// then current builds, then coursework. The first category listed is the
+// project's primary. `fit: "contain"` is for logos/illustrations that shouldn't
+// be cropped; `focus` is an object-position so crops keep the subject in frame.
+// A project with a `schematic` instead of an `image` gets a drawn diagram as its plate.
 export const vaultProjects = [
+  {
+    id: "poseidon",
+    repo: "Poseidon",
+    name: "Poseidon",
+    category: "HackTheBurgh · Team lead · Nov 2026",
+    description:
+      "Live ship tracking that flags ships going quiet while other ships in the same area keep reporting. It merges AISStream's worldwide feed with Digitraffic's Finnish one, so a ship heard twice is stored once, and gives an analyst a short list of candidates, a risk order for each ship with its reasons, a replay and a shared team workspace. A flag is a prompt to review, not an accusation. A route model trained on Danish Maritime Authority AIS estimates up to 24 hours ahead with 80% and 95% circles, and the go-dark ranking is weak and labelled so. Built at HackTheBurgh by four people, each directing a coding agent in one repository; I was team lead.",
+    url: "https://github.com/Hamish-MarshallDawson/Poseidon",
+    tags: ["React", "MapLibre", "Python", "TimescaleDB", "LightGBM", "Coding agents"],
+    categories: ["ml"],
+    featured: {
+      pitch: "Watches live ship tracking and flags ships that go quiet while others in the same area keep reporting. A flag is a prompt to review, not an accusation.",
+      facts: [
+        "Team lead of four, each directing a coding agent in one repo",
+        "One evening replayed: 2,326 gaps, 654 candidates, 1,097 coverage gaps",
+        "Go-dark ranking is weak and labelled so: AUC 0.59 at 1 h, 0.63 at 6 h",
+      ],
+      demo: "poseidon",
+    },
+    image: img("poseidon.jpg"),
+    alt: "The Poseidon logo beside a tilted dark map of shipping around Denmark and the Baltic",
+  },
   {
     id: "dissertation",
     repo: "Language-Commands-for-a-Robotic-arm-using-Object-Recognition-",

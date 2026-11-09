@@ -1,0 +1,810 @@
+/* ==========================================================================
+   Poseidon's panel scenes: the ship window, the Review list and Model Lab. Sizes are the shipped
+   product's (windows.css, review.css, panels.css, lab.css), each multiplied by --u. Tokens come from
+   .pd-demo in PoseidonDemo.css.
+
+   Each element's base style is its END state and an entrance starts hidden and fills forwards, so
+   `.is-still` (no animation) shows the end state and `.is-paused` holds. Only transform, opacity and
+   clip-path move. The top-right 52 x 52 stays clear for the player's close button.
+   ========================================================================== */
+
+.pd-pn {
+  position: absolute;
+  inset: 0;
+}
+
+.pd-pn-rise,
+.pd-pn-pop,
+.pd-pn-drop,
+.pd-pn-wipe,
+.pd-rv-was,
+.pd-lab-lit {
+  animation-delay: var(--d, 0ms);
+  animation-fill-mode: both;
+  animation-timing-function: var(--ease-out);
+}
+
+.pd-pn-rise {
+  animation-name: pd-pn-rise;
+  animation-duration: 340ms;
+}
+
+.pd-pn-pop {
+  animation-name: pd-pn-pop;
+  animation-duration: 320ms;
+}
+
+.pd-pn-drop {
+  animation-name: pd-pn-drop;
+  animation-duration: 320ms;
+}
+
+.pd-pn-wipe {
+  animation-name: pd-pn-wipe;
+  animation-duration: 420ms;
+}
+
+@keyframes pd-pn-rise {
+  from {
+    opacity: 0;
+    transform: translateY(calc(6 * var(--u)));
+  }
+}
+
+@keyframes pd-pn-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+@keyframes pd-pn-drop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-12 * var(--u)));
+  }
+}
+
+@keyframes pd-pn-wipe {
+  from {
+    clip-path: inset(0 0 0 100%);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes pd-pn-gone {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes pd-pn-lit {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.pd-demo.is-paused .pd-pn *,
+.pd-demo.is-paused .pd-pn {
+  animation-play-state: paused;
+}
+
+.pd-demo.is-still .pd-pn *,
+.pd-demo.is-still .pd-pn {
+  animation: none;
+}
+
+/* ---------- window ---------- */
+
+/* The ship the leader line ends on: SYN (61%, 41%) on .pd-world, which covers the box and overflows it. */
+.pd-pn-window {
+  --world: max(100cqw, calc(100cqh * 656 / 801));
+  --ship-x: calc(50cqw + 0.11 * var(--world));
+  --ship-y: calc(50cqh - 0.1099 * var(--world));
+  --lead-x: calc(16 * var(--u) + 322 * var(--u));
+  --lead-y: calc(90 * var(--u));
+}
+
+.pd-lead {
+  position: absolute;
+  inset: 0;
+}
+
+/* A hairline drawn as a polygon, because its ends mix a window edge in px with a ship position in %. */
+.pd-lead-line {
+  position: absolute;
+  inset: 0;
+  background: var(--ship-selected);
+  clip-path: polygon(
+    var(--lead-x) calc(var(--lead-y) - 0.6px),
+    var(--ship-x) calc(var(--ship-y) - 0.6px),
+    var(--ship-x) calc(var(--ship-y) + 0.6px),
+    var(--lead-x) calc(var(--lead-y) + 0.6px)
+  );
+}
+
+.pd-lead-dot {
+  position: absolute;
+  left: var(--ship-x);
+  top: var(--ship-y);
+  width: calc(6 * var(--u));
+  height: calc(6 * var(--u));
+  margin: calc(-3 * var(--u)) 0 0 calc(-3 * var(--u));
+  border-radius: 50%;
+  background: var(--ship-selected);
+}
+
+.pd-sw {
+  position: absolute;
+  left: calc(16 * var(--u));
+  top: calc(72 * var(--u));
+  display: flex;
+  flex-direction: column;
+  width: calc(322 * var(--u));
+  border: calc(1 * var(--u)) solid var(--border-default);
+  transform-origin: 100% 12%;
+}
+
+.pd-sw-bar {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  padding: calc(6 * var(--u)) calc(4 * var(--u)) calc(6 * var(--u)) calc(8 * var(--u));
+  border-bottom: calc(1 * var(--u)) solid var(--border-subtle);
+  background: var(--bg-raised);
+}
+
+.pd-sw-grip {
+  flex: none;
+  width: calc(6 * var(--u));
+  height: calc(14 * var(--u));
+  background: radial-gradient(circle, var(--text-muted) 40%, transparent 44%) 0 0 / calc(3 * var(--u)) calc(5 * var(--u));
+}
+
+.pd-sw-name {
+  flex: 1;
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+  font-weight: 600;
+}
+
+.pd-sw-btn {
+  padding: calc(2 * var(--u)) calc(6 * var(--u));
+  color: var(--text-secondary);
+  font: var(--size-body) / var(--line-body) var(--font-data);
+}
+
+.pd-sw-card {
+  display: flex;
+  flex-direction: column;
+  gap: calc(12 * var(--u));
+  padding: calc(16 * var(--u));
+  background: var(--bg-panel);
+}
+
+.pd-sw-col {
+  display: flex;
+  flex-direction: column;
+  gap: calc(12 * var(--u));
+  min-width: 0;
+}
+
+.pd-sw-chip {
+  align-self: flex-start;
+  padding: calc(2 * var(--u)) calc(6 * var(--u));
+  border: calc(1 * var(--u)) solid var(--ship-dark);
+  border-radius: calc(2 * var(--u));
+  color: var(--ship-dark);
+  font: 500 var(--size-caption) / var(--line-caption) var(--font-data);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pd-sw-sub,
+.pd-sw-route,
+.pd-sw-note {
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+}
+
+.pd-sw-sub,
+.pd-sw-note {
+  color: var(--text-secondary);
+}
+
+.pd-sw-route {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(2 * var(--u)) calc(8 * var(--u));
+}
+
+.pd-sw-route b,
+.pd-sw-note b {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.pd-sw-timer {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-data);
+}
+
+.pd-sw-clock {
+  color: var(--ship-dark);
+  font-size: var(--size-display);
+  line-height: var(--line-display);
+  font-variant-numeric: tabular-nums;
+}
+
+.pd-sw-caption {
+  color: var(--text-muted);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+}
+
+.pd-sw-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(12 * var(--u));
+}
+
+.pd-sw-field {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--u));
+  min-width: 0;
+}
+
+.pd-sw-label {
+  color: var(--text-muted);
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+}
+
+.pd-sw-value {
+  font: var(--size-data) / var(--line-data) var(--font-data);
+}
+
+.pd-sw-actions {
+  display: flex;
+  gap: calc(8 * var(--u));
+}
+
+/* ---------- review ---------- */
+
+/* Starts below the close button's corner and stops above the scrub bar and credits. */
+.pd-rv {
+  position: absolute;
+  top: 60px;
+  right: calc(16 * var(--u));
+  bottom: calc(140 * var(--u));
+  display: flex;
+  flex-direction: column;
+  width: min(calc(360 * var(--u)), calc(100% - 32 * var(--u)));
+  max-height: calc(650 * var(--u));
+  border: calc(1 * var(--u)) solid var(--text-muted);
+  border-radius: calc(2 * var(--u));
+  background: var(--bg-panel);
+}
+
+.pd-rv-title {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  padding: calc(14 * var(--u)) calc(12 * var(--u)) calc(6 * var(--u));
+}
+
+.pd-rv-title h3 {
+  flex: 1;
+  font-size: var(--size-heading);
+  line-height: var(--line-heading);
+  font-weight: 600;
+}
+
+.pd-rv-title .pd-btn {
+  border-color: var(--text-muted);
+}
+
+.pd-rv-title kbd {
+  color: var(--text-muted);
+  font: var(--size-caption) / var(--line-caption) var(--font-data);
+}
+
+.pd-rv-banner {
+  flex: none;
+  padding: 0 calc(12 * var(--u)) calc(10 * var(--u));
+  border-bottom: calc(1 * var(--u)) solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+}
+
+.pd-rv-list {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pd-rv-item {
+  display: flex;
+  flex-direction: column;
+  gap: calc(6 * var(--u));
+  padding: calc(12 * var(--u));
+  border-bottom: calc(1 * var(--u)) solid var(--border-subtle);
+}
+
+.pd-rv-head {
+  display: flex;
+  align-items: center;
+  gap: calc(6 * var(--u));
+}
+
+.pd-rv-name {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: calc(4 * var(--u));
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.pd-rv-name b {
+  font-size: var(--size-heading);
+  line-height: var(--line-heading);
+  font-weight: 600;
+}
+
+.pd-rv-name span {
+  color: var(--text-secondary);
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+}
+
+.pd-rv-timer {
+  flex: none;
+  font: var(--size-caption) / var(--line-caption) var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.is-noais .pd-rv-timer {
+  color: var(--ship-dark);
+}
+
+.pd-rv-pick {
+  flex: none;
+  width: calc(14 * var(--u));
+  height: calc(14 * var(--u));
+  border: calc(1 * var(--u)) solid var(--border-strong);
+  border-radius: calc(2 * var(--u));
+}
+
+.pd-rv-risk {
+  display: flex;
+  align-items: center;
+  gap: calc(10 * var(--u));
+}
+
+.pd-rv-risk b {
+  flex: none;
+  font: 600 var(--size-title) / var(--line-title) var(--font-data);
+}
+
+.pd-rv-risk span {
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+}
+
+.pd-rv-risk small {
+  display: block;
+  color: var(--text-secondary);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+}
+
+.pd-rv-codes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(4 * var(--u));
+}
+
+.pd-rv-sys {
+  color: var(--text-secondary);
+  font: var(--size-caption) / var(--line-caption) var(--font-data);
+}
+
+.pd-rv-actions {
+  display: flex;
+  gap: calc(8 * var(--u));
+}
+
+/* The shipped status select (presence.css .pr-status), with its caret. */
+.pd-rv-status {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: calc(84 * var(--u));
+  height: calc(28 * var(--u));
+  padding: 0 calc(20 * var(--u)) 0 calc(8 * var(--u));
+  border: calc(1 * var(--u)) solid var(--text-muted);
+  border-radius: calc(4 * var(--u));
+  background: var(--bg-panel);
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+}
+
+.pd-rv-status::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: calc(7 * var(--u));
+  margin-top: calc(-2 * var(--u));
+  border: calc(4 * var(--u)) solid transparent;
+  border-top-color: var(--text-secondary);
+  border-bottom-width: 0;
+}
+
+/* The status the row started on, covering the new one until it fades. */
+.pd-rv-was {
+  position: absolute;
+  inset: 0 calc(20 * var(--u)) 0 0;
+  display: flex;
+  align-items: center;
+  padding-left: calc(8 * var(--u));
+  background: var(--bg-panel);
+  opacity: 0;
+  animation-name: pd-pn-gone;
+  animation-duration: 240ms;
+}
+
+.pd-rv-brief {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(8 * var(--u));
+  padding: calc(8 * var(--u)) calc(12 * var(--u));
+  border-top: calc(1 * var(--u)) solid var(--border-subtle);
+  background: var(--bg-raised);
+  color: var(--text-secondary);
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+}
+
+.pd-rv-brief-actions {
+  display: flex;
+  flex: none;
+  gap: calc(8 * var(--u));
+}
+
+.pd-btn.is-off {
+  opacity: 0.55;
+}
+
+.pd-rv-foot {
+  flex: none;
+  padding: calc(8 * var(--u)) calc(12 * var(--u));
+  border-top: calc(1 * var(--u)) solid var(--border-subtle);
+  color: var(--text-secondary);
+  font: var(--size-caption) / var(--line-caption) var(--font-data);
+  text-decoration: underline;
+}
+
+/* ---------- lab ---------- */
+
+.pd-lab {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(12 * var(--u));
+}
+
+.pd-lab-head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  height: 52px;
+  padding: 0 60px 0 calc(24 * var(--u));
+  border-bottom: calc(1 * var(--u)) solid var(--border-default);
+  background: var(--bg-panel);
+}
+
+.pd-lab-head h3 {
+  font-size: var(--size-title);
+  line-height: var(--line-title);
+  font-weight: 600;
+}
+
+.pd-lab-cols {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 0;
+  border-bottom: calc(1 * var(--u)) solid var(--border-default);
+}
+
+.pd-lab-col {
+  display: flex;
+  flex-direction: column;
+  gap: calc(10 * var(--u));
+  min-width: 0;
+  padding: calc(22 * var(--u)) calc(24 * var(--u));
+}
+
+.pd-lab-col + .pd-lab-col {
+  border-left: calc(1 * var(--u)) solid var(--border-default);
+}
+
+.pd-lab-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  color: var(--text-muted);
+  font-size: var(--size-label);
+  line-height: var(--line-caption);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pd-lab-weak {
+  border-color: var(--risk-2);
+  color: var(--text-primary);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.pd-lab-q {
+  font-size: calc(24 * var(--u));
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.pd-lab-basis {
+  color: var(--text-secondary);
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+}
+
+.pd-lab-stats {
+  display: flex;
+  flex-direction: column;
+  gap: calc(14 * var(--u));
+  margin-top: calc(6 * var(--u));
+}
+
+.pd-lab-stat {
+  display: flex;
+  flex-direction: column;
+  gap: calc(2 * var(--u));
+  padding-left: calc(12 * var(--u));
+  border-left: calc(3 * var(--u)) solid var(--border-strong);
+}
+
+.pd-lab-stat.is-weak {
+  border-left-color: var(--risk-2);
+}
+
+.pd-lab-stat b {
+  font: 700 calc(32 * var(--u)) / 1.05 var(--font-data);
+}
+
+.pd-lab-stat span {
+  color: var(--text-secondary);
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+}
+
+.pd-lab-pipe {
+  display: grid;
+  flex: none;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin: calc(14 * var(--u)) calc(24 * var(--u)) 0;
+}
+
+.pd-lab-pipe li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: calc(44 * var(--u));
+  padding: calc(6 * var(--u)) calc(8 * var(--u)) calc(9 * var(--u));
+  border: calc(1 * var(--u)) solid var(--border-default);
+  border-left-width: 0;
+  background: var(--bg-panel);
+  color: var(--text-muted);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pd-lab-pipe li:first-child {
+  border-left-width: calc(1 * var(--u));
+  border-radius: calc(4 * var(--u)) 0 0 calc(4 * var(--u));
+}
+
+.pd-lab-pipe li:last-child {
+  border-radius: 0 calc(4 * var(--u)) calc(4 * var(--u)) 0;
+}
+
+.pd-lab-lit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(3 * var(--u));
+  background: var(--accent);
+  transform-origin: left;
+  animation-name: pd-pn-lit;
+  animation-duration: 260ms;
+}
+
+.pd-lab-rule {
+  flex: none;
+  margin: calc(12 * var(--u)) calc(24 * var(--u)) 0;
+  padding: calc(12 * var(--u)) calc(16 * var(--u));
+  border: calc(1 * var(--u)) solid var(--border-subtle);
+  border-radius: calc(4 * var(--u));
+  background: var(--bg-raised);
+}
+
+.pd-lab-sentence {
+  margin-top: calc(4 * var(--u));
+  font-size: var(--size-heading);
+  line-height: var(--line-heading);
+  font-weight: 500;
+}
+
+.pd-lab-small {
+  color: var(--text-muted);
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+}
+
+.pd-lab-small {
+  margin-top: calc(4 * var(--u));
+}
+
+/* ---------- desktop: the shell's bottom chrome sits 70px up, above the site's status strip ---------- */
+
+@container pd (min-width: 521px) and (min-height: 561px) {
+  .pd-rv {
+    bottom: calc(70px + 90 * var(--u));
+  }
+
+  .pd-lab {
+    padding-bottom: 70px;
+  }
+}
+
+/* ---------- narrow boxes: phones held upright ---------- */
+
+@container pd (max-width: 420px) {
+  /* The window would cover the ship, so it sits at the foot of the box, clear of the scrub bar. */
+  .pd-pn-window {
+    --lead-x: 36%;
+    --lead-y: calc(var(--ship-y) + 80 * var(--u));
+  }
+
+  .pd-sw {
+    top: auto;
+    bottom: calc(96 * var(--u));
+    transform-origin: 40% 0;
+  }
+
+  .pd-sw-gaps,
+  .pd-sw-col > .pd-sw-caption {
+    display: none;
+  }
+
+  .pd-lab-col {
+    padding: calc(14 * var(--u)) calc(12 * var(--u));
+  }
+
+  .pd-lab-q {
+    font-size: calc(18 * var(--u));
+  }
+
+  .pd-lab-pipe {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: calc(10 * var(--u)) calc(12 * var(--u)) 0;
+  }
+
+  .pd-lab-pipe li,
+  .pd-lab-pipe li:first-child,
+  .pd-lab-pipe li:last-child {
+    border-width: calc(1 * var(--u));
+    border-radius: 0;
+  }
+
+  .pd-lab-rule {
+    margin: calc(10 * var(--u)) calc(12 * var(--u)) 0;
+  }
+}
+
+/* ---------- short boxes: phones on their side ---------- */
+
+@container pd (max-height: 460px) {
+  .pd-sw {
+    top: calc(66 * var(--u));
+    width: calc(520 * var(--u));
+  }
+
+  .pd-pn-window {
+    --lead-x: calc(16 * var(--u) + 520 * var(--u));
+    --lead-y: calc(92 * var(--u));
+  }
+
+  .pd-sw-card {
+    flex-direction: row;
+    padding: calc(10 * var(--u));
+  }
+
+  .pd-sw-col {
+    flex: 1 1 0;
+    gap: calc(6 * var(--u));
+  }
+
+  .pd-sw-gaps,
+  .pd-sw-actions,
+  .pd-sw-col > .pd-sw-caption {
+    display: none;
+  }
+
+  .pd-rv {
+    top: calc(8 * var(--u));
+    right: 60px;
+    bottom: calc(75 * var(--u));
+    max-height: none;
+  }
+
+  .pd-rv-brief,
+  .pd-rv-foot,
+  .pd-rv-item:nth-child(n + 2) {
+    display: none;
+  }
+
+  .pd-lab-head {
+    height: 40px;
+  }
+
+  .pd-lab-q,
+  .pd-lab-basis,
+  .pd-lab-pipe {
+    display: none;
+  }
+
+  .pd-lab-col {
+    gap: calc(6 * var(--u));
+    padding: calc(8 * var(--u)) calc(16 * var(--u));
+  }
+
+  .pd-lab-stats {
+    flex-direction: row;
+    gap: calc(10 * var(--u));
+    margin-top: 0;
+  }
+
+  .pd-lab-stat {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .pd-lab-stat b {
+    font-size: calc(22 * var(--u));
+  }
+
+  .pd-lab-rule {
+    margin-top: calc(6 * var(--u));
+    padding: calc(6 * var(--u)) calc(12 * var(--u));
+  }
+}

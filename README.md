@@ -2,7 +2,7 @@
 
 My portfolio site, live at [hamishmarshalldawson.com](https://hamishmarshalldawson.com). Built with React and framer-motion.
 
-The Project vault has a **Featured builds** block: LocalMind and TensoRoom each get a card and a walkthrough that plays inside the page, so visitors can see the software without downloading or running it. Each demo is styled like its own app.
+The Project vault has a **Featured builds** block: Poseidon, LocalMind, TensoRoom, Gyminit, the Code for Good platform and the Lothian Bus Display each get a card and a walkthrough that plays inside the page, so visitors can see the software without downloading or running it. Each demo is styled like its own app.
 
 ## Preview
 
@@ -11,6 +11,10 @@ Each Featured card has a round **Play** button on its picture. Pressing it plays
 | Desktop (1440px) | Phone (390px) |
 |---|---|
 | <img src="docs/preview/desktop-cards.jpg" alt="Featured builds block with LocalMind and TensoRoom cards on desktop" width="560"> | <img src="docs/preview/phone-card.jpg" alt="LocalMind card on a phone with its Play button" width="220"> |
+
+### Poseidon
+
+Seven scenes in Poseidon's own dark theme: live AIS on one map, a ship falling silent while others keep reporting, the ship window, the 80% and 95% circles, the Review list as an order with reasons, the replay, and Model Lab with its weak go-dark figures left in. Every named ship is synthetic.
 
 ### LocalMind
 

@@ -236,7 +236,7 @@ NeuralLattice), the demos' inner scenes, glitch/wipe effects. They exist as draw
 
 ### Adding a project
 
-Projects live in `src/components/projectdata.js`. A featured project gets a Featured card (carousel order: LocalMind,
+Projects live in `src/components/projectdata.js`. A featured project gets a Featured card (carousel order: Poseidon, LocalMind,
 TensoRoom, Gyminit, Code for Good, Lothian Bus Display) and every project gets a Vault slot and a dossier. The featured index tag reads
 "Featured NN/NN"; the dossier bar reads "File NN/NN · Category". Action labels: "Play demo" (signal, only when there
 is a demo), then "Repo" for GitHub URLs or "Visit" otherwise (paper, external glyph, opens a new tab). An extra
@@ -247,9 +247,9 @@ show it). Its entry in `projectdata.js` is `code-for-good`.
 
 - Name "50+ Network impact platform" (full title "West Lothian 50+ Network: feedback and impact platform").
 - Category line "Code for Good · JPMorganChase · Oct 2026"; vault category `ml` (ML & web).
-- Position: "Featured 04/05" in the carousel; vault file 06/10 (order: dissertation, hri, localmind, tensoroom,
-  gyminit, code-for-good, bus, iteration-inc, minecraft-agent, bonin-loot), so the slot reads [06] and the dossier
-  bar "File 06/10 · ML & web".
+- Position: "Featured 05/06" in the carousel; vault file 07/11 (order: poseidon, dissertation, hri, localmind, tensoroom,
+  gyminit, code-for-good, bus, iteration-inc, minecraft-agent, bonin-loot), so the slot reads [07] and the dossier
+  bar "File 07/11 · ML & web".
 - Pitch: "A feedback and impact platform for the charity West Lothian 50+ Network, built in under 24 hours by a team
   of five who had never met before. I was the lead front-end developer."
 - Facts: "Built in under 24 hours, brief to demo" / "Lead front-end developer in a team of five strangers" /
@@ -469,3 +469,10 @@ demo's root, so the Colour menu cannot reach it, and the three-colour rule stops
 Copy the product from its real screens (video stills, screenshots), keep its real copy and figures, and draw each
 scene's end state first: that is also the reduced-motion frame. Entrances start hidden and fill forwards; only
 transform, opacity and clip-path move. The Code for Good scenes are on the Figma page "Demo - Code for Good".
+
+The Poseidon demo uses the product's shipped Dark theme (`tokens/tokens.css` of the Poseidon repo: panel #1c2d38,
+text #eee9dc, accent #86c9e8, dark-ship pink #f26aa0, Barlow Semi Condensed and IBM Plex Mono), with every size a
+multiple of one product pixel (`--u`). Where the product's wording would overclaim, the demo departs from it on purpose:
+go-dark is an order with reasons and never a percentage, route estimates are "80% circle" and "95% circle", every named
+ship is synthetic (SYN 4821, MMSI 000 004 821) and a persistent tag says so. Map, AIS and Danish Maritime Authority
+credits sit where that data appears.

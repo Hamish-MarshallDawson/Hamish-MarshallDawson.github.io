@@ -313,19 +313,20 @@ test("the contact form speaks plainly", () => {
   expect(reachOut.textContent).not.toMatch(/ident|payload|transmit|firewall|intercept/i);
 });
 
-test("the featured block shows LocalMind, TensoRoom, Gyminit, Code for Good and the bus display; all have a demo", () => {
+test("the featured block shows Poseidon, LocalMind, TensoRoom, Gyminit, Code for Good and the bus display; all have a demo", () => {
   render(<App />);
   const grid = screen.getByRole("list", { name: "Featured projects" });
   const cards = within(grid).getAllByRole("article");
   expect(cards.map((card) => within(card).getByRole("heading", { level: 4 }).textContent)).toEqual([
+    "Poseidon",
     "LocalMind",
     "TensoRoom",
     "Gyminit",
     "50+ Network impact platform",
     "Lothian Bus Display",
   ]);
-  expect(within(grid).getAllByRole("button", { name: /^play demo/i })).toHaveLength(5);
-  expect(within(cards[3]).getByRole("link", { name: /^Visit charity/ })).toHaveAttribute("href", "https://westlothian50plusnetwork.co.uk/");
+  expect(within(grid).getAllByRole("button", { name: /^play demo/i })).toHaveLength(6);
+  expect(within(cards[4]).getByRole("link", { name: /^Visit charity/ })).toHaveAttribute("href", "https://westlothian50plusnetwork.co.uk/");
 });
 
 test("Play demo plays LocalMind's scenes in its own picture box, with no stage", async () => {

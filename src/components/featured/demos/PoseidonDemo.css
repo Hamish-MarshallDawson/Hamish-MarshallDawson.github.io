@@ -1,0 +1,1223 @@
+/* ==========================================================================
+   Poseidon scenes, in the product's own Dark theme. Every value below is from its shipped
+   tokens/tokens.css ([data-theme="dark"], standard signals, default text size), ui/ui.css and
+   timeline/scrubbar.css. The palette is declared on the root, so the site's Colour menu cannot
+   reach it.
+
+   --u is one product pixel: 1 at the 656-wide desktop panel, down to 0.72 on small boxes.
+
+   Motion rules are the same as the other demos. Each element's base style is its END state, and
+   an entrance is a keyframe that starts hidden and fills forwards. With `.is-still` (no animation)
+   the end state shows. With `.is-paused` animations hold. Only transform, opacity and clip-path
+   move.
+   ========================================================================== */
+
+.pd-demo {
+  --bg-app: #15232d;
+  --bg-panel: #1c2d38;
+  --bg-raised: #253a47;
+  --border-subtle: #30485a;
+  --border-default: #4a6474;
+  --border-strong: #9fb4bf;
+  --text-primary: #eee9dc;
+  --text-secondary: #cbc5b6;
+  --text-muted: #a5a99f;
+  --text-on-accent: #10202a;
+  --accent: #86c9e8;
+  --accent-subtle: #86c9e829;
+  --map-water: #1f3b4b;
+  --map-land: #3b3a32;
+  --shadow-lift: #00000073;
+  --ship-normal: #eee9dc;
+  --ship-class-b: #9a8fe8;
+  --ship-selected: #86c9e8;
+  --ship-dark: #f26aa0;
+  --ship-spoof: #f2b33d;
+  --ship-sanctioned: #ff7650;
+  --ship-ghost-fill: #f26aa024;
+  --ship-ghost-edge: #f26aa0bf;
+  --ship-keyline: #15232d;
+  --risk-1: #e5d38c;
+  --risk-2: #f2a640;
+  --risk-3: #ee7458;
+  --risk-4: #f0609e;
+  --coverage-dead: #8d969a3d;
+  --replay-edge: #eee9dc;
+  --font-ui: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --u: clamp(0.72px, min(100cqw / 656, 100cqh / 801), 1.15px);
+  --size-caption: calc(10 * var(--u));
+  --line-caption: calc(14 * var(--u));
+  --size-label: calc(12 * var(--u));
+  --line-label: calc(16 * var(--u));
+  --size-data: calc(12 * var(--u));
+  --line-data: calc(16 * var(--u));
+  --size-body: calc(14 * var(--u));
+  --line-body: calc(20 * var(--u));
+  --size-heading: calc(15 * var(--u));
+  --line-heading: calc(20 * var(--u));
+  --size-title: calc(18 * var(--u));
+  --line-title: calc(24 * var(--u));
+  --size-display: calc(32 * var(--u));
+  --line-display: calc(38 * var(--u));
+
+  container: pd / size;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: var(--size-body);
+  line-height: var(--line-body);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+}
+
+:where(.pd-demo) *,
+:where(.pd-demo) *::before,
+:where(.pd-demo) *::after {
+  box-sizing: border-box;
+}
+
+:where(.pd-demo) :is(p, ul, ol, li, h3, h4) {
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  list-style: none;
+}
+
+/* Poseidon's floating map chrome (panels.css .panel): the edge separates it, so no shadow. Add
+   `.is-lab` for the Model Lab's 4px corners, or `.is-window` for a ship window's square ones. */
+.pd-panel {
+  background: var(--bg-panel);
+  border: calc(1 * var(--u)) solid var(--border-default);
+  border-radius: calc(2 * var(--u));
+  color: var(--text-primary);
+}
+
+.pd-panel.is-lab {
+  border-radius: calc(4 * var(--u));
+}
+
+.pd-panel.is-window {
+  border-radius: 0;
+}
+
+/* Mono caption heading inside panels (ui.css .dvm-section-label). */
+.pd-section-label {
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(4 * var(--u));
+  padding: 0 calc(5 * var(--u));
+  border: calc(1 * var(--u)) solid var(--border-default);
+  border-radius: calc(1 * var(--u));
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.pd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(6 * var(--u));
+  min-height: calc(28 * var(--u));
+  padding: 0 calc(12 * var(--u));
+  border: calc(1 * var(--u)) solid var(--border-default);
+  border-radius: calc(2 * var(--u));
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.pd-btn.is-filled {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-on-accent);
+}
+
+/* ---- The scene: a map fixed to its own aspect, covering the box, with chrome over it. ---- */
+.pd-scene {
+  position: absolute;
+  inset: 0;
+}
+
+.pd-world {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100cqw, calc(100cqh * 656 / 801));
+  aspect-ratio: 656 / 801;
+  transform: translate(-50%, -50%);
+}
+
+.pd-map,
+.pd-map > img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.pd-map.is-zoom {
+  animation: pd-zoom 4500ms var(--ease-out) both;
+}
+
+.pd-logo {
+  position: absolute;
+  top: calc(76 * var(--u));
+  left: calc(16 * var(--u));
+  width: calc(150 * var(--u));
+  height: auto;
+  filter: invert(0.93);
+}
+
+/* Ships. A zero-size anchor at the point; the hull is centred on it and turned to its heading. */
+.pd-ship {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.pd-ship.is-sailing {
+  animation: pd-sail var(--run) linear var(--d, 0ms) both;
+}
+
+/* The site's base rule caps an svg at 100% of its parent, and these parents are zero-size anchors. */
+.pd-hull,
+.pd-cross,
+.pd-ring {
+  max-width: none;
+}
+
+.pd-hull {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(12 * var(--s, 1) * var(--u));
+  height: calc(32 * var(--s, 1) * var(--u));
+  overflow: visible;
+  transform: translate(-50%, -50%) rotate(var(--r));
+}
+
+.pd-hull path {
+  fill: var(--ship-normal);
+  stroke: var(--ship-keyline);
+  stroke-width: 1.5;
+  paint-order: stroke;
+}
+
+.pd-hull.is-b path {
+  fill: var(--ship-class-b);
+}
+
+.pd-hull.is-dark path {
+  fill: none;
+  stroke: var(--ship-dark);
+  stroke-width: 1;
+}
+
+.pd-was {
+  opacity: 0;
+  animation: pd-gone 200ms linear var(--d, 0ms) backwards;
+}
+
+.pd-cross {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(11 * var(--u));
+  height: calc(11 * var(--u));
+  overflow: visible;
+  transform: translate(-50%, -50%);
+}
+
+.pd-cross path {
+  fill: none;
+  stroke: var(--ship-dark);
+  stroke-width: 2;
+}
+
+.pd-heard {
+  position: absolute;
+  top: calc(22 * var(--u));
+  left: 0;
+  transform: translateX(-50%);
+  color: var(--text-primary);
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+  font-weight: 500;
+  white-space: nowrap;
+  text-shadow: 0 0 calc(2 * var(--u)) var(--bg-app), 0 0 calc(3 * var(--u)) var(--bg-app), 0 0 calc(4 * var(--u)) var(--bg-app);
+}
+
+/* Selected: four corner brackets that stay upright whatever the hull's heading. */
+.pd-brackets {
+  position: absolute;
+  top: calc(-24 * var(--u));
+  left: calc(-24 * var(--u));
+  width: calc(48 * var(--u));
+  height: calc(48 * var(--u));
+}
+
+.pd-brackets i {
+  position: absolute;
+  width: calc(10 * var(--u));
+  height: calc(10 * var(--u));
+  border: 0 solid var(--ship-selected);
+}
+
+.pd-brackets i:nth-child(1) { top: 0; left: 0; border-width: calc(2 * var(--u)) 0 0 calc(2 * var(--u)); }
+.pd-brackets i:nth-child(2) { top: 0; right: 0; border-width: calc(2 * var(--u)) calc(2 * var(--u)) 0 0; }
+.pd-brackets i:nth-child(3) { bottom: 0; left: 0; border-width: 0 0 calc(2 * var(--u)) calc(2 * var(--u)); }
+.pd-brackets i:nth-child(4) { right: 0; bottom: 0; border-width: 0 calc(2 * var(--u)) calc(2 * var(--u)) 0; }
+
+/* Lines drawn on the map, in % of it. */
+.pd-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.pd-past {
+  stroke: var(--text-secondary);
+  stroke-width: calc(1.5 * var(--u));
+  vector-effect: non-scaling-stroke;
+}
+
+.pd-course {
+  stroke: var(--accent);
+  stroke-width: calc(1.5 * var(--u));
+  stroke-dasharray: calc(4 * var(--u)) calc(3 * var(--u));
+  vector-effect: non-scaling-stroke;
+}
+
+/* The estimate: 80% dashed and filled, 95% a thin plain ring, no hatch (ForecastOverlay.tsx). */
+.pd-rings {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.pd-ring {
+  position: absolute;
+  overflow: visible;
+}
+
+.pd-ring.is-80 {
+  top: calc(-60 * var(--u));
+  left: calc(-60 * var(--u));
+  width: calc(120 * var(--u));
+  height: calc(120 * var(--u));
+}
+
+.pd-ring.is-95 {
+  top: calc(-100 * var(--u));
+  left: calc(-100 * var(--u));
+  width: calc(200 * var(--u));
+  height: calc(200 * var(--u));
+}
+
+.pd-ring circle {
+  vector-effect: non-scaling-stroke;
+}
+
+.pd-ring.is-80 circle {
+  fill: var(--ship-ghost-fill);
+  stroke: var(--ship-dark);
+  stroke-width: calc(1.5 * var(--u));
+  stroke-dasharray: calc(4.5 * var(--u)) calc(3 * var(--u));
+}
+
+.pd-ring.is-95 circle {
+  fill: none;
+  stroke: var(--ship-dark);
+  stroke-width: calc(1 * var(--u));
+  stroke-opacity: 0.55;
+}
+
+.pd-ring-t {
+  position: absolute;
+  left: 0;
+  transform: translateX(-50%);
+  padding: 0 calc(4 * var(--u));
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+  white-space: nowrap;
+}
+
+.pd-ring-t.is-80 { top: calc(44 * var(--u)); }
+.pd-ring-t.is-95 { top: calc(84 * var(--u)); }
+
+/* Gap label (forecast.css .fc-gap-label): magenta stripe, because only candidates get one. */
+.pd-gap-label {
+  position: absolute;
+  max-width: calc(280 * var(--u));
+  padding: calc(4 * var(--u)) calc(8 * var(--u)) calc(5 * var(--u)) calc(10 * var(--u));
+  background: var(--bg-panel);
+  border: calc(1 * var(--u)) solid var(--text-muted);
+  border-left: calc(3 * var(--u)) solid var(--ship-dark);
+  color: var(--text-primary);
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+  font-weight: 500;
+}
+
+.pd-gap-label b {
+  display: block;
+  font-weight: 600;
+}
+
+.pd-gap-label span {
+  display: block;
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+  font-weight: 400;
+}
+
+.pd-gap-label code {
+  font: inherit;
+  font-weight: 600;
+  color: var(--ship-dark);
+}
+
+.pd-quiet-label {
+  top: calc(474 * var(--u));
+  right: calc(16 * var(--u));
+}
+
+.pd-est-label {
+  top: calc(60 * var(--u));
+  right: calc(16 * var(--u));
+  max-width: calc(350 * var(--u));
+}
+
+/* The silence clock (.sc-clock), with the threshold under it. */
+.pd-clock {
+  position: absolute;
+  top: calc(76 * var(--u));
+  left: calc(16 * var(--u));
+  display: grid;
+  gap: calc(4 * var(--u));
+  width: calc(236 * var(--u));
+  padding: calc(10 * var(--u)) calc(12 * var(--u));
+}
+
+.pd-clock-t {
+  color: var(--ship-dark);
+  font-family: var(--font-data);
+  font-size: var(--size-display);
+  line-height: var(--line-display);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.pd-clock-c {
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+}
+
+.pd-meter {
+  position: relative;
+  height: calc(5 * var(--u));
+  margin: calc(4 * var(--u)) 0;
+  border: calc(1 * var(--u)) solid var(--border-default);
+}
+
+/* 45 minutes across, so 30 min sits at 2/3 and the silence ends at 31 min. */
+.pd-meter-fill {
+  position: absolute;
+  inset: 0 31% 0 0;
+  background: var(--ship-dark);
+  transform-origin: left;
+  animation: pd-fill 2800ms linear var(--d, 0ms) backwards;
+}
+
+.pd-meter-mark {
+  position: absolute;
+  top: calc(-4 * var(--u));
+  bottom: calc(-4 * var(--u));
+  left: 66.67%;
+  width: calc(1 * var(--u));
+  background: var(--text-primary);
+}
+
+.pd-skill {
+  position: absolute;
+  top: calc(76 * var(--u));
+  left: calc(16 * var(--u));
+  padding: calc(8 * var(--u)) calc(10 * var(--u));
+}
+
+.pd-skill ul {
+  display: flex;
+  gap: calc(14 * var(--u));
+  margin-top: calc(4 * var(--u));
+}
+
+.pd-skill li {
+  display: flex;
+  gap: calc(6 * var(--u));
+  align-items: baseline;
+  color: var(--text-muted);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+}
+
+.pd-skill b {
+  color: var(--text-primary);
+  font-size: var(--size-data);
+  font-weight: 500;
+}
+
+/* ---- Chrome ---- */
+
+/* panels.css .status-line. */
+.pd-topleft {
+  position: absolute;
+  top: calc(16 * var(--u));
+  left: calc(16 * var(--u));
+  display: grid;
+  justify-items: start;
+  gap: calc(6 * var(--u));
+}
+
+.pd-topleft.is-replay {
+  top: calc(40 * var(--u));
+}
+
+.pd-status {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  padding: calc(4 * var(--u)) calc(8 * var(--u));
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+  white-space: nowrap;
+}
+
+.pd-dot {
+  flex: none;
+  width: calc(7 * var(--u));
+  height: calc(7 * var(--u));
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.pd-mode {
+  font-weight: 500;
+  letter-spacing: 0.8px;
+}
+
+.is-replay > .pd-status {
+  padding: calc(6 * var(--u)) calc(10 * var(--u));
+}
+
+.pd-replay {
+  padding: 0 calc(6 * var(--u));
+  border-radius: calc(1 * var(--u));
+  background: var(--text-primary);
+  color: var(--bg-app);
+  font-weight: 600;
+  letter-spacing: 0.6px;
+}
+
+/* Top-right chips, moved left of the player's close button. */
+.pd-tools {
+  position: absolute;
+  top: calc(16 * var(--u));
+  right: 60px;
+  display: flex;
+  gap: calc(8 * var(--u));
+}
+
+.pd-tools.is-replay {
+  top: calc(40 * var(--u));
+}
+
+.pd-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  padding: calc(6 * var(--u)) calc(10 * var(--u));
+  background: var(--bg-panel);
+  border: calc(1 * var(--u)) solid var(--border-default);
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.pd-tool small {
+  color: var(--text-muted);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+}
+
+.pd-sq,
+.pd-box {
+  flex: none;
+  width: calc(8 * var(--u));
+  height: calc(8 * var(--u));
+}
+
+.pd-sq {
+  background: var(--text-primary);
+}
+
+.pd-box {
+  border: calc(1.5 * var(--u)) solid var(--text-muted);
+}
+
+.pd-bottom {
+  position: absolute;
+  right: calc(16 * var(--u));
+  bottom: calc(6 * var(--u));
+  left: calc(16 * var(--u));
+  display: grid;
+}
+
+/* On a desktop the site's HUD strip covers the panel's last 70px until the visitor scrolls. */
+@container pd (min-width: 521px) and (min-height: 561px) {
+  .pd-bottom {
+    bottom: 70px;
+  }
+}
+
+.pd-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.pd-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  height: calc(36 * var(--u));
+  padding: 0 calc(12 * var(--u));
+  background: var(--bg-panel);
+  border: calc(1 * var(--u)) solid var(--border-default);
+  border-radius: calc(2 * var(--u));
+  font-size: var(--size-body);
+  line-height: var(--line-body);
+  font-weight: 500;
+}
+
+.pd-legend-i {
+  position: relative;
+  width: calc(16 * var(--u));
+  height: calc(16 * var(--u));
+}
+
+.pd-legend-i i {
+  position: absolute;
+  left: calc(1 * var(--u));
+  width: calc(4 * var(--u));
+  height: calc(4 * var(--u));
+  background: currentColor;
+}
+
+.pd-legend-i i::after {
+  content: "";
+  position: absolute;
+  top: calc(1.25 * var(--u));
+  left: calc(6 * var(--u));
+  width: calc(8 * var(--u));
+  height: calc(1.5 * var(--u));
+  background: currentColor;
+}
+
+.pd-legend-i i:nth-child(1) { top: calc(2 * var(--u)); }
+.pd-legend-i i:nth-child(2) { top: calc(7 * var(--u)); }
+.pd-legend-i i:nth-child(3) { top: calc(12 * var(--u)); }
+
+.pd-scale {
+  display: grid;
+  justify-items: end;
+  gap: calc(2 * var(--u));
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+  text-shadow: 0 0 calc(3 * var(--u)) var(--bg-app);
+}
+
+.pd-scale i {
+  width: calc(var(--w, 110) * var(--u));
+  height: calc(3 * var(--u));
+  border: calc(1 * var(--u)) solid var(--text-secondary);
+}
+
+/* The floating scrub bar (scrubbar.css), with the track's vertical offsets kept. */
+.pd-bar {
+  display: flex;
+  align-items: center;
+  gap: calc(12 * var(--u));
+  height: calc(48 * var(--u));
+  margin-top: calc(8 * var(--u));
+  padding: 0 calc(8 * var(--u));
+  background: var(--bg-panel);
+  border: calc(1 * var(--u)) solid var(--border-default);
+  border-radius: calc(2 * var(--u));
+  font-size: var(--size-label);
+  line-height: var(--line-label);
+  font-weight: 600;
+}
+
+.pd-bar.is-replay {
+  border-top-color: var(--replay-edge);
+  box-shadow: inset 0 calc(1 * var(--u)) 0 0 var(--replay-edge);
+}
+
+.pd-bar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: calc(32 * var(--u));
+  height: calc(32 * var(--u));
+  padding: 0 calc(10 * var(--u));
+  border: calc(1 * var(--u)) solid var(--text-muted);
+  border-radius: calc(2 * var(--u));
+  white-space: nowrap;
+}
+
+.pd-play {
+  width: calc(32 * var(--u));
+  padding: 0;
+}
+
+.pd-play svg {
+  width: calc(12 * var(--u));
+  height: calc(12 * var(--u));
+  fill: currentColor;
+}
+
+.pd-mono {
+  min-width: calc(48 * var(--u));
+  font-family: var(--font-data);
+  font-size: var(--size-data);
+  font-weight: 500;
+}
+
+.pd-mono.is-off {
+  border-color: var(--border-subtle);
+  color: var(--text-muted);
+}
+
+.pd-back {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.pd-readout {
+  display: inline-flex;
+  flex: none;
+  align-items: baseline;
+  gap: calc(8 * var(--u));
+  font-family: var(--font-data);
+  white-space: nowrap;
+}
+
+.pd-time {
+  font-size: var(--size-body);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.pd-behind {
+  font-size: var(--size-data);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.pd-track {
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  min-width: 0;
+}
+
+.pd-line {
+  position: absolute;
+  top: calc(23 * var(--u));
+  right: 0;
+  left: 0;
+  height: calc(2 * var(--u));
+  background: var(--text-secondary);
+}
+
+.pd-tick {
+  position: absolute;
+  top: calc(19 * var(--u));
+  width: calc(1 * var(--u));
+  height: calc(3 * var(--u));
+  background: var(--border-default);
+}
+
+.pd-tick.is-major {
+  top: calc(16 * var(--u));
+  height: calc(6 * var(--u));
+}
+
+.pd-span {
+  position: absolute;
+  top: calc(21 * var(--u));
+  height: calc(6 * var(--u));
+  border: calc(1 * var(--u)) solid var(--ship-dark);
+  background: var(--ship-ghost-fill);
+}
+
+.pd-span.is-open {
+  border-style: dashed;
+  border-right: 0;
+}
+
+.pd-span.is-lane1 {
+  top: calc(12 * var(--u));
+}
+
+.pd-count {
+  position: absolute;
+  top: calc(1 * var(--u));
+  min-width: calc(14 * var(--u));
+  height: calc(13 * var(--u));
+  padding: 0 calc(2 * var(--u));
+  transform: translateX(-50%);
+  background: var(--bg-raised);
+  border: calc(1 * var(--u)) solid var(--text-muted);
+  border-radius: calc(2 * var(--u));
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  line-height: calc(11 * var(--u));
+  font-weight: 500;
+  text-align: center;
+}
+
+.pd-cov {
+  position: absolute;
+  top: calc(34 * var(--u));
+  right: 0;
+  left: 0;
+  height: calc(5 * var(--u));
+  border: calc(1 * var(--u)) dashed var(--border-default);
+}
+
+.pd-cov i {
+  position: absolute;
+  top: calc(-1 * var(--u));
+  right: 0;
+  width: 4%;
+  height: calc(5 * var(--u));
+  background: var(--border-default);
+}
+
+/* The playhead: a full-track layer moved by % of its own width, so only transform animates. */
+.pd-head {
+  position: absolute;
+  inset: 0;
+  transform: translateX(100%);
+}
+
+.pd-head i {
+  position: absolute;
+  top: calc(18 * var(--u));
+  left: calc(-6 * var(--u));
+  width: calc(12 * var(--u));
+  height: calc(12 * var(--u));
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.pd-head.is-scrub {
+  transform: translateX(70%);
+  animation: pd-scrub 6200ms linear both;
+}
+
+.pd-head.is-scrub i {
+  top: calc(17 * var(--u));
+  left: calc(-5 * var(--u));
+  width: calc(10 * var(--u));
+  height: calc(14 * var(--u));
+  background: var(--text-primary);
+}
+
+.pd-menu-wrap {
+  position: relative;
+  flex: none;
+}
+
+.pd-pop {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8 * var(--u));
+  display: grid;
+  gap: calc(2 * var(--u));
+  min-width: calc(96 * var(--u));
+  padding: calc(4 * var(--u));
+  background: var(--bg-panel);
+  border: calc(1 * var(--u)) solid var(--border-default);
+  border-radius: calc(2 * var(--u));
+  font-family: var(--font-data);
+  font-size: var(--size-data);
+  line-height: var(--line-data);
+  font-weight: 500;
+}
+
+.pd-pop-i {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: calc(28 * var(--u));
+  padding: 0 calc(10 * var(--u));
+  border-radius: calc(2 * var(--u));
+}
+
+.pd-pop-i.is-on::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--accent-subtle);
+  animation: pd-snap 1ms steps(1) var(--d, 0ms) backwards;
+}
+
+/* Replay chrome: the 2px edge round the screen and the tab at the top centre. */
+.pd-edge {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--replay-edge);
+  pointer-events: none;
+}
+
+.pd-tab {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 26px);
+  padding: calc(4 * var(--u)) calc(12 * var(--u));
+  transform: translateX(-50%);
+  background: var(--replay-edge);
+  color: var(--bg-app);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+  white-space: nowrap;
+}
+
+.pd-tab b {
+  margin-right: calc(4 * var(--u));
+  font-weight: 600;
+  letter-spacing: 0.8px;
+}
+
+.pd-tag {
+  padding: 0 calc(4 * var(--u));
+  background: var(--bg-panel);
+  border: calc(1 * var(--u)) dashed var(--border-default);
+  color: var(--text-muted);
+  font-family: var(--font-data);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+  white-space: nowrap;
+}
+
+/* Always two lines tall, so the bar does not jump between scenes with one credit line or two. */
+.pd-credits {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: calc(2 * var(--line-caption) + 4 * var(--u));
+  padding: 0 calc(8 * var(--u));
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  font-size: var(--size-caption);
+  line-height: var(--line-caption);
+  text-align: right;
+}
+
+/* Lab has no map chrome: its tag and credit sit in its header, left of the close button. */
+.pd-lab-note {
+  position: absolute;
+  top: calc(10 * var(--u));
+  right: 60px;
+  display: grid;
+  justify-items: end;
+  gap: calc(2 * var(--u));
+}
+
+.pd-lab-note .pd-credits {
+  height: auto;
+  padding: 0;
+  background: none;
+}
+
+/* Text swapped in place: every line shares one grid cell. */
+.pd-frames {
+  display: inline-grid;
+}
+
+.pd-frames > * {
+  grid-area: 1 / 1;
+}
+
+.pd-frame {
+  opacity: 0;
+  animation: pd-frame var(--len) steps(1) var(--d, 0ms);
+}
+
+/* ---- Small boxes: phones in portrait and landscape keep the story and drop the furniture. ---- */
+@container pd (max-width: 520px) or (max-height: 560px) {
+  .pd-tools,
+  .pd-row,
+  .pd-range,
+  .pd-behind,
+  .pd-skill,
+  .pd-logo {
+    display: none;
+  }
+
+  .pd-bar {
+    height: calc(40 * var(--u));
+    margin-top: calc(4 * var(--u));
+    gap: calc(8 * var(--u));
+  }
+
+  .pd-track {
+    transform: translateY(calc(-4 * var(--u)));
+  }
+
+  .pd-clock {
+    top: calc(68 * var(--u));
+    left: calc(8 * var(--u));
+    width: calc(190 * var(--u));
+    padding: calc(6 * var(--u)) calc(8 * var(--u));
+  }
+
+  .pd-clock-t {
+    font-size: var(--size-title);
+    line-height: var(--line-title);
+  }
+
+  .pd-clock-c + .pd-meter + .pd-clock-c {
+    display: none;
+  }
+
+  .pd-gap-label {
+    max-width: calc(100cqw - 16px);
+  }
+
+  .pd-quiet-label,
+  .pd-est-label {
+    top: auto;
+    right: calc(8 * var(--u));
+    bottom: calc(96 * var(--u));
+    left: calc(8 * var(--u));
+    max-width: none;
+  }
+
+  .pd-topleft.is-replay {
+    top: calc(26 * var(--u));
+  }
+
+  .pd-heard {
+    display: none;
+  }
+
+  .pd-bottom {
+    right: calc(8 * var(--u));
+    bottom: calc(3 * var(--u));
+    left: calc(8 * var(--u));
+  }
+}
+
+/* Landscape phones are short, so each label moves to the side its scene leaves empty. */
+@container pd (max-height: 360px) {
+  .pd-quiet-label,
+  .pd-est-label {
+    bottom: calc(82 * var(--u));
+    max-width: 44cqw;
+  }
+
+  .pd-quiet-label {
+    left: auto;
+  }
+
+  .pd-est-label {
+    right: auto;
+  }
+}
+
+/* ---- Motion ---- */
+.pd-in {
+  animation: pd-in 380ms var(--ease-out) var(--d, 0ms) backwards;
+}
+
+.pd-drop {
+  animation: pd-drop 280ms var(--ease-out) var(--d, 0ms) backwards;
+}
+
+.pd-grow {
+  animation: pd-grow 2200ms var(--ease-out) var(--d, 0ms) backwards;
+}
+
+.pd-wipe {
+  animation: pd-wipe 900ms var(--ease-out) var(--d, 0ms) backwards;
+}
+
+.pd-snap {
+  animation: pd-snap 1ms steps(1) var(--d, 0ms) backwards;
+}
+
+/* An element centred with its own transform only fades. */
+.pd-ring-t.pd-in,
+.pd-cross.pd-in,
+.pd-heard.pd-in,
+.pd-hull.pd-in {
+  animation-name: pd-fade;
+}
+
+.pd-tab.pd-drop {
+  animation-name: pd-tab;
+}
+
+@keyframes pd-in {
+  from {
+    opacity: 0;
+    transform: translateY(calc(8 * var(--u)));
+  }
+}
+
+@keyframes pd-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pd-gone {
+  from,
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pd-frame {
+  from,
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pd-snap {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pd-drop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(6 * var(--u)));
+  }
+}
+
+@keyframes pd-tab {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%);
+  }
+}
+
+@keyframes pd-sail {
+  from {
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+
+@keyframes pd-zoom {
+  from {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes pd-grow {
+  from {
+    opacity: 0.2;
+    transform: scale(0.12);
+  }
+}
+
+@keyframes pd-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes pd-wipe {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes pd-scrub {
+  0% {
+    transform: translateX(100%);
+  }
+  24% {
+    transform: translateX(12%);
+  }
+  28% {
+    transform: translateX(12%);
+  }
+  100% {
+    transform: translateX(70%);
+  }
+}
+
+.pd-demo.is-paused *,
+.pd-demo.is-paused *::before,
+.pd-demo.is-paused *::after {
+  animation-play-state: paused !important;
+}
+
+.pd-demo.is-still *,
+.pd-demo.is-still *::before,
+.pd-demo.is-still *::after {
+  animation: none !important;
+}

@@ -16,6 +16,7 @@ export const DEMOS = {
   gyminit: () => import("./demos/GyminitDemo"),
   codeforgood: () => import("./demos/CodeForGoodDemo"),
   bus: () => import("./demos/BusDisplayDemo"),
+  poseidon: () => import("./demos/PoseidonDemo"),
 };
 
 const NO_SCENES = [];

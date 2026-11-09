@@ -18,6 +18,14 @@ test("the bus display is featured with its repo, and its picture is the city-cen
   expect(JSON.stringify(bus)).not.toMatch(/e-ink/i);
 });
 
+test("Poseidon is featured with its repo and demo, and its copy makes no guarantee", () => {
+  const poseidon = vaultProjects.find((project) => project.id === "poseidon");
+  expect(poseidon.url).toBe("https://github.com/Hamish-MarshallDawson/Poseidon");
+  expect(poseidon.featured.demo).toBe("poseidon");
+  expect(JSON.stringify(poseidon)).not.toMatch(/detects illegal|caught|proves|guarantee|80% chance/i);
+  expect(poseidon.description).toMatch(/Danish Maritime Authority/);
+});
+
 test("every featured demo names a loader in DEMOS", () => {
   featured.filter((project) => project.featured.demo).forEach((project) => expect(Object.keys(DEMOS)).toContain(project.featured.demo));
 });
