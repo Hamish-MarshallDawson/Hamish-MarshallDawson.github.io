@@ -16,6 +16,7 @@ import { ArrowIcon, ExternalIcon } from "../shared/Icons";
 import { linkLatency } from "../shared/Telemetry";
 import { experience, isActiveRole, pickHighlights, profile } from "../projectdata";
 import "./Hero.css";
+import "./HeroPhone.css";
 
 const ease = [0.16, 1, 0.3, 1];
 const WORDS = profile.name.split(" ");
