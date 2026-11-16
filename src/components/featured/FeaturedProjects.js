@@ -118,11 +118,24 @@ export function FeaturedProjects({ projects, onOpenFile }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, close]);
 
-  // On opening, the stage scrolls to just under the top bar, so all of it is on screen above the status strip.
+  // On opening, and on each swap from the strip below it, the stage scrolls to just under the top bar, so
+  // all of it is on screen above the status strip.
+  const runKey = open ? run.runKey : null;
   useEffect(() => {
     // Instant: a smooth scroll is cancelled by the layout settling under it.
-    if (open) playMain.current?.scrollIntoView?.({ block: "start", behavior: "instant" });
-  }, [open]);
+    if (runKey !== null) playMain.current?.scrollIntoView?.({ block: "start", behavior: "instant" });
+  }, [runKey]);
+
+  // The demo mounts once the card has finished growing into its panel: mounting it is heavy enough to
+  // swallow the 240 ms slide. With reduced motion there is no slide, so it mounts at once.
+  const [grown, setGrown] = useState(false);
+  useEffect(() => {
+    setGrown(open && calm);
+    if (!open || calm) return undefined;
+    // In case the layout animation never reports back (nothing to animate from).
+    const fallback = setTimeout(() => setGrown(true), 400);
+    return () => clearTimeout(fallback);
+  }, [open, calm]);
 
   // Back on the grid, focus returns to the Play button of the card that was playing.
   useEffect(() => {
@@ -157,7 +170,9 @@ export function FeaturedProjects({ projects, onOpenFile }) {
                 phase={run.phase}
                 scene={run.scene}
                 count={runScenes.length}
+                reduce={reduce}
                 transition={morph}
+                onGrown={() => setGrown(true)}
                 onOpenFile={onOpenFile}
               />
               <motion.div
@@ -169,7 +184,7 @@ export function FeaturedProjects({ projects, onOpenFile }) {
                 <DemoPanel
                   key={run.runKey}
                   stage
-                  Demo={mods[runDemo]?.default ?? null}
+                  Demo={grown ? mods[runDemo]?.default ?? null : null}
                   scenes={runScenes}
                   scene={run.scene}
                   phase={run.phase}
@@ -242,10 +257,11 @@ export function FeaturedProjects({ projects, onOpenFile }) {
 }
 
 // The project's outbound links: its repo or site, and the charity it was built for.
-function ProjectLinks({ project }) {
+// `compact` (the grid cards) shows one: the charity a build was made for, else its repo or site.
+function ProjectLinks({ project, compact = false }) {
   return (
     <>
-      {project.url && (
+      {project.url && !(compact && project.charity) && (
         <a className="btn btn--paper u-press" href={project.url} target="_blank" rel="noopener noreferrer">
           {repoLabel(project.url)}
           <span className="sr-only"> (opens in a new tab)</span>
@@ -296,7 +312,7 @@ function FeaturedCard({ project, transition, buttonRef, onPlay, onPreload }) {
               <span className="sr-only"> for {project.name}</span>
             </button>
           )}
-          <ProjectLinks project={project} />
+          <ProjectLinks project={project} compact />
         </div>
       </div>
     </motion.article>
@@ -304,13 +320,15 @@ function FeaturedCard({ project, transition, buttonRef, onPlay, onPreload }) {
 }
 
 // The playing card, grown to two rows: more about the project beside its demo.
-function FeaturedInfo({ project, phase, scene, count, transition, onOpenFile }) {
+function FeaturedInfo({ project, phase, scene, count, reduce, transition, onGrown, onOpenFile }) {
   const { pitch, facts = [] } = project.featured;
-  const state = { playing: "▶ Playing", paused: "❚❚ Paused", ended: "■ Ended" }[phase];
+  // With FX off the demo holds each scene until the round control steps it on.
+  const state = { playing: reduce ? "▶ Step through" : "▶ Playing", paused: "❚❚ Paused", ended: "■ Ended" }[phase];
   return (
     <motion.article
       layoutId={`feat-${project.id}`}
       transition={transition}
+      onLayoutAnimationComplete={onGrown}
       className="feat-card feat-info surface-paper"
       aria-labelledby={`feat-info-${project.id}`}
     >
