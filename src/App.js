@@ -11,9 +11,8 @@ import { GlitchTransition } from "./components/fx/Atmosphere";
 import { BootSequence, shouldBoot } from "./components/boot/BootSequence";
 import { GlobalHUD } from "./components/hud/GlobalHUD";
 import { HeroBootSequence } from "./components/hero/HeroBootSequence";
-import { Manifesto } from "./components/hero/Manifesto";
 import { AIResearchVault } from "./components/vault/AIResearchVault";
-import { FieldOps, OffDuty, ServiceLog } from "./components/records/Records";
+import { BeyondCode, ServiceLog, Study } from "./components/records/Records";
 import { Contact } from "./components/redwall/Contact";
 
 const FX_KEY = "hmd:fx";
@@ -143,11 +142,10 @@ function App() {
 
       <main key={generation} id="main" className="stage" tabIndex={-1}>
         <HeroBootSequence live={booted} />
-        <Manifesto />
-        <AIResearchVault />
         <ServiceLog />
-        <FieldOps />
-        <OffDuty />
+        <AIResearchVault />
+        <Study />
+        <BeyondCode />
         <Contact cvRequest={cvRequest} />
       </main>
 

@@ -11,17 +11,15 @@ import {
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { AICore } from "./AICore";
 import { SECTIONS } from "../../sections";
-import { Barcode } from "../shared/Barcode";
 import { Typewriter } from "../shared/Typewriter";
-import { Wipe } from "../shared/Wipe";
-import { ArrowIcon } from "../shared/Icons";
+import { ArrowIcon, ExternalIcon } from "../shared/Icons";
 import { linkLatency } from "../shared/Telemetry";
-import { experience, extracurricular, isActiveRole, pickHighlights, profile, vaultProjects } from "../projectdata";
+import { experience, isActiveRole, pickHighlights, profile } from "../projectdata";
 import "./Hero.css";
 
 const ease = [0.16, 1, 0.3, 1];
 const WORDS = profile.name.split(" ");
-const codeFor = (href) => SECTIONS.find((section) => `#${section.id}` === href)?.code;
+const INDEX = SECTIONS.filter((section) => section.id !== "core");
 
 const sessionCode = () =>
   Math.floor(Math.random() * 0xffffff)
@@ -35,29 +33,14 @@ const sessionCode = () =>
 // reaches the DOM text or the heading's accessible name.
 const echoFor = (i) => ` ${[...WORDS.slice(i + 1), ...WORDS, ...WORDS].join(" ")}`;
 
-// The lobby menu, each entry with a live chip. Everything comes from the data.
-function buildMenu() {
-  const active = experience.filter((job) => isActiveRole(job)).length;
-  return [
-    { href: "#vault", label: "Project vault", chip: `${vaultProjects.length} files` },
-    {
-      href: "#work",
-      label: "Work log",
-      chip: active ? `Active [${active}/${experience.length}]` : `${experience.length} entries`,
-    },
-    { href: "#volunteer", label: "Volunteer work", chip: `${extracurricular.length} records` },
-    { href: "#reach-out", label: "Reach out", chip: "Contact", alert: true },
-  ];
-}
-
-// The profile sheet's columns.
+// The data sheet's columns: where he studies, where he works, what he wants.
 function buildStats() {
   const activeJob = experience.find((job) => isActiveRole(job));
   const job = activeJob ?? experience[0];
   return [
-    { key: "Designation", value: profile.role },
-    { key: "Status", value: `${profile.degree} — ${profile.institution}` },
-    { key: activeJob ? "Current post" : "Last post", value: `${job.role} — ${job.org}` },
+    { key: "Status", value: profile.status },
+    { key: activeJob ? "Current post" : "Last post", value: `${job.role} · ${job.org}${activeJob ? ` · until ${job.period.split(" – ")[1]}` : ""}` },
+    { key: "Seeking", value: profile.seeking, seeking: true },
   ];
 }
 
@@ -73,7 +56,6 @@ export function HeroBootSequence({ live }) {
   const sectionRef = useRef(null);
   const [session] = useState(sessionCode);
   const [rtt] = useState(linkLatency);
-  const [menu] = useState(buildMenu);
   const [stats] = useState(buildStats);
   // A different five each time the page loads (or refreshes via Colour).
   const [highlights] = useState(() => pickHighlights(5));
@@ -125,7 +107,7 @@ export function HeroBootSequence({ live }) {
             </dd>
           </div>
           {stats.map((row, i) => (
-            <div key={row.key} className="hero-cell">
+            <div key={row.key} className={`hero-cell${row.seeking ? " hero-cell--seeking" : ""}`}>
               <dt>{row.key}</dt>
               <dd>
                 <Typewriter text={row.value} start={live} delay={0.55 + i * 0.25} cps={54} />
@@ -157,66 +139,60 @@ export function HeroBootSequence({ live }) {
 
           <AICore live={live} shadow={steer ? shadow : undefined} />
 
-          <div className="hero-rail" aria-hidden="true">
-            <Barcode value={`HMD-${session}`} className="hero-barcode" vertical />
-            <span className="hero-rail-text">
-              HMD / {profile.location} · {profile.coords}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="hero-deck">
-        <div className="hero-intro">
-          <p className="hero-role">{profile.role}</p>
-          <p className="hero-cmd">
-            <span className="hero-prompt">operator@hmd-mainframe:~$</span>{" "}
-            <Typewriter text="cat bio.txt" start={live} delay={0.9} cps={22} />
-          </p>
-          <motion.p
-            className="hero-bio"
-            initial={reduce ? false : { clipPath: "inset(0% 0% 100% 0%)" }}
-            animate={{ clipPath: live || reduce ? "inset(0% 0% 0% 0%)" : "inset(0% 0% 100% 0%)" }}
-            transition={{ delay: live && !reduce ? 1.45 : 0, duration: 0.7, ease: [0.7, 0, 0.2, 1] }}
+          <motion.div
+            className="hero-card"
+            initial={reduce ? false : { opacity: 0, y: 24 }}
+            animate={live || reduce ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+            transition={{ delay: live && !reduce ? 0.5 : 0, duration: 0.6, ease }}
           >
-            {profile.bio}
-          </motion.p>
-          <a className="btn btn--ink u-press hero-cta" href="#vault">
-            Deploy to project vault <ArrowIcon className="btn-glyph" />
-          </a>
+            <p className="hero-kicker u-micro">
+              {profile.name} · {profile.role}
+            </p>
+            <p className="hero-tagline">
+              {profile.tagline} <em>{profile.taglineWhen}</em>.
+            </p>
+            <div className="hero-actions">
+              <a className="btn btn--signal u-press" href={profile.cv} download>
+                <ArrowIcon direction="down" className="btn-glyph" /> Download CV · PDF
+              </a>
+              <a className="btn btn--ink u-press" href={`mailto:${profile.email}`}>
+                Email me <ArrowIcon className="btn-glyph" />
+              </a>
+              <a className="btn btn--paper u-press" href={profile.linkedin} target="_blank" rel="noopener noreferrer">
+                LinkedIn <ExternalIcon className="btn-glyph" />
+              </a>
+              <a className="btn btn--paper u-press" href={profile.github} target="_blank" rel="noopener noreferrer">
+                GitHub <ExternalIcon className="btn-glyph" />
+              </a>
+            </div>
+          </motion.div>
         </div>
-
-        <Wipe className="hero-vector surface-ink" from="left">
-          <p className="hero-vector-key u-micro">Research vector</p>
-          <p className="hero-vector-value">
-            <Typewriter text={profile.research} start={live} delay={1.2} cps={36} />
-          </p>
-          <p className="hero-vector-sub">
-            {profile.researchContext}: how input latency changes an operator&apos;s trust in the robot.
-          </p>
-          <p className="hero-vector-note u-micro">{profile.researchNote}</p>
-        </Wipe>
 
         <dl className="hero-highlights">
           {highlights.map((item) => (
-            <div key={item.key} className="hero-highlight">
-              <dt>{item.key}</dt>
+            <div key={item.key} className={`hero-highlight${item.weight < 1000 ? " is-rotating" : ""}`}>
+              <dt>
+                {item.key}
+                {item.weight < 1000 && <span aria-hidden="true"> ↻</span>}
+              </dt>
               <dd>{item.value}</dd>
             </div>
           ))}
         </dl>
 
-        <nav className="hero-menu" aria-label="Lobby">
-          {menu.map((item) => (
-            <a key={item.href} href={item.href} className="hero-item u-press" data-alert={item.alert || undefined}>
-              <span className="hero-item-code u-micro" aria-hidden="true">
-                ({codeFor(item.href)})
-              </span>
-              <span className="hero-item-label">{item.label}</span>
-              <span className="hero-item-chip chip">{item.chip}</span>
-              <ArrowIcon direction="down" className="hero-item-glyph" />
-            </a>
-          ))}
+        <nav className="hero-index surface-ink" aria-label="Sections">
+          <ul className="hero-index-list u-micro">
+            {INDEX.map((section) => (
+              <li key={section.id}>
+                <a href={`#${section.id}`}>
+                  <span aria-hidden="true">({section.code})</span> {section.short}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a className="hero-doing" href="#work">
+            What I&apos;m doing <ArrowIcon direction="down" className="hero-doing-glyph" />
+          </a>
         </nav>
       </div>
     </section>

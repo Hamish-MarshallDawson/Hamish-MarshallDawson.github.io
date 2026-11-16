@@ -3,7 +3,7 @@ import { AnimatePresence, LayoutGroup, motion, useIsPresent, useScroll } from "f
 import { SECTIONS } from "../../sections";
 import { useDialog } from "../../hooks/useDialog";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
-import { experience, extracurricular, isActiveRole, personal, profile, vaultProjects } from "../projectdata";
+import { education, experience, extracurricular, hackathons, isActiveRole, personal, profile, vaultProjects } from "../projectdata";
 import { PALETTE, ratioOf } from "../../styles/palette";
 import { Barcode } from "../shared/Barcode";
 import { ArrowIcon, CloseIcon, CvIcon, ExternalIcon, GithubIcon, LinkedinIcon, MailIcon } from "../shared/Icons";
@@ -31,8 +31,8 @@ function buildStatus() {
     core: "Top of file",
     vault: `${vaultProjects.length} files`,
     work: active ? `Active [${active}/${experience.length}]` : `${experience.length} entries`,
-    volunteer: `${extracurricular.length} records`,
-    offline: `${personal.length} entries`,
+    study: `${education.length} schools · ${hackathons.length} hackathons`,
+    volunteer: `${extracurricular.length + personal.length} records`,
     "reach-out": "Open",
   };
 }
