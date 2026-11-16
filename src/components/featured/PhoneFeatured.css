@@ -1,0 +1,251 @@
+/* Phone featured carousel and phone demo stage (Figma 21:822, 26:1198). Rendered below 768px only. */
+
+.pfeat {
+  margin-bottom: var(--space-7, 48px);
+}
+
+.pfeat-title {
+  margin: 0 0 var(--space-5, 24px);
+}
+
+/* The viewport clips to the card plus a 50px peek of the next one. pan-y keeps vertical scrolling native. */
+.pfeat-viewport {
+  overflow: hidden;
+  /* Room for the cards' offset shadows. */
+  padding: 0 0 var(--off-2) 0;
+  touch-action: pan-y;
+}
+
+/* The previous card sits off the left edge, so a swipe right reveals it. */
+.pfeat-track {
+  --pfeat-gap: 12px;
+  --pfeat-card: calc(100% - 50px - var(--pfeat-gap));
+  display: flex;
+  gap: var(--pfeat-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transform: translateX(calc(-1 * (var(--pfeat-card) + var(--pfeat-gap))));
+}
+
+.pfeat-slide {
+  display: flex;
+  flex: 0 0 var(--pfeat-card);
+  min-width: 0;
+}
+
+.pfeat-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: var(--bw-frame) solid var(--line);
+  box-shadow: 6px 6px 0 0 var(--signal);
+}
+
+.pfeat-media {
+  position: relative;
+  height: 150px;
+  overflow: hidden;
+  border-bottom: var(--bw-frame) solid var(--line);
+  background: var(--surface);
+}
+
+.pfeat-media > img,
+.pfeat-media > .schematic {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pfeat-media.is-contain > img {
+  object-fit: contain;
+}
+
+.pfeat-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+}
+
+.pfeat-kicker {
+  margin: 0;
+  color: var(--text-accent);
+}
+
+.pfeat-name {
+  margin: 0;
+  font: 900 26px / 0.95 var(--font-grotesk);
+  text-transform: uppercase;
+}
+
+.pfeat-pitch {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.pfeat-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+/* ---- counter, position bar, arrows ---- */
+
+.pfeat-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: var(--space-5, 24px);
+}
+
+.pfeat-count {
+  flex: none;
+  font: 700 14px / 1 var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.pfeat-bar {
+  display: flex;
+  flex: 1;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pfeat-bar li {
+  flex: 1;
+  height: 6px;
+  background: var(--line);
+  opacity: 0.18;
+}
+
+.pfeat-bar li.is-current {
+  background: var(--signal);
+  opacity: 1;
+}
+
+.pfeat-arrow {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--hit, 44px);
+  height: var(--hit, 44px);
+  padding: 0;
+  border: var(--bw-rule) solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.pfeat-arrow--next {
+  background: var(--signal);
+  color: var(--paper);
+}
+
+.pfeat-arrow:active {
+  transform: translate(2px, 2px);
+}
+
+.pfeat-arrow:focus-visible {
+  outline: var(--bw-rule) solid var(--line);
+  outline-offset: 2px;
+}
+
+.pfeat-arrow .btn-glyph {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---- demo playing: fills the screen between the header and the phone bar ---- */
+
+.pfeat-stage {
+  position: fixed;
+  inset: var(--bar-h) 0 var(--phonebar-h, 60px);
+  z-index: calc(var(--z-bar, 50) - 1);
+  display: flex;
+  flex-direction: column;
+  background: var(--ink);
+  overscroll-behavior: contain;
+}
+
+.pfeat-stage[data-show="false"] {
+  display: none;
+}
+
+/* The grid's panel is a card-sized overlay; here it is the whole stage. */
+.pfeat-stage .fdemo-overlay {
+  position: relative;
+  inset: auto;
+  flex: 1;
+  min-height: 0;
+  border: 0;
+  box-shadow: none;
+  --fdemo-band: 60px;
+}
+
+.pfeat-stage .fdemo-stage {
+  position: relative;
+  top: auto;
+  height: 100%;
+}
+
+.pfeat-stage .fdemo-top {
+  position: absolute;
+  inset: 0 0 auto;
+  margin: 0;
+}
+
+.pfeat-switch {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 8px;
+  border-top: var(--bw-rule) solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.pfeat-switch .pfeat-arrow {
+  width: 40px;
+  height: 40px;
+}
+
+.pfeat-switch-label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pfeat-switch-label b {
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+}
+
+.pfeat-switch-label span {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+
+/* Play and Repo fit side by side on a 296px card, as drawn. */
+.pfeat-actions .btn {
+  gap: var(--space-2);
+  padding: 0 14px;
+}

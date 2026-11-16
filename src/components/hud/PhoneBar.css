@@ -1,0 +1,69 @@
+:root {
+  --phonebar-h: 60px;
+}
+
+.phonebar {
+  display: none;
+}
+
+/* Where the status strip is hidden (GlobalHUD.css): phones, and short landscape screens. */
+@media (max-width: 767px), (max-height: 500px) {
+  .phonebar {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: var(--z-bar);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: calc(var(--phonebar-h) + env(safe-area-inset-bottom, 0px));
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+    background: var(--ink);
+  }
+
+  .stage {
+    padding-bottom: calc(var(--phonebar-h) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.phonebar-btn {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 100%;
+  border: var(--bw-rule) solid var(--ink);
+  font: 700 13px / 1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.phonebar-cv {
+  background: var(--signal);
+  color: var(--paper);
+}
+
+.phonebar-mail {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.phonebar-btn:focus-visible {
+  outline: var(--bw-rule) solid var(--paper);
+  outline-offset: 2px;
+}
+
+.phonebar-btn:active {
+  transform: translate(2px, 2px);
+}
+
+.phonebar-fps {
+  flex: none;
+  width: 4ch;
+  color: var(--paper);
+  text-align: center;
+  line-height: 1.2;
+  word-spacing: 100vw; /* "60 FPS" stacks the number over the unit, as drawn */
+}

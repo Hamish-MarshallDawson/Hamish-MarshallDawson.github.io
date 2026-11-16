@@ -10,6 +10,7 @@ import { VaultSlot, pad } from "./VaultSlot";
 import { VaultInspector } from "./VaultInspector";
 import { ProjectDossier } from "./ProjectDossier";
 import { FeaturedProjects } from "../featured/FeaturedProjects";
+import { PhoneFeatured } from "../featured/PhoneFeatured";
 import "./Vault.css";
 
 const ALL = {
@@ -41,6 +42,7 @@ export function AIResearchVault() {
   const repos = useRepoTelemetry(profile.githubUser);
   const withInspector = useMediaQuery("(min-width: 1100px)");
   const isTouch = useMediaQuery("(pointer: coarse)");
+  const phone = useMediaQuery("(max-width: 767px)");
   const tabRefs = useRef({});
 
   // Curated order and copy always win; GitHub only adds the repo link (for
@@ -139,7 +141,7 @@ export function AIResearchVault() {
           by category.
         </SectionHeader>
 
-        <FeaturedProjects projects={featured} />
+        {phone ? <PhoneFeatured projects={featured} /> : <FeaturedProjects projects={featured} />}
 
         <LayoutGroup id="vault-tabs">
           <div className="vault-tabs" role="tablist" aria-label="Categories">

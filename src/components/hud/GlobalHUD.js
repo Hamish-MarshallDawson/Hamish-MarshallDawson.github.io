@@ -8,6 +8,7 @@ import { PALETTE, ratioOf } from "../../styles/palette";
 import { Barcode } from "../shared/Barcode";
 import { ArrowIcon, CloseIcon, CvIcon, ExternalIcon, GithubIcon, LinkedinIcon, MailIcon } from "../shared/Icons";
 import { Clock, Fps, useOnline } from "../shared/Telemetry";
+import { PhoneBar } from "./PhoneBar";
 import "./GlobalHUD.css";
 
 const snap = [0.7, 0, 0.2, 1];
@@ -525,6 +526,7 @@ export function GlobalHUD({ active, navigate, onRequestCv, fx, onToggleFx, colou
         )}
       </AnimatePresence>
       <StatusStrip uplinks={uplinks} fx={fx} onToggleFx={onToggleFx} />
+      <PhoneBar onRequestCv={onRequestCv} />
       <SectionStamp active={active} />
     </>
   );
