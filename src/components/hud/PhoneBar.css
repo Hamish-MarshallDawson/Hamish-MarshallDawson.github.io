@@ -67,3 +67,10 @@
   line-height: 1.2;
   word-spacing: 100vw; /* "60 FPS" stacks the number over the unit, as drawn */
 }
+
+/* The Index panel's FX switch is the phone's only FX control: give it a full tap target. */
+@media (max-width: 767px), (max-height: 500px) {
+  .index .fx-toggle {
+    min-height: var(--hit);
+  }
+}
