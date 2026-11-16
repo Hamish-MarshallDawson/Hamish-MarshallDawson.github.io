@@ -151,11 +151,6 @@ export function Contact({ cvRequest }) {
           out the form below — it comes straight to me.
         </SectionHeader>
 
-        <p className="rw-warning">
-          <span className="rw-warning-tag u-micro">Security alert</span>
-          <span className="rw-warning-text u-micro">Unrestricted entity beyond this point. Proceed anyway.</span>
-        </p>
-
         <div className="rw-grid">
           <form className={formClass.join(" ")} noValidate onSubmit={onSubmit} aria-labelledby="rw-form-title">
             <div className="rw-form-head surface-ink u-micro" aria-hidden="true">

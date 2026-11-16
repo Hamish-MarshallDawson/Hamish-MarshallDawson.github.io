@@ -134,10 +134,7 @@ export function AIResearchVault() {
             `Vault capacity ${pad(projects.length)}/${pad(slotsFor(projects.length))}`,
             `GitHub telemetry: ${repos ? "linked" : "standby"}`,
           ]}
-        >
-          Projects I&apos;m proud of: robotics research, neural pipelines and the software around them. Filter the index
-          by category.
-        </SectionHeader>
+        />
 
         <FeaturedProjects projects={featured} />
 

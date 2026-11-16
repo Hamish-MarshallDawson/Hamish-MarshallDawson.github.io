@@ -22,34 +22,6 @@
   text-shadow: calc(0.035em + var(--intrusion, 0) * 0.08em) calc(0.035em + var(--intrusion, 0) * 0.08em) 0 var(--ink);
 }
 
-.rw-warning {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  margin-bottom: var(--space-7);
-  border: var(--bw-frame) solid var(--ink);
-  background: repeating-linear-gradient(-45deg, var(--ink) 0 12px, var(--paper) 12px 24px);
-}
-
-.rw-warning-tag,
-.rw-warning-text {
-  display: flex;
-  align-items: center;
-  padding: var(--space-3) var(--space-4);
-}
-
-.rw-warning-tag {
-  background: var(--ink);
-  color: var(--paper);
-  font-weight: 700;
-}
-
-.rw-warning-text {
-  margin: var(--space-2) var(--space-2) var(--space-2) auto;
-  background: var(--paper);
-  color: var(--ink);
-}
-
 .rw-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.7fr) minmax(280px, 1fr);
@@ -432,9 +404,5 @@ textarea.rw-input {
   .rw-chip {
     flex-basis: 50%;
     border-bottom: var(--bw-rule) solid var(--ink);
-  }
-
-  .rw-warning-text {
-    margin-left: var(--space-2);
   }
 }

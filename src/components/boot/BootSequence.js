@@ -129,7 +129,7 @@ export function BootSequence({ onFinish, palette = null, onCovered }) {
       >
         <header className="boot-top u-micro">
           <span>Loading // HMD-mainframe</span>
-          <span className="boot-top-mid">Personnel file · orbital terminal 07</span>
+          <span className="boot-top-mid">Personnel file</span>
           <span>Zone 00 · Lobby</span>
         </header>
 

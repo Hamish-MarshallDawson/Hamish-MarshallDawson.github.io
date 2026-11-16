@@ -76,9 +76,9 @@ test("selecting a vault slot loads it into the inspector", () => {
   const inspector = document.getElementById("vault-inspector");
   expect(within(inspector).getByRole("heading", { level: 3 })).toHaveTextContent(vaultProjects[0].name);
 
-  fireEvent.click(screen.getByRole("button", { name: /^TensoRoom\./ }));
+  fireEvent.click(screen.getByRole("button", { name: /^TensorRoom./ }));
 
-  expect(screen.getByRole("button", { name: /^TensoRoom\./ })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByRole("button", { name: /^TensorRoom./ })).toHaveAttribute("aria-pressed", "true");
 });
 
 test("contact form refuses an incomplete message", () => {
@@ -116,11 +116,13 @@ test("a valid message hands a pre-filled email to the visitor's email app", () =
   }
 });
 
-test("the CV uplink opens Reach out with a CV request selected", () => {
+test("every CV control opens the PDF", () => {
   render(<App />);
   const uplinks = screen.getByRole("list", { name: "Uplinks" });
-  fireEvent.click(within(uplinks).getByRole("link", { name: /^CV:/ }));
-  expect(screen.getByRole("radio", { name: /cv request/i })).toBeChecked();
+  expect(within(uplinks).getByRole("link", { name: /^CV:/ })).toHaveAttribute("href", "/cv.pdf");
+  const cvLinks = screen.getAllByRole("link", { name: /\bCV\b/ });
+  expect(cvLinks.length).toBeGreaterThan(1);
+  cvLinks.forEach((link) => expect(link).toHaveAttribute("href", "/cv.pdf"));
 });
 
 test("reaching Reach out flips the header into breach mode and back", () => {
@@ -244,6 +246,18 @@ test("picking a colour replays the loading card in it, then repaints the page", 
   expect(document.documentElement.style.getPropertyValue("--signal")).toBe("#e10600");
 });
 
+test("weighted highlights: the four anchors nearly always show, niche facts only sometimes", () => {
+  const anchors = ["Fault detection", "Publication", "Dissertation", "University Prize"];
+  const runs = 2000;
+  const seen = {};
+  for (let i = 0; i < runs; i += 1) pickHighlights(5).forEach(({ key }) => (seen[key] = (seen[key] || 0) + 1));
+  anchors.forEach((key) => expect(seen[key] / runs).toBeGreaterThan(0.9));
+  expect((seen["PC builds"] || 0) / runs).toBeLessThan(0.1);
+  expect(highlights.filter((item) => !item.weight)).toEqual([]);
+  // Anchors keep their place at the front.
+  expect(pickHighlights(5, highlights, () => 0.5).slice(0, 4).map((item) => item.key)).toEqual(anchors);
+});
+
 test("the highlight strip draws five different facts from the pool", () => {
   const picked = pickHighlights(5);
   expect(picked).toHaveLength(5);
@@ -321,14 +335,14 @@ test("the contact form speaks plainly", () => {
   expect(reachOut.textContent).not.toMatch(/ident|payload|transmit|firewall|intercept/i);
 });
 
-test("the featured block shows Poseidon, LocalMind, TensoRoom, Gyminit, Code for Good and the bus display; all have a demo", () => {
+test("the featured block shows Poseidon, LocalMind, TensorRoom, Gyminit, Code for Good and the bus display; all have a demo", () => {
   render(<App />);
   const grid = screen.getByRole("list", { name: "Featured projects" });
   const cards = within(grid).getAllByRole("article");
   expect(cards.map((card) => within(card).getByRole("heading", { level: 4 }).textContent)).toEqual([
     "Poseidon",
     "LocalMind",
-    "TensoRoom",
+    "TensorRoom",
     "Gyminit",
     "50+ Network impact platform",
     "Lothian Bus Display",
