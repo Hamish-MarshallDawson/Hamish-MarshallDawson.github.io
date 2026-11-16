@@ -141,11 +141,22 @@
   text-transform: uppercase;
 }
 
+/* "More from the vault": the same rule-underlined heading as Featured builds. */
+.vault-more {
+  margin: var(--space-9) 0 var(--space-6);
+  padding-bottom: var(--space-3);
+  border-bottom: var(--bw-rule) solid var(--line);
+  font: 900 clamp(1.125rem, 0.95rem + 0.6vw, 1.5rem) / 1 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-condensed);
+  text-transform: uppercase;
+}
+
 /* ---------- file cards ---------- */
 
 .vault-slots {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: var(--space-6);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--space-6) var(--space-5);
 }
 

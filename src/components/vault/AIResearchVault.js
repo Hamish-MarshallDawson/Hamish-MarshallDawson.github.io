@@ -2,12 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { categories, profile, vaultProjects } from "../projectdata";
 import { useRepoTelemetry } from "../../hooks/useRepoTelemetry";
-import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { parseHash } from "../../hooks/useSectionRouter";
 import { SectionHeader } from "../shared/SectionHeader";
-import { CategoryBanner } from "./CategoryBanner";
 import { VaultSlot, pad } from "./VaultSlot";
-import { VaultInspector } from "./VaultInspector";
 import { ProjectDossier } from "./ProjectDossier";
 import { FeaturedProjects } from "../featured/FeaturedProjects";
 import "./Vault.css";
@@ -20,27 +17,21 @@ const ALL = {
 };
 const TABS = [ALL, ...categories];
 const TAB_IDS = TABS.map((tab) => tab.id);
-const COLUMNS = 4;
-
-// Slots always fill whole rows of the 4-column grid (and so of the 2-column
-// phone grid too); the leftovers render as empty hatched cells.
-const slotsFor = (count) => Math.max(COLUMNS, Math.ceil(count / COLUMNS) * COLUMNS);
 
 function categoryFromHash() {
   const route = parseHash(window.location.hash, ["vault"]);
   return route && TAB_IDS.includes(route.sub) ? route.sub : "all";
 }
 
-// The vault: a ruled tab row of categories, a grid of file cards on hard
-// shadows, and an inspector for the selected file. Tabs are a real tablist
-// (roving focus, arrow keys) and each one is also a route: #vault/robotics.
+// The vault: the featured builds first, then "More from the vault": a ruled
+// tab row of categories over a grid of the other files, each opening its
+// dossier. A project shows once: featured ones are not repeated in the grid.
+// Tabs are a real tablist (roving focus, arrow keys) and each one is also a
+// route: #vault/robotics.
 export function AIResearchVault() {
   const [category, setCategory] = useState(categoryFromHash);
-  const [selectedId, setSelectedId] = useState(vaultProjects[0].id);
   const [openId, setOpenId] = useState(null);
   const repos = useRepoTelemetry(profile.githubUser);
-  const withInspector = useMediaQuery("(min-width: 1100px)");
-  const isTouch = useMediaQuery("(pointer: coarse)");
   const tabRefs = useRef({});
 
   // Curated order and copy always win; GitHub only adds the repo link (for
@@ -55,28 +46,28 @@ export function AIResearchVault() {
   );
 
   const featured = useMemo(() => projects.filter((project) => project.featured), [projects]);
+  const rest = useMemo(() => projects.filter((project) => !project.featured), [projects]);
 
   const counts = useMemo(
     () =>
       Object.fromEntries(
         TABS.map((tab) => [
           tab.id,
-          tab.id === "all" ? projects.length : projects.filter((p) => p.categories.includes(tab.id)).length,
+          tab.id === "all" ? rest.length : rest.filter((p) => p.categories.includes(tab.id)).length,
         ])
       ),
-    [projects]
+    [rest]
   );
 
   const visible = useMemo(
-    () => (category === "all" ? projects : projects.filter((p) => p.categories.includes(category))),
-    [projects, category]
+    () => (category === "all" ? rest : rest.filter((p) => p.categories.includes(category))),
+    [rest, category]
   );
 
-  // Keep a valid selection when the filter drops the selected file.
-  const selected = visible.find((p) => p.id === selectedId) ?? visible[0];
   const current = TABS.find((tab) => tab.id === category);
-  const openIndex = visible.findIndex((p) => p.id === openId);
-  const emptySlots = slotsFor(visible.length) - visible.length;
+  // The dossier steps through the list its file came from: the featured six or the filtered grid.
+  const dossierList = featured.some((p) => p.id === openId) ? featured : visible;
+  const openIndex = dossierList.findIndex((p) => p.id === openId);
 
   const select = (id, moveFocus = false) => {
     setCategory(id);
@@ -105,19 +96,12 @@ export function AIResearchVault() {
     select(TABS[next].id, true);
   };
 
-  const onSlot = (project) => {
-    setSelectedId(project.id);
-    if (!withInspector) setOpenId(project.id);
-  };
-
   const stepDossier = useCallback(
     (direction) => {
-      const at = visible.findIndex((p) => p.id === openId);
-      const next = visible[(at + direction + visible.length) % visible.length].id;
-      setOpenId(next);
-      setSelectedId(next);
+      const at = dossierList.findIndex((p) => p.id === openId);
+      setOpenId(dossierList[(at + direction + dossierList.length) % dossierList.length].id);
     },
-    [visible, openId]
+    [dossierList, openId]
   );
 
   const closeDossier = useCallback(() => setOpenId(null), []);
@@ -130,13 +114,12 @@ export function AIResearchVault() {
           kicker="Project vault"
           title="Things I've built."
           titleId="vault-title"
-          aside={[
-            `Vault capacity ${pad(projects.length)}/${pad(slotsFor(projects.length))}`,
-            `GitHub telemetry: ${repos ? "linked" : "standby"}`,
-          ]}
+          aside={[`${projects.length} files · ${featured.length} featured`]}
         />
 
-        <FeaturedProjects projects={featured} />
+        <FeaturedProjects projects={featured} onOpenFile={setOpenId} />
+
+        <h3 className="vault-more">More from the vault</h3>
 
         <LayoutGroup id="vault-tabs">
           <div className="vault-tabs" role="tablist" aria-label="Categories">
@@ -186,62 +169,21 @@ export function AIResearchVault() {
           {category === "all" ? "" : `: ${current.label}`}.
         </p>
 
-        <div className="vault-body">
-          <div className="vault-main">
-            <p className="vault-path" aria-hidden="true">
-              <span className="vault-path-prompt">operator@hmd-mainframe</span>:~/vault
-              {category === "all" ? "" : `/${category}`}$ ls{" "}
-              <span className="vault-path-count">
-                {visible.length}/{slotsFor(visible.length)} slots
-              </span>
-              <span className="caret" />
-              <span className="vault-path-hint">
-                {withInspector ? "Select a file to inspect it" : `${isTouch ? "Tap" : "Select"} a file to open it`}
-              </span>
-            </p>
-
-            <motion.ul
-              id="vault-panel"
-              role="tabpanel"
-              aria-labelledby={`vault-tab-${category}`}
-              className="vault-slots"
-            >
-              <AnimatePresence mode="popLayout" initial={false}>
-                {visible.map((project) => (
-                  <VaultSlot
-                    key={project.id}
-                    project={project}
-                    fileNo={projects.indexOf(project) + 1}
-                    inspector={withInspector}
-                    selected={withInspector && project.id === selected.id}
-                    onSelect={() => onSlot(project)}
-                  />
-                ))}
-              </AnimatePresence>
-              {Array.from({ length: emptySlots }, (_, i) => (
-                <li key={`empty-${i}`} className="vslot-cell" aria-hidden="true">
-                  <span className="vslot vslot--empty">
-                    <span className="vslot-empty-mark">+</span>
-                  </span>
-                </li>
-              ))}
-            </motion.ul>
-
-            <CategoryBanner category={current} counts={counts} />
-          </div>
-
-          {withInspector && (
-            <VaultInspector
-              project={selected}
-              fileNo={projects.indexOf(selected) + 1}
-              total={projects.length}
-              onExpand={() => setOpenId(selected.id)}
-            />
-          )}
-        </div>
+        <motion.ul id="vault-panel" role="tabpanel" aria-labelledby={`vault-tab-${category}`} className="vault-slots">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {visible.map((project) => (
+              <VaultSlot
+                key={project.id}
+                project={project}
+                fileNo={featured.length + rest.indexOf(project) + 1}
+                onSelect={() => setOpenId(project.id)}
+              />
+            ))}
+          </AnimatePresence>
+        </motion.ul>
       </div>
 
-      <ProjectDossier projects={visible} index={openIndex} onClose={closeDossier} onStep={stepDossier} />
+      <ProjectDossier projects={dossierList} index={openIndex} onClose={closeDossier} onStep={stepDossier} />
     </section>
   );
 }

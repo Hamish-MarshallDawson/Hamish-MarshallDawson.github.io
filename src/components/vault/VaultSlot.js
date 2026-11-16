@@ -16,7 +16,7 @@ export function linkLabel(url) {
 // over its corner and a ruled caption. forwardRef because AnimatePresence's
 // popLayout mode measures it.
 export const VaultSlot = forwardRef(function VaultSlot(
-  { project, fileNo, inspector, selected, onSelect },
+  { project, fileNo, onSelect },
   ref
 ) {
   const primary = project.categories[0];
@@ -32,10 +32,9 @@ export const VaultSlot = forwardRef(function VaultSlot(
     >
       <button
         type="button"
-        className={`vslot${selected ? " is-selected" : ""}`}
+        className="vslot"
         data-category={primary}
-        aria-pressed={selected}
-        aria-controls={inspector ? "vault-inspector" : undefined}
+        aria-haspopup="dialog"
         aria-label={`${project.name}. ${project.category}.`}
         onClick={onSelect}
       >

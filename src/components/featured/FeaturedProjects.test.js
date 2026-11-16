@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { MotionConfig } from "framer-motion";
-import { FeaturedProjects } from "./FeaturedProjects";
+import { FeaturedProjects, sideFor } from "./FeaturedProjects";
 
 // Two stand-in demos. Each shows the scene it is given, and whether it is playing, so the
 // tests can read what the player asks of the demo. The demos are loaded through dynamic
@@ -80,20 +80,8 @@ const gyminit = {
 };
 const three = [...projects, gyminit];
 
-// jsdom has no layout, so "wide" is decided by a matchMedia stand-in: the default in setupTests
-// is a wide screen; narrow() makes it one column (under 900px).
 const realMatchMedia = window.matchMedia;
 const realObserver = window.IntersectionObserver;
-function narrow() {
-  window.matchMedia = (query) => ({
-    matches: !/min-width/.test(query),
-    media: query,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    addListener: () => {},
-    removeListener: () => {},
-  });
-}
 
 // Lets the demo modules' promises resolve.
 const flush = () => act(async () => {
@@ -102,13 +90,6 @@ const flush = () => act(async () => {
 });
 
 // Cards and cells. A cell is the grid item (li) that holds a card and, while a demo covers it, the panel.
-const card = (name) => screen.getByRole("article", { name });
-const local = () => card("LocalMind");
-const room = () => card("TensorRoom");
-const cell = (id) => {
-  // eslint-disable-next-line testing-library/no-node-access
-  return document.querySelector(`li[data-id="${id}"]`);
-};
 const panel = (title) => screen.getByRole("region", { name: `${title} demo` });
 const playCard = (name) => screen.getByRole("button", { name: `Play demo for ${name}` });
 const captionText = (region) => {
@@ -139,83 +120,93 @@ async function startLocal() {
   await flush();
 }
 
-test("on a wide screen, a demo covers the other card: it sits in that card's cell, and that card is inert", async () => {
-  await renderFeatured();
-  await startLocal();
+const info = (name) => screen.getByRole("article", { name });
+const others = () => screen.getByRole("list", { name: /other builds/i });
+const playing = () => document.querySelector(".feat-play"); // eslint-disable-line testing-library/no-node-access
 
-  expect(within(cell("beta")).getByRole("region", { name: "LocalMind demo" })).toBe(panel("LocalMind"));
-  expect(cell("alpha").querySelector('[role="region"]')).toBeNull();
-  expect(room()).toHaveAttribute("inert");
-  expect(local()).not.toHaveAttribute("inert");
-  // The card it started from stays usable, and says Pause.
-  expect(within(local()).getByRole("button", { name: "Pause demo for LocalMind" })).toBeInTheDocument();
+test("the six builds sit on a grid of cards, each with its own Play demo", async () => {
+  await renderFeatured(three);
+  const grid = screen.getByRole("list", { name: "Featured projects" });
+  expect(within(grid).getAllByRole("article")).toHaveLength(3);
+  expect(within(grid).getAllByRole("button", { name: /^Play demo for/ })).toHaveLength(3);
+  expect(screen.queryByRole("button", { name: /next projects/i })).toBeNull();
 });
 
-test("on a narrow screen, the demo covers its own card: the panel is in that cell, and the focus goes to the X", async () => {
-  narrow();
-  await renderFeatured();
+test("the column rule: left and middle cards put the panel on the left, right-column cards mirror it", () => {
+  expect([0, 1, 2, 3, 4, 5].map(sideFor)).toEqual(["left", "left", "right", "left", "left", "right"]);
+});
+
+test("Play grows the card into an info panel beside the stage; the other builds go to a strip", async () => {
+  await renderFeatured(three);
   await startLocal();
 
-  expect(within(cell("alpha")).getByRole("region", { name: "LocalMind demo" })).toBe(panel("LocalMind"));
-  expect(room()).not.toHaveAttribute("inert");
-  expect(local()).toHaveAttribute("inert");
+  expect(screen.queryByRole("list", { name: "Featured projects" })).toBeNull();
+  expect(playing()).toHaveAttribute("data-side", "left");
+  expect(info("LocalMind")).toHaveTextContent("A pitch.");
+  expect(info("LocalMind")).toHaveTextContent("One fact");
+  expect(info("LocalMind")).toHaveTextContent(/Playing · scene 1 \/ 3/);
+  expect(screen.getByText("Now playing · 01 / 03")).toBeInTheDocument();
+  expect(within(others()).getAllByRole("button").map((b) => b.textContent)).toEqual([
+    "Play the demo of TensorRoom▶",
+    "Play the demo of Gyminit▶",
+  ]);
   expect(within(panel("LocalMind")).getByRole("button", { name: "Close the LocalMind demo" })).toHaveFocus();
 });
 
-test("the X puts the card back: the panel fades, the card is live, focus returns, and the label is Play demo", async () => {
-  await renderFeatured();
-  await startLocal();
-  const close = within(panel("LocalMind")).getByRole("button", { name: "Close the LocalMind demo" });
-  act(() => close.focus());
-
-  fireEvent.click(close);
-  expect(shownOf(panel("LocalMind"))).toBe("false");
-  expect(panel("LocalMind")).toHaveAttribute("inert"); // closed: out of the tab order and the accessibility tree
-  expect(room()).not.toHaveAttribute("inert");
-  expect(playCard("LocalMind")).toHaveTextContent("Play demo");
-  expect(playCard("LocalMind")).toHaveFocus();
-  expect(jest.getTimerCount()).toBe(0);
+test("a right-column card keeps its place: the stage opens to its left", async () => {
+  await renderFeatured(three);
+  fireEvent.click(playCard("Gyminit"));
+  await flush();
+  expect(playing()).toHaveAttribute("data-side", "right");
 });
 
-test("on a narrow screen, the X closes the demo over its own card, and the card is live again", async () => {
-  narrow();
-  await renderFeatured();
+test("the X goes back to the grid, with focus on the card's Play button", async () => {
+  await renderFeatured(three);
   await startLocal();
   fireEvent.click(within(panel("LocalMind")).getByRole("button", { name: "Close the LocalMind demo" }));
 
-  expect(shownOf(panel("LocalMind"))).toBe("false");
-  expect(local()).not.toHaveAttribute("inert");
+  expect(screen.getByRole("list", { name: "Featured projects" })).toBeInTheDocument();
+  expect(screen.queryByRole("region", { name: "LocalMind demo" })).toBeNull();
   expect(playCard("LocalMind")).toHaveFocus();
 });
 
-test("Escape closes the demo while focus is in the panel", async () => {
-  await renderFeatured();
+test("Escape closes the stage from anywhere on the page, but not from inside a dialog", async () => {
+  await renderFeatured(three);
   await startLocal();
-  act(() => within(panel("LocalMind")).getByRole("button", { name: "Close the LocalMind demo" }).focus());
+  document.body.focus();
 
-  fireEvent.keyDown(document.activeElement, { key: "Escape" });
-  expect(shownOf(panel("LocalMind"))).toBe("false");
-  expect(room()).not.toHaveAttribute("inert");
-  expect(playCard("LocalMind")).toHaveFocus();
-});
-
-test("Escape closes the demo while focus is on the card it started from", async () => {
-  await renderFeatured();
-  await startLocal();
-  const pause = screen.getByRole("button", { name: "Pause demo for LocalMind" });
-  act(() => pause.focus());
-
-  fireEvent.keyDown(pause, { key: "Escape" });
-  expect(shownOf(panel("LocalMind"))).toBe("false");
-});
-
-test("Escape does nothing while focus is elsewhere on the page", async () => {
-  await renderFeatured();
-  await startLocal();
-  act(() => document.activeElement.blur());
+  const dialog = document.createElement("div");
+  dialog.setAttribute("role", "dialog");
+  const inside = document.createElement("button");
+  dialog.appendChild(inside);
+  document.body.appendChild(dialog);
+  inside.focus();
+  fireEvent.keyDown(inside, { key: "Escape" });
+  expect(panel("LocalMind")).toBeInTheDocument();
+  dialog.remove();
 
   fireEvent.keyDown(document.body, { key: "Escape" });
-  expect(shownOf(panel("LocalMind"))).toBe("true");
+  expect(screen.queryByRole("region", { name: "LocalMind demo" })).toBeNull();
+  expect(playCard("LocalMind")).toHaveFocus();
+});
+
+test("a build in the strip swaps the demo without closing it; closing then returns to that card", async () => {
+  await renderFeatured(three);
+  await startLocal();
+  act(() => jest.advanceTimersByTime(1000));
+
+  fireEvent.click(within(others()).getByRole("button", { name: /TensorRoom/ }));
+  await flush();
+
+  expect(screen.queryByRole("region", { name: "LocalMind demo" })).toBeNull();
+  expect(captionText(panel("TensorRoom"))).toBe("Room one");
+  expect(demoOf(panel("TensorRoom"), "room-demo")).toHaveAttribute("data-playing", "true");
+  expect(info("TensorRoom")).toBeInTheDocument();
+  expect(within(others()).getByRole("button", { name: /LocalMind/ })).toBeInTheDocument();
+  expect(within(panel("TensorRoom")).getByRole("button", { name: "Close the TensorRoom demo" })).toHaveFocus();
+
+  fireEvent.keyDown(document.body, { key: "Escape" });
+  expect(playCard("TensorRoom")).toHaveFocus();
 });
 
 test("play starts the scenes, and each scene advances on its own", async () => {
@@ -228,7 +219,7 @@ test("play starts the scenes, and each scene advances on its own", async () => {
 
   act(() => jest.advanceTimersByTime(4000));
   expect(captionText(panel("LocalMind"))).toBe("Scene two");
-  expect(demoOf(panel("LocalMind"), "local-demo")).toHaveAttribute("data-scene", "1");
+  expect(info("LocalMind")).toHaveTextContent(/scene 2 \/ 3/);
 });
 
 test("the caption is an aria-live region, and the scene dots follow the scene", async () => {
@@ -249,95 +240,40 @@ test("pause freezes the scene, and play resumes from the same point", async () =
 
   fireEvent.click(within(panel("LocalMind")).getByRole("button", { name: "Pause the LocalMind demo" }));
   expect(demoOf(panel("LocalMind"), "local-demo")).toHaveAttribute("data-playing", "false");
+  expect(info("LocalMind")).toHaveTextContent(/Paused/);
 
-  // Paused, nothing moves for a long time.
   act(() => jest.advanceTimersByTime(10000));
   expect(captionText(panel("LocalMind"))).toBe("Scene one");
 
   // Resumed, the scene has its remaining 3 s, not a fresh 4 s.
   fireEvent.click(within(panel("LocalMind")).getByRole("button", { name: "Play the LocalMind demo" }));
-  expect(demoOf(panel("LocalMind"), "local-demo")).toHaveAttribute("data-playing", "true");
   act(() => jest.advanceTimersByTime(2999));
   expect(captionText(panel("LocalMind"))).toBe("Scene one");
   act(() => jest.advanceTimersByTime(1));
   expect(captionText(panel("LocalMind"))).toBe("Scene two");
 });
 
-test("the card's button, the round control on the card and the one in the panel stay in sync", async () => {
-  await renderFeatured();
-  expect(playCard("LocalMind")).toHaveTextContent("Play demo");
-  expect(within(local()).getByRole("button", { name: "Play the LocalMind demo" })).toBeInTheDocument();
-
-  fireEvent.click(playCard("LocalMind"));
-  await flush();
-  expect(within(local()).getByRole("button", { name: "Pause demo for LocalMind" })).toBeInTheDocument();
-  expect(within(local()).getByRole("button", { name: "Pause the LocalMind demo" })).toBeInTheDocument();
-  expect(within(panel("LocalMind")).getByRole("button", { name: "Pause the LocalMind demo" })).toBeInTheDocument();
-
-  fireEvent.click(within(panel("LocalMind")).getByRole("button", { name: "Pause the LocalMind demo" }));
-  expect(within(local()).getByRole("button", { name: "Play demo for LocalMind" })).toBeInTheDocument();
-  expect(within(local()).getByRole("button", { name: "Play the LocalMind demo" })).toBeInTheDocument();
-  expect(within(panel("LocalMind")).getByRole("button", { name: "Play the LocalMind demo" })).toBeInTheDocument();
-
-  // Pressing the card's button resumes what the panel's control paused.
-  fireEvent.click(playCard("LocalMind"));
-  expect(within(panel("LocalMind")).getByRole("button", { name: "Pause the LocalMind demo" })).toBeInTheDocument();
-});
-
-test("the last scene is held, the panel fades, and Replay plays it again", async () => {
+test("the last scene is held on the stage, and Replay plays it again from the start", async () => {
   await renderFeatured();
   await startLocal();
   act(() => jest.advanceTimersByTime(4000));
   act(() => jest.advanceTimersByTime(4000));
   expect(captionText(panel("LocalMind"))).toBe("Scene three");
 
-  // The last scene runs 4 s and is held for 2 s more, then the panel fades back to the card.
-  act(() => jest.advanceTimersByTime(5999));
+  // The last scene runs 4 s and is held for 2 s more; then the run ends but the stage stays open on it.
+  act(() => jest.advanceTimersByTime(6000));
   expect(shownOf(panel("LocalMind"))).toBe("true");
-  act(() => jest.advanceTimersByTime(1));
-  expect(shownOf(panel("LocalMind"))).toBe("false");
-  expect(panel("LocalMind")).toHaveAttribute("inert");
-  expect(room()).not.toHaveAttribute("inert");
-  expect(within(local()).getByRole("button", { name: "Replay demo for LocalMind" })).toBeInTheDocument();
-  expect(within(local()).getByRole("button", { name: "Replay the LocalMind demo" })).toBeInTheDocument();
+  expect(captionText(panel("LocalMind"))).toBe("Scene three");
+  expect(within(panel("LocalMind")).getByRole("button", { name: "Replay the LocalMind demo" })).toBeInTheDocument();
   expect(jest.getTimerCount()).toBe(0);
 
-  fireEvent.click(within(local()).getByRole("button", { name: "Replay the LocalMind demo" }));
-  expect(shownOf(panel("LocalMind"))).toBe("true");
-  expect(captionText(panel("LocalMind"))).toBe("Scene one");
-  expect(demoOf(panel("LocalMind"), "local-demo")).toHaveAttribute("data-scene", "0");
-});
-
-test("only one demo plays at a time: the panel moves to the other card, and the first card goes back to Play", async () => {
-  await renderFeatured();
-  await startLocal();
-  act(() => jest.advanceTimersByTime(1000));
-
-  fireEvent.click(playCard("TensorRoom"));
+  fireEvent.click(within(panel("LocalMind")).getByRole("button", { name: /^↻ Replay/ }));
   await flush();
-
-  // TensorRoom is playing, over LocalMind's cell now (the card beside it); LocalMind's own panel is gone.
-  expect(screen.queryByRole("region", { name: "LocalMind demo" })).toBeNull();
-  expect(within(cell("alpha")).getByRole("region", { name: "TensorRoom demo" })).toBe(panel("TensorRoom"));
-  expect(local()).toHaveAttribute("inert");
-  expect(room()).not.toHaveAttribute("inert");
-  expect(playCard("LocalMind")).toBeInTheDocument();
-  expect(within(local()).getByRole("button", { name: "Play demo for LocalMind" })).toBeInTheDocument();
-  expect(captionText(panel("TensorRoom"))).toBe("Room one");
-  expect(demoOf(panel("TensorRoom"), "room-demo")).toHaveAttribute("data-playing", "true");
+  expect(captionText(panel("LocalMind"))).toBe("Scene one");
+  expect(demoOf(panel("LocalMind"), "local-demo")).toHaveAttribute("data-playing", "true");
 });
 
-test("a demo with no partner card covers its own card, even on a wide screen", async () => {
-  await renderFeatured([projects[0]]);
-  await startLocal();
-
-  expect(within(cell("alpha")).getByRole("region", { name: "LocalMind demo" })).toBe(panel("LocalMind"));
-  expect(local()).toHaveAttribute("inert");
-  expect(within(panel("LocalMind")).getByRole("button", { name: "Close the LocalMind demo" })).toHaveFocus();
-});
-
-test("auto-pauses when its panel is off screen, and resumes when it is back", async () => {
-  // Every observer reports through here: the panel is the only thing observed.
+test("auto-pauses when its stage is off screen, and resumes when it is back", async () => {
   const reports = [];
   class FakeObserver {
     constructor(callback) {
@@ -357,8 +293,6 @@ test("auto-pauses when its panel is off screen, and resumes when it is back", as
   expect(demoOf(panel("LocalMind"), "local-demo")).toHaveAttribute("data-playing", "false");
   act(() => jest.advanceTimersByTime(10000));
   expect(captionText(panel("LocalMind"))).toBe("Scene one");
-  // Its phase is kept: the card still offers Pause, and the panel is still playing.
-  expect(within(local()).getByRole("button", { name: "Pause demo for LocalMind" })).toBeInTheDocument();
 
   act(() => reports.forEach((report) => report([{ isIntersecting: true }])));
   expect(demoOf(panel("LocalMind"), "local-demo")).toHaveAttribute("data-playing", "true");
@@ -373,34 +307,20 @@ test("with FX off there is no timer: the control steps through the scenes, and t
     </MotionConfig>,
   );
   await flush();
-  expect(within(local()).getByRole("button", { name: "Play the LocalMind demo" })).toBeInTheDocument();
-
-  fireEvent.click(within(local()).getByRole("button", { name: "Play the LocalMind demo" }));
-  await flush();
+  await startLocal();
   expect(demoOf(panel("LocalMind"), "local-demo")).toHaveAttribute("data-reduced", "true");
-  expect(captionText(panel("LocalMind"))).toBe("Scene one");
   act(() => jest.advanceTimersByTime(30000));
   expect(captionText(panel("LocalMind"))).toBe("Scene one");
   expect(demoOf(panel("LocalMind"), "local-demo")).toHaveAttribute("data-playing", "false");
-  expect(within(panel("LocalMind")).getByRole("button", { name: "Next scene of the LocalMind demo" })).toBeInTheDocument();
 
-  fireEvent.click(within(local()).getByRole("button", { name: "Next scene for LocalMind" }));
+  fireEvent.click(within(panel("LocalMind")).getByRole("button", { name: "Next scene of the LocalMind demo" }));
   expect(captionText(panel("LocalMind"))).toBe("Scene two");
-  fireEvent.click(within(panel("LocalMind")).getByRole("button", { name: "Next scene of the LocalMind demo" }));
-  expect(captionText(panel("LocalMind"))).toBe("Scene three");
 
-  // After the last scene, the next press returns to the card.
-  fireEvent.click(within(panel("LocalMind")).getByRole("button", { name: "Next scene of the LocalMind demo" }));
-  expect(shownOf(panel("LocalMind"))).toBe("false");
-  expect(playCard("LocalMind")).toHaveTextContent("Play demo");
-
-  // And a fresh run can be closed with the X.
-  fireEvent.click(playCard("LocalMind"));
   fireEvent.click(within(panel("LocalMind")).getByRole("button", { name: "Close the LocalMind demo" }));
-  expect(shownOf(panel("LocalMind"))).toBe("false");
+  expect(playCard("LocalMind")).toHaveFocus();
 });
 
-test("leaving the card unmounted leaves no timers behind", async () => {
+test("leaving the block unmounted leaves no timers behind", async () => {
   const { unmount } = render(<FeaturedProjects projects={projects} />);
   await flush();
   await startLocal();
@@ -413,9 +333,17 @@ test("the Play controls preload the demo on hover, so the first play has no wait
   fireEvent.mouseEnter(playCard("LocalMind"));
   await flush();
 
-  // The module is in: the first play shows the scene at once, with no further flush.
   fireEvent.click(playCard("LocalMind"));
   expect(demoOf(panel("LocalMind"), "local-demo")).toHaveAttribute("data-scene", "0");
+});
+
+test("Full file opens the project's dossier", async () => {
+  const onOpenFile = jest.fn();
+  render(<FeaturedProjects projects={projects} onOpenFile={onOpenFile} />);
+  await flush();
+  await startLocal();
+  fireEvent.click(within(info("LocalMind")).getByRole("button", { name: /^Full file/ }));
+  expect(onOpenFile).toHaveBeenCalledWith("alpha");
 });
 
 test("the Gyminit card links to the live app and reads Visit", async () => {
@@ -429,66 +357,4 @@ test("a card with a charity shows a Visit charity link to it", async () => {
   await renderFeatured([charityCard]);
   const link = within(screen.getByRole("article", { name: "Delta" })).getByRole("link", { name: /^Visit charity/ });
   expect(link).toHaveAttribute("href", "https://charity.example.org/");
-});
-
-test("with two projects there is no carousel", async () => {
-  await renderFeatured();
-  expect(screen.queryByRole("button", { name: "Next projects" })).toBeNull();
-});
-
-test("on a narrow screen there is no carousel, even with three projects", async () => {
-  narrow();
-  await renderFeatured(three);
-  expect(screen.queryByRole("button", { name: "Next projects" })).toBeNull();
-  expect(cell("gamma")).not.toHaveAttribute("inert");
-});
-
-test("the carousel shows two cards, and next and previous move the pair, wrapping round", async () => {
-  await renderFeatured(three);
-  expect(screen.getByText("01–02 / 03")).toBeInTheDocument();
-  expect(cell("alpha")).not.toHaveAttribute("inert");
-  expect(cell("gamma")).toHaveAttribute("inert");
-
-  fireEvent.click(screen.getByRole("button", { name: "Next projects" }));
-  expect(screen.getByText("02–03 / 03")).toBeInTheDocument();
-  expect(cell("alpha")).toHaveAttribute("inert");
-  expect(cell("gamma")).not.toHaveAttribute("inert");
-
-  // Next from the last pair wraps: the last card on the left, the first on the right.
-  fireEvent.click(screen.getByRole("button", { name: "Next projects" }));
-  expect(screen.getByText("03–01 / 03")).toBeInTheDocument();
-  expect(cell("gamma").style.order).toBe("0");
-  expect(cell("alpha").style.order).toBe("1");
-  expect(cell("beta")).toHaveAttribute("inert");
-
-  fireEvent.click(screen.getByRole("button", { name: "Next projects" }));
-  expect(screen.getByText("01–02 / 03")).toBeInTheDocument();
-});
-
-test("previous from the first pair skips to the end", async () => {
-  await renderFeatured(three);
-  fireEvent.click(screen.getByRole("button", { name: "Previous projects" }));
-  expect(screen.getByText("03–01 / 03")).toBeInTheDocument();
-  expect(cell("gamma")).not.toHaveAttribute("inert");
-  expect(cell("alpha")).not.toHaveAttribute("inert");
-  expect(cell("beta")).toHaveAttribute("inert");
-});
-
-test("in the carousel a demo covers the visible partner, and changing slide closes it", async () => {
-  await renderFeatured(three);
-  fireEvent.click(screen.getByRole("button", { name: "Next projects" }));
-  fireEvent.click(playCard("TensorRoom"));
-  await flush();
-  // The visible pair is TensorRoom and Gyminit, so the panel sits over Gyminit.
-  expect(within(cell("gamma")).getByRole("region", { name: "TensorRoom demo" })).toBe(panel("TensorRoom"));
-
-  fireEvent.click(screen.getByRole("button", { name: "Previous projects" }));
-  expect(shownOf(panel("TensorRoom"))).toBe("false");
-  expect(playCard("TensorRoom")).toHaveTextContent("Play demo");
-});
-
-test("the carousel nav sits under the cards", async () => {
-  await renderFeatured(three);
-  const nav = screen.getByRole("group", { name: "Featured projects navigation" });
-  expect(screen.getByRole("list", { name: "Featured projects" }).compareDocumentPosition(nav) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });

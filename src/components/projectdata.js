@@ -195,6 +195,7 @@ export const vaultProjects = [
   {
     id: "code-for-good",
     name: "50+ Network impact platform",
+    short: "50+ Network",
     category: "Code for Good · JPMorganChase · Oct 2026",
     description:
       "A feedback and impact platform for the West Lothian 50+ Network, built in under 24 hours from brief to demo. Our team of five had never met before the hackathon, and I was lead front-end developer. We built it to the charity's own brief.",
