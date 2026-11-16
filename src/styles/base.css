@@ -187,8 +187,10 @@ button {
 }
 
 /* ---------- motion preferences ----------
-   The FX switch sets data-fx="off" and behaves exactly like the OS
-   reduced-motion setting. framer-motion is told separately (MotionConfig). */
+   The FX switch sets data-fx="off" and stills everything. The OS
+   reduced-motion setting stills everything except the loading card and the
+   featured demos (panel fade and scenes), which power-saving modes would
+   otherwise stop. framer-motion is told separately (MotionConfig). */
 html[data-fx="off"] {
   scroll-behavior: auto;
 }
@@ -206,9 +208,9 @@ html[data-fx="off"] *::after {
     scroll-behavior: auto;
   }
 
-  *,
-  *::before,
-  *::after {
+  :not(.boot, .boot *, .fdemo-overlay, .fdemo-scene *),
+  :not(.boot, .boot *, .fdemo-scene *)::before,
+  :not(.boot, .boot *, .fdemo-scene *)::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;

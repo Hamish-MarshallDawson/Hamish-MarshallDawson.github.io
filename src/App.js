@@ -101,9 +101,8 @@ function App() {
     (entry) => {
       storeColour(entry);
       pending.current = entry;
-      // No card with reduced motion or FX off: the page just changes.
-      const still = !fx || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-      if (still) {
+      // No card with FX off: the page just changes.
+      if (!fx) {
         resetPage();
         return;
       }

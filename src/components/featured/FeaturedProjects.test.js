@@ -366,7 +366,7 @@ test("auto-pauses when its panel is off screen, and resumes when it is back", as
   expect(captionText(panel("LocalMind"))).toBe("Scene two");
 });
 
-test("with reduced motion there is no timer: the control steps through the scenes, and the X still closes", async () => {
+test("with FX off there is no timer: the control steps through the scenes, and the X still closes", async () => {
   render(
     <MotionConfig reducedMotion="always">
       <FeaturedProjects projects={projects} />

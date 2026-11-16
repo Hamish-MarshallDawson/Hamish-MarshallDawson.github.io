@@ -359,7 +359,7 @@ test("the round control and the card's button both pause and play the demo", asy
   expect(within(card).getByRole("button", { name: "Play the LocalMind demo" })).toBeInTheDocument();
 });
 
-test("with reduced motion the round control steps through the scenes by hand", async () => {
+test("with FX off the round control steps through the scenes by hand", async () => {
   localStorage.setItem("hmd:fx", "off");
   render(<App />);
   const card = screen.getByRole("article", { name: "LocalMind" });

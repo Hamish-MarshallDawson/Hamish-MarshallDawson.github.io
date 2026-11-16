@@ -8,7 +8,7 @@ test("the labels follow the phase: play, pause, resume and replay", () => {
   expect(controlLabels("ended", false, "LocalMind")).toEqual({ text: "Replay demo", aria: "Replay the LocalMind demo", glyph: "replay" });
 });
 
-test("with reduced motion, the control steps through scenes, then returns to the picture", () => {
+test("with FX off, the control steps through scenes, then returns to the picture", () => {
   expect(controlLabels("idle", true, "TensoRoom").text).toBe("Play demo");
   expect(controlLabels("playing", true, "TensoRoom")).toEqual({
     text: "Next scene",

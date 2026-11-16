@@ -465,18 +465,11 @@
   fill: currentColor;
 }
 
-/* Reduced motion (the OS setting or the site's FX switch): nothing animates, and each
-   scene is drawn in its final state. */
+/* FX off: nothing animates, and each scene is drawn in its final state. The OS
+   reduced-motion setting does not stop the demos (see base.css). */
 .fdemo-overlay[data-reduced] {
   transition: none;
   animation: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .fdemo-overlay {
-    transition: none;
-    animation: none;
-  }
 }
 
 /* A poster with a demo keeps the bottom band clear, as the panel's scenes do: the round control sits in

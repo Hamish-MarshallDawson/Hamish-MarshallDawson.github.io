@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useReducedMotionConfig } from "framer-motion";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { MotionConfigContext, useReducedMotionConfig } from "framer-motion";
 import { DemoPanel, RoundControl, controlLabels } from "./DemoPlayer";
 import { ArrowIcon, ExternalIcon } from "../shared/Icons";
 import { ProjectMedia } from "../vault/ProjectMedia";
@@ -33,7 +33,10 @@ const partnerIndex = (index, start, total) => (index === start ? (start + 1) % t
 // button (X) puts the covered card back.
 export function FeaturedProjects({ projects }) {
   const wide = useMediaQuery("(min-width: 900px)");
-  const reduce = useReducedMotionConfig();
+  // The demos go still only with FX off (MotionConfig "always"), not with the OS setting, which
+  // power-saving modes switch on. The carousel slide follows both.
+  const reduce = useContext(MotionConfigContext).reducedMotion === "always";
+  const calm = useReducedMotionConfig();
   // The one run: which card it started from, its phase, its scene, and a key that changes per run.
   // Phases: "playing", "paused", "ended" (held on the last scene, then the panel fades out) and "idle" (closed).
   const [run, setRun] = useState(null);
@@ -111,7 +114,7 @@ export function FeaturedProjects({ projects }) {
   const slide = (step) => {
     setFrom((first + step + projects.length) % projects.length);
     close();
-    if (!reduce) {
+    if (!calm) {
       track.current?.animate?.([{ transform: `translateX(${step * 12}%)`, opacity: 0 }, { transform: "none", opacity: 1 }], {
         duration: 260,
         easing: "cubic-bezier(0.2, 0, 0, 1)",

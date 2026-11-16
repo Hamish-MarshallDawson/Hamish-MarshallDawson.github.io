@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useReducedMotionConfig } from "framer-motion";
 
 // The demo plays in a panel over a featured card: the card it was started from, or the
 // card beside it on a wide screen. The panel is the card's own size (the cell's box), so
@@ -7,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 //
 // The player owns the timing. A demo owns its scenes (its own look and its own CSS animations).
 // The player tells it which scene to show, and whether it is playing (`playing` is false while
-// paused, off screen, in a hidden tab, or with reduced motion). The demo must not start JS
+// paused, off screen, in a hidden tab, or with FX off). The demo must not start JS
 // timers while `playing` is false.
 //
 //   scenes:  [{ id, caption, ms }], exported by the demo. `ms` is how long the scene is shown.
@@ -86,6 +87,8 @@ function bringIntoView(panel, reduce) {
 
 export function DemoPanel({ Demo, scenes = NO_SCENES, scene, phase, reduce, title, runKey, focusClose, onPress, onClose, onScene, onEnd, onPreload }) {
   const [away, setAway] = useState(false);
+  // `reduce` is FX off only; scrolling also respects the OS reduced-motion setting.
+  const calm = useReducedMotionConfig();
   const panelRef = useRef(null);
   const closeRef = useRef(null);
   const count = scenes.length;
@@ -124,8 +127,8 @@ export function DemoPanel({ Demo, scenes = NO_SCENES, scene, phase, reduce, titl
   // A new run starts its first scene with no time left over from the last run, and comes into view.
   useEffect(() => {
     remain.current = null;
-    if (show && panelRef.current) bringIntoView(panelRef.current, reduce);
-  }, [runKey, reduce, show]);
+    if (show && panelRef.current) bringIntoView(panelRef.current, calm);
+  }, [runKey, calm, show]);
 
   // The close button takes focus when the panel opens over the card that was pressed (the card's
   // own button is inert then), and when the panel moves to a new card while it is open.

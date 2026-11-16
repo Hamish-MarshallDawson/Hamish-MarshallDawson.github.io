@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { animate, motion, useMotionValue, useTransform } from "framer-motion";
+import { animate, motion, MotionConfig, useMotionValue, useTransform } from "framer-motion";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { Typewriter } from "../shared/Typewriter";
 import { categories, experience, profile, vaultProjects } from "../projectdata";
@@ -7,10 +7,10 @@ import "./BootSequence.css";
 
 const BOOT_FLAG = "hmd:booted";
 
-// Plays once per browser session, and never with reduced motion or FX off.
+// Plays once per browser session, and never with FX off. The OS reduced-motion
+// setting does not stop it: power-saving modes switch that on, and the card is the intro.
 export function shouldBoot() {
   if (typeof window === "undefined") return false;
-  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return false;
   try {
     return !sessionStorage.getItem(BOOT_FLAG) && localStorage.getItem("hmd:fx") !== "off";
   } catch {
@@ -114,88 +114,91 @@ export function BootSequence({ onFinish, palette = null, onCovered }) {
     [`Index categories · ${categories.map((c) => c.name).join(" / ")}`, "OK"],
   ];
 
+  // The card only shows with FX on, so it always animates (base.css exempts its CSS too).
   return (
-    <motion.div
-      className="boot surface-signal"
-      aria-hidden="true"
-      style={replay ? { "--signal": palette.hex } : undefined}
-      initial={replay ? { y: "-100%" } : false}
-      animate={{ y: "0%" }}
-      transition={{ duration: 0.55, ease: snap }}
-      onAnimationComplete={() => onCovered?.()}
-      exit={{ y: "-100%", transition: { duration: 0.62, ease: snap } }}
-    >
-      <header className="boot-top u-micro">
-        <span>Loading // HMD-mainframe</span>
-        <span className="boot-top-mid">Personnel file · orbital terminal 07</span>
-        <span>Zone 00 · Lobby</span>
-      </header>
+    <MotionConfig reducedMotion="never">
+      <motion.div
+        className="boot surface-signal"
+        aria-hidden="true"
+        style={replay ? { "--signal": palette.hex } : undefined}
+        initial={replay ? { y: "-100%" } : false}
+        animate={{ y: "0%" }}
+        transition={{ duration: 0.55, ease: snap }}
+        onAnimationComplete={() => onCovered?.()}
+        exit={{ y: "-100%", transition: { duration: 0.62, ease: snap } }}
+      >
+        <header className="boot-top u-micro">
+          <span>Loading // HMD-mainframe</span>
+          <span className="boot-top-mid">Personnel file · orbital terminal 07</span>
+          <span>Zone 00 · Lobby</span>
+        </header>
 
-      <div className="boot-card">
-        <p className="boot-name">
-          {profile.name.split(" ").map((word, i) => (
-            <span key={word} className="boot-line">
-              <motion.span
-                className="boot-word"
-                initial={{ y: "108%" }}
-                animate={{ y: "0%" }}
-                transition={{ duration: 0.85, delay: 0.12 + i * 0.12, ease: rise }}
-              >
-                {word}
-              </motion.span>
-            </span>
-          ))}
-        </p>
-        <p className="boot-role u-micro">{profile.role}</p>
-      </div>
-
-      <div className="boot-foot">
-        <motion.ol
-          className="boot-log u-micro"
-          variants={log}
-          initial="hidden"
-          animate="show"
-          onAnimationComplete={() => setGranted(true)}
-        >
-          {lines.map(([label, status]) => (
-            <motion.li key={label} variants={line}>
-              <span className="boot-label">&gt; {label}</span>
-              <span className="boot-dots" />
-              <span className={`boot-status${status === "FALLBACK" ? " is-warn" : ""}`}>[{status}]</span>
-            </motion.li>
-          ))}
-        </motion.ol>
-
-        <div className="boot-meta u-micro">
-          <p className="boot-granted">
-            {granted ? (
-              <Typewriter
-                text="> Operator recognised. Welcome, engineer."
-                cps={60}
-                caret
-                onDone={() => {
-                  holdTimer.current = setTimeout(finish, 420);
-                }}
-              />
-            ) : (
-              " "
-            )}
-          </p>
-          <p className="boot-skip">{isTouch ? "Tap anywhere to skip" : "Press any key to skip"}</p>
-        </div>
-
-        <div className="boot-progress">
-          <span className="boot-progress-label u-micro">Loading</span>
-          <div className="boot-segments">
-            {Array.from({ length: SEGMENTS }, (_, i) => (
-              <span key={i} className={i < segments ? "is-on" : undefined} />
+        <div className="boot-card">
+          <p className="boot-name">
+            {profile.name.split(" ").map((word, i) => (
+              <span key={word} className="boot-line">
+                <motion.span
+                  className="boot-word"
+                  initial={{ y: "108%" }}
+                  animate={{ y: "0%" }}
+                  transition={{ duration: 0.85, delay: 0.12 + i * 0.12, ease: rise }}
+                >
+                  {word}
+                </motion.span>
+              </span>
             ))}
-          </div>
-          <motion.span className="boot-percent">{percent}</motion.span>
+          </p>
+          <p className="boot-role u-micro">{profile.role}</p>
         </div>
-      </div>
 
-      <span className="boot-edge" />
-    </motion.div>
+        <div className="boot-foot">
+          <motion.ol
+            className="boot-log u-micro"
+            variants={log}
+            initial="hidden"
+            animate="show"
+            onAnimationComplete={() => setGranted(true)}
+          >
+            {lines.map(([label, status]) => (
+              <motion.li key={label} variants={line}>
+                <span className="boot-label">&gt; {label}</span>
+                <span className="boot-dots" />
+                <span className={`boot-status${status === "FALLBACK" ? " is-warn" : ""}`}>[{status}]</span>
+              </motion.li>
+            ))}
+          </motion.ol>
+
+          <div className="boot-meta u-micro">
+            <p className="boot-granted">
+              {granted ? (
+                <Typewriter
+                  text="> Operator recognised. Welcome, engineer."
+                  cps={60}
+                  caret
+                  onDone={() => {
+                    holdTimer.current = setTimeout(finish, 420);
+                  }}
+                />
+              ) : (
+                " "
+              )}
+            </p>
+            <p className="boot-skip">{isTouch ? "Tap anywhere to skip" : "Press any key to skip"}</p>
+          </div>
+
+          <div className="boot-progress">
+            <span className="boot-progress-label u-micro">Loading</span>
+            <div className="boot-segments">
+              {Array.from({ length: SEGMENTS }, (_, i) => (
+                <span key={i} className={i < segments ? "is-on" : undefined} />
+              ))}
+            </div>
+            <motion.span className="boot-percent">{percent}</motion.span>
+          </div>
+        </div>
+
+        <span className="boot-edge" />
+      </motion.div>
+    </MotionConfig>
   );
 }
