@@ -249,9 +249,10 @@
 }
 
 .hero-highlight dd {
-  font: 900 clamp(1rem, 0.85rem + 0.45vw, 1.25rem) / 1 var(--font-grotesk);
-  font-variation-settings: "wdth" var(--wdth-wide);
+  font: 900 clamp(0.9375rem, 0.7rem + 0.5vw, 1.25rem) / 1.05 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-normal);
   text-transform: uppercase;
+  overflow-wrap: anywhere; /* a long single word (JPMORGANCHASE) wraps inside its cell */
 }
 
 /* ---------- section index + "What I'm doing" ---------- */
