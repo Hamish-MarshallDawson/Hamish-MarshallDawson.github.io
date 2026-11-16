@@ -9,7 +9,7 @@ const pad = (n) => String(n).padStart(2, "0");
 const TICKS = [
   { sym: "DISS", val: "89/100", dir: "up", note: "final grade" },
   { sym: "HCI", val: "2026", dir: "up", note: "accepted for publication" },
-  { sym: "VLM", val: "98%", dir: "up", note: "fault detection, 25 classes" },
+  { sym: "VLM", val: "AGENT", dir: "up", note: "fault detection at STMicroelectronics" },
   { sym: "VRAM", val: "<4GB", dir: "down", note: "fully local pipeline" },
   { sym: "STUDY", val: "N=12", dir: "flat", note: "latency × trust" },
   { sym: "EPSRC", val: "FUNDED", dir: "up", note: "continuation funding" },

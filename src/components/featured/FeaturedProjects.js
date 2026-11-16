@@ -155,7 +155,6 @@ export function FeaturedProjects({ projects }) {
         <h3 id="feat-title" className="feat-title">
           Featured builds
         </h3>
-        <p className="feat-note u-micro">Walkthroughs built into this page. No downloads, no network calls.</p>
       </div>
 
       <div className={carousel ? "feat-viewport" : undefined}>

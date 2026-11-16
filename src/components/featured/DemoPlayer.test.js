@@ -9,13 +9,13 @@ test("the labels follow the phase: play, pause, resume and replay", () => {
 });
 
 test("with FX off, the control steps through scenes, then returns to the picture", () => {
-  expect(controlLabels("idle", true, "TensoRoom").text).toBe("Play demo");
-  expect(controlLabels("playing", true, "TensoRoom")).toEqual({
+  expect(controlLabels("idle", true, "TensorRoom").text).toBe("Play demo");
+  expect(controlLabels("playing", true, "TensorRoom")).toEqual({
     text: "Next scene",
-    aria: "Next scene of the TensoRoom demo",
+    aria: "Next scene of the TensorRoom demo",
     glyph: "next",
   });
-  expect(controlLabels("ended", true, "TensoRoom").text).toBe("Play demo");
+  expect(controlLabels("ended", true, "TensorRoom").text).toBe("Play demo");
 });
 
 test("the last scene is held for two seconds", () => {

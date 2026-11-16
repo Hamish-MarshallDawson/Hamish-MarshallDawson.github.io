@@ -20,7 +20,7 @@ function buildUplinks(onRequestCv) {
     { id: "github", title: "GitHub", detail: "Source repositories", href: profile.github, Icon: GithubIcon, external: true },
     { id: "linkedin", title: "LinkedIn", detail: "Professional record", href: profile.linkedin, Icon: LinkedinIcon, external: true },
     profile.cv
-      ? { id: "cv", title: "CV", detail: "Download PDF", href: profile.cv, Icon: CvIcon, download: true }
+      ? { id: "cv", title: "CV", detail: "PDF", href: profile.cv, Icon: CvIcon, download: true }
       : { id: "cv", title: "CV", detail: "On request", href: "#reach-out", Icon: CvIcon, onActivate: onRequestCv },
   ];
 }

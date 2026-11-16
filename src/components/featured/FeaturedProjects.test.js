@@ -57,7 +57,7 @@ const projects = [
   },
   {
     id: "beta",
-    name: "TensoRoom",
+    name: "TensorRoom",
     category: "Photos",
     categories: ["photos"],
     tags: ["Python"],
@@ -104,7 +104,7 @@ const flush = () => act(async () => {
 // Cards and cells. A cell is the grid item (li) that holds a card and, while a demo covers it, the panel.
 const card = (name) => screen.getByRole("article", { name });
 const local = () => card("LocalMind");
-const room = () => card("TensoRoom");
+const room = () => card("TensorRoom");
 const cell = (id) => {
   // eslint-disable-next-line testing-library/no-node-access
   return document.querySelector(`li[data-id="${id}"]`);
@@ -313,18 +313,18 @@ test("only one demo plays at a time: the panel moves to the other card, and the 
   await startLocal();
   act(() => jest.advanceTimersByTime(1000));
 
-  fireEvent.click(playCard("TensoRoom"));
+  fireEvent.click(playCard("TensorRoom"));
   await flush();
 
-  // TensoRoom is playing, over LocalMind's cell now (the card beside it); LocalMind's own panel is gone.
+  // TensorRoom is playing, over LocalMind's cell now (the card beside it); LocalMind's own panel is gone.
   expect(screen.queryByRole("region", { name: "LocalMind demo" })).toBeNull();
-  expect(within(cell("alpha")).getByRole("region", { name: "TensoRoom demo" })).toBe(panel("TensoRoom"));
+  expect(within(cell("alpha")).getByRole("region", { name: "TensorRoom demo" })).toBe(panel("TensorRoom"));
   expect(local()).toHaveAttribute("inert");
   expect(room()).not.toHaveAttribute("inert");
   expect(playCard("LocalMind")).toBeInTheDocument();
   expect(within(local()).getByRole("button", { name: "Play demo for LocalMind" })).toBeInTheDocument();
-  expect(captionText(panel("TensoRoom"))).toBe("Room one");
-  expect(demoOf(panel("TensoRoom"), "room-demo")).toHaveAttribute("data-playing", "true");
+  expect(captionText(panel("TensorRoom"))).toBe("Room one");
+  expect(demoOf(panel("TensorRoom"), "room-demo")).toHaveAttribute("data-playing", "true");
 });
 
 test("a demo with no partner card covers its own card, even on a wide screen", async () => {
@@ -477,14 +477,14 @@ test("previous from the first pair skips to the end", async () => {
 test("in the carousel a demo covers the visible partner, and changing slide closes it", async () => {
   await renderFeatured(three);
   fireEvent.click(screen.getByRole("button", { name: "Next projects" }));
-  fireEvent.click(playCard("TensoRoom"));
+  fireEvent.click(playCard("TensorRoom"));
   await flush();
-  // The visible pair is TensoRoom and Gyminit, so the panel sits over Gyminit.
-  expect(within(cell("gamma")).getByRole("region", { name: "TensoRoom demo" })).toBe(panel("TensoRoom"));
+  // The visible pair is TensorRoom and Gyminit, so the panel sits over Gyminit.
+  expect(within(cell("gamma")).getByRole("region", { name: "TensorRoom demo" })).toBe(panel("TensorRoom"));
 
   fireEvent.click(screen.getByRole("button", { name: "Previous projects" }));
-  expect(shownOf(panel("TensoRoom"))).toBe("false");
-  expect(playCard("TensoRoom")).toHaveTextContent("Play demo");
+  expect(shownOf(panel("TensorRoom"))).toBe("false");
+  expect(playCard("TensorRoom")).toHaveTextContent("Play demo");
 });
 
 test("the carousel nav sits under the cards", async () => {

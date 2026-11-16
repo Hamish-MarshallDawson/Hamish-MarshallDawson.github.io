@@ -25,10 +25,9 @@ export const profile = {
   // If the file is missing the hero draws a generated wireframe instead.
   coreImage: `${process.env.PUBLIC_URL}/optimized/image_2a10f9.jpg`,
   coreAlt: "Hamish in a rust corduroy jacket, sitting on the steps under the National Robotarium sign",
-  // Point this at a PDF in /public (e.g. `${process.env.PUBLIC_URL}/cv.pdf`)
-  // to make the CV controls download it. While it's null they open the Red
-  // Wall with a CV request instead, so there is never a dead link.
-  cv: null,
+  // Every CV control opens this PDF. Set it to null to fall back to a CV
+  // request in Let's talk instead.
+  cv: `${process.env.PUBLIC_URL}/cv.pdf`,
 };
 
 // Categories filter the vault; each is also a route (#vault/robotics). They
@@ -73,14 +72,14 @@ export const vaultProjects = [
     name: "Poseidon",
     category: "HackTheBurgh · Team lead · Nov 2026",
     description:
-      "Live ship tracking that flags ships going quiet while other ships in the same area keep reporting. It merges AISStream's worldwide feed with Digitraffic's Finnish one, so a ship heard twice is stored once, and gives an analyst a short list of candidates, a risk order for each ship with its reasons, a replay and a shared team workspace. A flag is a prompt to review, not an accusation. A route model trained on Danish Maritime Authority AIS estimates up to 24 hours ahead with 80% and 95% circles, and the go-dark ranking is weak and labelled so. Built at HackTheBurgh by four people, each directing a coding agent in one repository; I was team lead.",
+      "Live ship tracking that flags ships going quiet while other ships in the same area keep reporting. It merges AISStream's worldwide feed with Digitraffic's Finnish one, so a ship heard twice is stored once, and gives an analyst a short list of candidates, a risk order for each ship with its reasons, a replay and a shared team workspace. A flag is a prompt to review, not an accusation. A route model trained on Danish Maritime Authority AIS estimates up to 24 hours ahead with 80% and 95% circles, and the go-dark ranking is weak and labelled so. I led the team of four at HackTheBurgh; each of us directed a coding agent in one repository.",
     url: "https://github.com/Hamish-MarshallDawson/Poseidon",
-    tags: ["React", "MapLibre", "Python", "TimescaleDB", "LightGBM", "Coding agents"],
+    tags: ["React", "MapLibre", "Python", "TimescaleDB", "LightGBM"],
     categories: ["ml"],
     featured: {
       pitch: "Watches live ship tracking and flags ships that go quiet while others in the same area keep reporting. A flag is a prompt to review, not an accusation.",
       facts: [
-        "Team lead of four, each directing a coding agent in one repo",
+        "Team lead of four, from brief to working demo in 24 hours",
         "One evening replayed: 2,326 gaps, 654 candidates, 1,097 coverage gaps",
         "Go-dark ranking is weak and labelled so: AUC 0.59 at 1 h, 0.63 at 6 h",
       ],
@@ -138,7 +137,7 @@ export const vaultProjects = [
   {
     id: "tensoroom",
     repo: "TensorRoom",
-    name: "TensoRoom",
+    name: "TensorRoom",
     category: "Collaborative · 2026 – ongoing",
     description:
       "Redesign a real room by describing it. Diffusion, segmentation, and language models wired into one pipeline that edits the space you point it at, in real time.",
@@ -162,7 +161,7 @@ export const vaultProjects = [
       demo: "tensoroom",
     },
     image: img("tensoroom.png"),
-    alt: "TensoRoom logo, a wireframe cube",
+    alt: "TensorRoom logo, a wireframe cube",
     fit: "contain",
   },
   {
@@ -170,7 +169,7 @@ export const vaultProjects = [
     name: "Gyminit",
     category: "Personal · 2026",
     description:
-      "A free, ad-free gym tracker I built for a small group of friends. It installs on a phone like an app and logs strength and cardio quickly, even with no signal. Your data lives on the phone; signing in with an emailed code adds an optional cloud backup. It was also a practice in multi-agent orchestration: a team of AI coding agents built it.",
+      "A free, ad-free gym tracker I built for a small group of friends. It installs on a phone like an app and logs strength and cardio quickly, even with no signal. I designed it offline-first, so your data lives on the phone; signing in with an emailed code adds an optional cloud backup. I also used it to practise multi-agent orchestration, directing a team of AI coding agents through the build.",
     url: "https://gyminit.hamishmdawson.workers.dev",
     tags: ["React", "TypeScript", "PWA", "Offline-first", "Supabase", "Cloudflare Workers"],
     categories: ["performance"],
@@ -178,7 +177,7 @@ export const vaultProjects = [
       pitch: "A free, ad-free gym tracker for my friends that installs on a phone and logs a workout even with no signal. Signed out, nothing leaves the device.",
       facts: [
         "Data lives on the phone; sign in with an emailed code to back it up",
-        "A practice in multi-agent orchestration for a traditional serverless web app",
+        "Offline-first PWA on React, TypeScript and Cloudflare Workers",
         "260+ unit tests, plus end-to-end checks at phone sizes",
       ],
       demo: "gyminit",
@@ -288,10 +287,11 @@ export const experience = [
     ends: "2026-12",
     location: "Edinburgh",
     points: [
-      "Delivered a vision-language-model fault detection pipeline that reached 98% accuracy across 25 fault classes, up from 23% at the start of the placement — turning current research into a working agentic system that names unseen faults and routes known ones into existing classifications.",
-      "Made a previously unmeasurable AI pipeline testable, with every result reproducible, by building fixed train/test splits and Bayesian-optimised parameter selection into the evaluation before tuning the model.",
-      "Took GitHub Copilot beyond the software teams — 8 senior engineers from other disciplines adopted it — by co-delivering a session on its strengths, failure cases and the AGENTS.md and SKILLS.md conventions.",
-      "Explained LoRA, context windows, VRAM limits, quantisation and RAG in practical terms so non-specialist colleagues could make informed decisions on generative AI, which led to invitations to run wider team reviews.",
+      "Built an agentic vision-language-model pipeline that names unseen faults and routes known ones into existing classes, using CLIP with LoRA adapters.",
+      "Made its results testable and reproducible with fixed train/test splits and Bayesian-optimised parameter selection.",
+      "Took it from research prototype to a deployed service on Azure.",
+      "Set the AGENTS.md and SKILLS.md conventions for the GitHub Copilot rollout and co-delivered sessions for engineers outside the software teams.",
+      "Explained LoRA, quantisation, context windows and RAG in practical terms for non-specialist colleagues.",
     ],
   },
   {
@@ -393,39 +393,42 @@ export const education = [
 ];
 
 // Quick-scan facts from the CV for the hero's ruled strip. Every page load
-// shows a different five (see pickHighlights), so keep each one true and
-// short enough for a fifth of the row.
+// shows a different five (see pickHighlights), drawn by `weight`: the four
+// anchors (weight 100) nearly always show, the rest share the fifth slot and
+// niche ones (weight 1) turn up only now and then. Keep each one true and
+// short enough for a fifth of the row, and keep STMicroelectronics figure-free.
 export const highlights = [
-  { key: "Degree", value: "On track for a First" },
-  { key: "University Prize", value: "Top grade in my year" },
-  { key: "Publication", value: "British HCI 2026" },
-  { key: "Dissertation", value: "89/100" },
-  { key: "Code for Good", value: "JPMorganChase · Oct 2026" },
-  { key: "Fault detection", value: "98% across 25 classes" },
-  { key: "Accuracy lift", value: "23% → 98%" },
-  { key: "Copilot rollout", value: "8 senior engineers" },
-  { key: "User study", value: "12 participants" },
-  { key: "EPSRC showcase", value: "Funding continued" },
-  { key: "Racing team", value: "15+ partnerships" },
-  { key: "Team lead", value: "8 engineers shipped" },
-  { key: "Local pipeline", value: "Under 4GB of VRAM" },
-  { key: "Class rep", value: "Rep of the Year" },
-  { key: "LocalMind", value: "Wakes on request" },
-  { key: "Judo", value: "Brown belt" },
-  { key: "Alford Academy", value: "Head Prefect" },
-  { key: "Garioch Judo", value: "4 years volunteering" },
-  { key: "Photography", value: "10+ years" },
-  { key: "PC builds", value: "5+ and counting" },
+  { key: "Fault detection", value: "VLM pipeline · STMicro", weight: 100 },
+  { key: "Publication", value: "British HCI 2026", weight: 100 },
+  { key: "Dissertation", value: "89/100", weight: 100 },
+  { key: "University Prize", value: "Top grade in my year", weight: 100 },
+  { key: "Degree", value: "On track for a First", weight: 4 },
+  { key: "Code for Good", value: "JPMorganChase · Oct 2026", weight: 4 },
+  { key: "HackTheBurgh", value: "Team lead · Nov 2026", weight: 4 },
+  { key: "User study", value: "12 participants", weight: 3 },
+  { key: "EPSRC showcase", value: "Funding continued", weight: 3 },
+  { key: "Team lead", value: "8 engineers shipped", weight: 3 },
+  { key: "Local pipeline", value: "Under 4GB of VRAM", weight: 3 },
+  { key: "Racing team", value: "15+ partnerships", weight: 2 },
+  { key: "Class rep", value: "Rep of the Year", weight: 2 },
+  { key: "LocalMind", value: "Wakes on request", weight: 2 },
+  { key: "Judo", value: "Brown belt", weight: 1 },
+  { key: "Alford Academy", value: "Head Prefect", weight: 1 },
+  { key: "Garioch Judo", value: "4 years volunteering", weight: 1 },
+  { key: "Photography", value: "10+ years", weight: 1 },
+  { key: "PC builds", value: "5+ and counting", weight: 1 },
 ];
 
-// A fresh random `count` of the highlights (Fisher–Yates on a copy).
-export function pickHighlights(count = 5, pool = highlights) {
-  const deck = [...pool];
-  for (let i = deck.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
-  return deck.slice(0, count);
+// `count` highlights drawn without replacement, each with odds set by its
+// weight (Efraimidis–Spirakis: highest random^(1/weight) wins), shown in data
+// order so the anchors keep their places.
+export function pickHighlights(count = 5, pool = highlights, random = Math.random) {
+  return pool
+    .map((item, i) => ({ item, i, key: random() ** (1 / (item.weight ?? 1)) }))
+    .sort((a, b) => b.key - a.key)
+    .slice(0, count)
+    .sort((a, b) => a.i - b.i)
+    .map(({ item }) => item);
 }
 
 // The toolkit ledger under the work log.
