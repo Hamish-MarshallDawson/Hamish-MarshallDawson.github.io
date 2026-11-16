@@ -27,13 +27,17 @@ function writeCache(repos) {
 // first; this only fills in repo links and readouts when it arrives. Failing
 // (rate limit, offline) just leaves those readouts out — the unauthenticated
 // API allows 60 requests an hour, hence the session cache.
+// One request per page load, shared, so a remount (or React's dev double effect) does not ask twice.
+let pending = null;
+
 export function useRepoTelemetry(username) {
   const [repos, setRepos] = useState(readCache);
 
   useEffect(() => {
     if (repos) return;
     let cancelled = false;
-    fetchUserRepos(username)
+    pending ??= fetchUserRepos(username);
+    pending
       .then((data) => {
         const byName = Object.fromEntries(
           data.map(formatRepoData).map((repo) => [repo.name.toLowerCase(), repo])

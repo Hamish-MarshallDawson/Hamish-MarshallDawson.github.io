@@ -11,24 +11,18 @@ const GITHUB_API_BASE = "https://api.github.com";
  * @returns {Promise<Array>} - Array of repository objects
  */
 export const fetchUserRepos = async (username) => {
-  try {
-    const response = await fetch(
-      `${GITHUB_API_BASE}/users/${username}/repos?sort=updated&per_page=100`
-    );
-
-    if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`);
-    }
-
-    // Filter out forks if you only want original repos
-    // return repos.filter(repo => !repo.fork);
-
-    // sort=updated already returns the most recent first.
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching GitHub repos:", error);
-    throw error;
+  // Asking for the rate limit is free and never fails with 403, so a spent quota (60 an hour per IP,
+  // easily used up on a shared network) skips the call instead of logging a failed request.
+  const limit = await fetch(`${GITHUB_API_BASE}/rate_limit`);
+  if (limit.ok) {
+    const { resources } = await limit.json();
+    if (resources?.core?.remaining === 0) throw new Error("GitHub API rate limit reached");
   }
+
+  const response = await fetch(`${GITHUB_API_BASE}/users/${username}/repos?sort=updated&per_page=100`);
+  if (!response.ok) throw new Error(`GitHub API error: ${response.status}`);
+  // sort=updated already returns the most recent first.
+  return response.json();
 };
 
 /**

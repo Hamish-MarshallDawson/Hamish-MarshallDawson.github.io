@@ -110,7 +110,7 @@ export function AIResearchVault() {
     <section id="vault" className="section vault surface-paper" data-category={category} aria-labelledby="vault-title">
       <div className="section-inner">
         <SectionHeader
-          index="01"
+          index="02"
           kicker="Project vault"
           title="Things I've built."
           titleId="vault-title"
