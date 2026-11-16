@@ -33,18 +33,23 @@ test("renders the operator's name as the page heading", () => {
   expect(screen.getByRole("heading", { level: 2, name: "Things I've built." })).toBeInTheDocument();
 });
 
-test("vault lists every project until a category filters it", () => {
+test("the vault grid lists only the projects that are not featured, until a category filters it", () => {
   render(<App />);
-  expect(slotNames()).toHaveLength(vaultProjects.length);
+  const rest = vaultProjects.filter((p) => !p.featured);
+  expect(slotNames()).toHaveLength(rest.length);
+  vaultProjects.filter((p) => p.featured).forEach((p) => expect(slotNames().join("|")).not.toContain(p.name));
+  expect(screen.getByRole("tab", { name: /^all/i })).toHaveTextContent(String(rest.length).padStart(2, "0"));
+  expect(screen.queryByText(/slots/)).toBeNull();
+  expect(screen.getByText(`${vaultProjects.length} files · 6 featured`)).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole("tab", { name: /robotics/i }));
 
-  const robotics = vaultProjects.filter((p) => p.categories.includes("robotics"));
+  const robotics = rest.filter((p) => p.categories.includes("robotics"));
   expect(screen.getByRole("tab", { name: /robotics/i })).toHaveAttribute("aria-selected", "true");
   expect(window.location.hash).toBe("#vault/robotics");
   // Exiting slots animate out, so check the survivors rather than the count.
   robotics.forEach((project) => {
-    expect(screen.getByRole("button", { name: new RegExp(`^${project.name}\\.`) })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: new RegExp(`^${project.name}\.`) })).toBeInTheDocument();
   });
 });
 
@@ -59,11 +64,11 @@ test("arrow keys move between category tabs", () => {
   expect(research).toHaveFocus();
 });
 
-test("LocalMind is in the vault with its LM mark as the plate", () => {
+test("LocalMind's featured card shows its LM mark as the plate", () => {
   render(<App />);
-  const slot = screen.getByRole("button", { name: /^LocalMind\./ });
-  expect(slot.querySelector("svg.schematic")).toBeNull();
-  expect(slot.querySelector("img")).toHaveAttribute("src", expect.stringContaining("localmind.svg"));
+  const card = screen.getByRole("article", { name: "LocalMind" });
+  expect(card.querySelector("svg.schematic")).toBeNull(); // eslint-disable-line testing-library/no-node-access
+  expect(card.querySelector("img")).toHaveAttribute("src", expect.stringContaining("localmind.svg")); // eslint-disable-line testing-library/no-node-access
 });
 
 test("no Marathon faction names are left anywhere on the page", () => {
@@ -71,14 +76,10 @@ test("no Marathon faction names are left anywhere on the page", () => {
   expect(document.body.textContent).not.toMatch(/cyberacme|traxus|\bmida\b|arachne|uesc/i);
 });
 
-test("selecting a vault slot loads it into the inspector", () => {
+test("a vault card opens its dossier", () => {
   render(<App />);
-  const inspector = document.getElementById("vault-inspector");
-  expect(within(inspector).getByRole("heading", { level: 3 })).toHaveTextContent(vaultProjects[0].name);
-
-  fireEvent.click(screen.getByRole("button", { name: /^TensorRoom./ }));
-
-  expect(screen.getByRole("button", { name: /^TensorRoom./ })).toHaveAttribute("aria-pressed", "true");
+  fireEvent.click(screen.getByRole("button", { name: /^Iteration Inc\./ }));
+  expect(screen.getByRole("dialog")).toHaveTextContent("Iteration Inc");
 });
 
 test("contact form refuses an incomplete message", () => {
@@ -371,35 +372,31 @@ test("the featured block shows Poseidon, LocalMind, TensorRoom, Gyminit, Code fo
   expect(within(cards[4]).getByRole("link", { name: /^Visit charity/ })).toHaveAttribute("href", "https://westlothian50plusnetwork.co.uk/");
 });
 
-test("Play demo plays LocalMind's scenes in its own picture box, with no stage", async () => {
+test("Play demo opens LocalMind on the stage beside its info panel", async () => {
   render(<App />);
   const card = screen.getByRole("article", { name: "LocalMind" });
   fireEvent.click(within(card).getByRole("button", { name: "Play demo for LocalMind" }));
 
   expect(await screen.findByText(lmScenes[0].caption)).toBeInTheDocument();
-  expect(within(card).getByRole("button", { name: "Pause the LocalMind demo" })).toBeInTheDocument();
-  expect(screen.queryByRole("region", { name: /^Demo · / })).toBeNull();
-  expect(screen.queryByRole("group", { name: "Walkthrough navigation" })).toBeNull();
+  const stage = screen.getByRole("region", { name: "LocalMind demo" });
+  expect(within(stage).getByRole("button", { name: "Pause the LocalMind demo" })).toBeInTheDocument();
+  expect(screen.getByRole("list", { name: /other builds/i })).toBeInTheDocument();
 });
 
-test("the round control and the card's button both pause and play the demo", async () => {
+test("Full file on the playing panel opens the project's dossier", async () => {
   render(<App />);
-  const card = screen.getByRole("article", { name: "LocalMind" });
-  fireEvent.click(within(card).getByRole("button", { name: "Play demo for LocalMind" }));
+  fireEvent.click(screen.getByRole("button", { name: "Play demo for LocalMind" }));
   await screen.findByText(lmScenes[0].caption);
-
-  fireEvent.click(within(card).getByRole("button", { name: "Pause the LocalMind demo" }));
-  expect(within(card).getByRole("button", { name: "Play demo for LocalMind" })).toBeInTheDocument();
-  expect(within(card).getByRole("button", { name: "Play the LocalMind demo" })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: /^Full file/ }));
+  expect(screen.getByRole("dialog")).toHaveTextContent("LocalMind");
 });
 
 test("with FX off the round control steps through the scenes by hand", async () => {
   localStorage.setItem("hmd:fx", "off");
   render(<App />);
-  const card = screen.getByRole("article", { name: "LocalMind" });
-  fireEvent.click(within(card).getByRole("button", { name: "Play demo for LocalMind" }));
+  fireEvent.click(screen.getByRole("button", { name: "Play demo for LocalMind" }));
 
   expect(await screen.findByText(lmScenes[0].caption)).toBeInTheDocument();
-  fireEvent.click(within(card).getByRole("button", { name: "Next scene of the LocalMind demo" }));
+  fireEvent.click(screen.getByRole("button", { name: "Next scene of the LocalMind demo" }));
   expect(screen.getByText(lmScenes[1].caption)).toBeInTheDocument();
 });

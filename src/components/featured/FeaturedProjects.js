@@ -1,9 +1,8 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { MotionConfigContext, useReducedMotionConfig } from "framer-motion";
-import { DemoPanel, RoundControl, controlLabels } from "./DemoPlayer";
-import { ArrowIcon, ExternalIcon } from "../shared/Icons";
+import { LayoutGroup, MotionConfigContext, motion, useReducedMotionConfig } from "framer-motion";
+import { DemoPanel } from "./DemoPlayer";
+import { ExternalIcon } from "../shared/Icons";
 import { ProjectMedia } from "../vault/ProjectMedia";
-import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { pad } from "./format";
 import "./Featured.css";
 
@@ -20,33 +19,37 @@ export const DEMOS = {
 };
 
 const NO_SCENES = [];
+const COLUMNS = 3;
 
 const repoLabel = (url) => (url.includes("github.com") ? "Repo" : "Visit");
 
-// The card that a demo covers on a wide screen: the other card of the visible pair (start and the
-// card after it, wrapping round). With a lone card it is the card itself.
-const partnerIndex = (index, start, total) => (index === start ? (start + 1) % total : start);
+// Where the playing layout puts the info panel, from the column of the card that was pressed: the
+// stage takes the other two columns. A right-column card keeps its place and the stage opens to its
+// left; a left-column card keeps its place and the stage opens to its right; a middle-column card has
+// no two free columns on either side, so its panel slides one column left.
+export const sideFor = (index) => (index % COLUMNS === COLUMNS - 1 ? "right" : "left");
 
-// The featured block at the top of the vault: the polished builds, each with a
-// pitch, three facts and a demo. One demo plays at a time. It covers a card's whole
-// box: the card beside it on a wide screen, or its own card on a narrow one. Its close
-// button (X) puts the covered card back.
-export function FeaturedProjects({ projects }) {
-  const wide = useMediaQuery("(min-width: 900px)");
+// The featured block at the top of the vault: the six builds as a 3 x 2 grid of cards. Pressing Play
+// grows that card into a two-row info panel and opens the demo stage on the other two columns, both
+// rows. The other five shrink to an "Other builds" strip under it, each able to swap the demo in.
+// X or Esc goes back to the grid, with focus on the card's Play button. The block keeps the grid's
+// height while a demo plays, so nothing below it moves.
+export function FeaturedProjects({ projects, onOpenFile }) {
   // The demos go still only with FX off (MotionConfig "always"), not with the OS setting, which
-  // power-saving modes switch on. The carousel slide follows both.
+  // power-saving modes switch on. The expansion itself follows both: it cuts straight to the stage.
   const reduce = useContext(MotionConfigContext).reducedMotion === "always";
   const calm = useReducedMotionConfig();
-  // The one run: which card it started from, its phase, its scene, and a key that changes per run.
-  // Phases: "playing", "paused", "ended" (held on the last scene, then the panel fades out) and "idle" (closed).
+  // The one run: which project, its phase, its scene, and a key that changes per run.
+  // Phases: "playing", "paused", "ended" (held on the last scene) and "idle" (closed).
   const [run, setRun] = useState(null);
   // Loaded demo modules, keyed by the demo's name.
   const [mods, setMods] = useState({});
-  // The first visible card of the pair on a wide screen. More than two projects make a carousel,
-  // which wraps round: before the first pair comes the last card beside the first.
-  const [from, setFrom] = useState(0);
+  // The grid's height when the stage opened, which the playing layout keeps.
+  const [lock, setLock] = useState(null);
+  const grid = useRef(null);
+  const playMain = useRef(null);
   const buttons = useRef({});
-  const track = useRef(null);
+  const lastId = useRef(null);
 
   // A `featured.demo` that is not in DEMOS shows no button; say so in dev.
   useEffect(() => {
@@ -57,21 +60,13 @@ export function FeaturedProjects({ projects }) {
     });
   }, [projects]);
 
-  const carousel = wide && projects.length > 2;
-  const first = carousel ? from % projects.length : 0;
-  const second = carousel ? (first + 1) % projects.length : 1;
-  const visible = (index) => !carousel || index === first || index === second;
   const runIndex = run ? projects.findIndex((project) => project.id === run.id) : -1;
-  const runProject = runIndex >= 0 ? projects[runIndex] : null;
-  const runId = runProject?.id ?? null;
-  const showing = Boolean(runProject) && (run.phase === "playing" || run.phase === "paused");
-  // The card the panel sits over: its own card when narrow, its partner when wide.
-  const hostId = runProject ? projects[wide ? partnerIndex(runIndex, carousel ? first : runIndex - (runIndex % 2), projects.length) : runIndex].id : null;
-  const covered = showing ? hostId : null;
+  const open = runIndex >= 0 && run.phase !== "idle";
+  const runProject = open ? projects[runIndex] : null;
   const runDemo = runProject?.featured.demo;
   const runScenes = (runDemo && mods[runDemo]?.scenes) || NO_SCENES;
 
-  // Fetches a demo's module once. A failed fetch leaves its card on the picture.
+  // Fetches a demo's module once. A failed fetch closes the stage again.
   const preload = useCallback(
     (project) => {
       const key = project.featured?.demo;
@@ -84,18 +79,15 @@ export function FeaturedProjects({ projects }) {
     [mods],
   );
 
+  // Starts (or swaps to) a project's demo from its first scene.
   const start = (project) => {
     preload(project);
+    if (!open && grid.current) setLock(grid.current.offsetHeight);
+    lastId.current = project.id;
     setRun((prev) => ({ id: project.id, phase: "playing", scene: 0, runKey: (prev?.runKey ?? 0) + 1 }));
   };
 
-  // With reduced motion, a press steps to the next scene; after the last, the panel goes.
-  const advance = (project) => {
-    const count = (mods[project.featured.demo]?.scenes ?? NO_SCENES).length;
-    setRun((r) => (r.scene < count - 1 ? { ...r, scene: r.scene + 1 } : { ...r, phase: "ended" }));
-  };
-
-  // The card's button, the round control on the card and the one in the panel all call this.
+  // The round control: play, pause or replay; with FX off a press steps to the next scene.
   const press = (project) => {
     const phase = run?.id === project.id ? run.phase : "idle";
     if (phase === "idle" || phase === "ended") {
@@ -103,88 +95,80 @@ export function FeaturedProjects({ projects }) {
       return;
     }
     if (reduce) {
-      if (phase === "playing") advance(project);
+      const count = (mods[project.featured.demo]?.scenes ?? NO_SCENES).length;
+      setRun((r) => (r.scene < count - 1 ? { ...r, scene: r.scene + 1 } : { ...r, phase: "ended" }));
       return;
     }
     setRun((r) => ({ ...r, phase: r.phase === "playing" ? "paused" : "playing" }));
   };
 
   const close = useCallback(() => setRun((r) => (r ? { ...r, phase: "idle" } : r)), []);
-  // `step` is -1 or 1. The cards are reordered, so the track slides in from that side instead of moving.
-  const slide = (step) => {
-    setFrom((first + step + projects.length) % projects.length);
-    close();
-    if (!calm) {
-      track.current?.animate?.([{ transform: `translateX(${step * 12}%)`, opacity: 0 }, { transform: "none", opacity: 1 }], {
-        duration: 260,
-        easing: "cubic-bezier(0.2, 0, 0, 1)",
-      });
-    }
-  };
   const onScene = useCallback((scene) => setRun((r) => (r ? { ...r, scene } : r)), []);
   const onEnd = useCallback(() => setRun((r) => (r ? { ...r, phase: "ended" } : r)), []);
 
-  // Escape closes the panel while focus is in it, or on the card it started from.
+  // Esc closes the stage, unless a dialog (a dossier, the Index menu) is the one being closed.
   useEffect(() => {
-    if (!showing) return undefined;
+    if (!open) return undefined;
     const onKey = (event) => {
-      if (event.key !== "Escape") return;
-      const cell = document.activeElement?.closest?.(".feat-cell");
-      if (cell && (cell.dataset.id === runId || cell.dataset.id === hostId)) close();
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      if (document.activeElement?.closest?.('[role="dialog"]')) return;
+      close();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [showing, runId, hostId, close]);
+  }, [open, close]);
 
-  // When the panel closes or ends with focus in it, focus goes back to the card's Play button.
+  // On opening, the stage scrolls to just under the top bar, so all of it is on screen above the status strip.
   useEffect(() => {
-    if (showing || !runId) return;
-    if (document.activeElement?.closest?.(".fdemo-overlay")) buttons.current[runId]?.focus({ preventScroll: true });
-  }, [showing, runId]);
+    // Instant: a smooth scroll is cancelled by the layout settling under it.
+    if (open) playMain.current?.scrollIntoView?.({ block: "start", behavior: "instant" });
+  }, [open]);
 
-  // The panel moved (the screen crossed 900px) and took focus with it: focus its card's button.
+  // Back on the grid, focus returns to the Play button of the card that was playing.
   useEffect(() => {
-    if (showing && document.activeElement === document.body) buttons.current[runId]?.focus({ preventScroll: true });
-  }, [wide, showing, runId]);
+    if (open || !lastId.current) return;
+    buttons.current[lastId.current]?.focus(); // scrolls the card back into view if the grid moved it off screen
+    lastId.current = null;
+  }, [open]);
 
   if (!projects.length) return null;
 
+  const morph = calm ? { duration: 0 } : { duration: 0.24, ease: [0.2, 0, 0, 1] };
+
   return (
-    <section className="feat" aria-labelledby="feat-title" aria-roledescription={carousel ? "carousel" : undefined}>
+    <section className="feat" aria-labelledby="feat-title">
       <div className="feat-bar">
         <h3 id="feat-title" className="feat-title">
           Featured builds
         </h3>
+        {open && (
+          <p className="feat-now u-micro">
+            Now playing · {pad(runIndex + 1)} / {pad(projects.length)}
+          </p>
+        )}
       </div>
 
-      <div className={carousel ? "feat-viewport" : undefined}>
-      <ul className={`feat-grid${carousel ? " is-carousel" : ""}`} aria-label="Featured projects" ref={track}>
-        {projects.map((project, index) => {
-          const hosts = hostId === project.id && runProject;
-          return (
-            <li
-              key={project.id}
-              className="feat-cell"
-              data-id={project.id}
-              inert={visible(index) ? undefined : ""}
-              style={carousel ? { order: (index - first + projects.length) % projects.length } : undefined}
-            >
-              <FeaturedCard
-                project={project}
-                index={index}
-                total={projects.length}
-                phase={run?.id === project.id ? run.phase : "idle"}
-                reduce={reduce}
-                inert={covered === project.id}
-                buttonRef={(el) => {
-                  buttons.current[project.id] = el;
-                }}
-                onPress={() => press(project)}
-                onPreload={() => preload(project)}
+      <LayoutGroup id="feat">
+        {open ? (
+          <div className="feat-play" data-side={sideFor(runIndex)} style={lock ? { "--feat-lock": `${lock}px` } : undefined}>
+            <div className="feat-play-main" ref={playMain}>
+              <FeaturedInfo
+                project={runProject}
+                phase={run.phase}
+                scene={run.scene}
+                count={runScenes.length}
+                transition={morph}
+                onOpenFile={onOpenFile}
               />
-              {hosts && (
+              <motion.div
+                className="feat-stage"
+                initial={calm ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={calm ? { duration: 0 } : { duration: 0.24, delay: 0.12 }}
+              >
                 <DemoPanel
                   key={run.runKey}
+                  stage
                   Demo={mods[runDemo]?.default ?? null}
                   scenes={runScenes}
                   scene={run.scene}
@@ -192,76 +176,163 @@ export function FeaturedProjects({ projects }) {
                   reduce={reduce}
                   title={runProject.name}
                   runKey={run.runKey}
-                  focusClose={hostId === runId}
+                  focusClose
                   onPress={() => press(runProject)}
+                  onReplay={() => start(runProject)}
                   onClose={close}
                   onScene={onScene}
                   onEnd={onEnd}
                   onPreload={() => preload(runProject)}
                 />
-              )}
-            </li>
-          );
-        })}
-      </ul>
-      </div>
+              </motion.div>
+            </div>
 
-      {carousel && (
-        <div className="feat-nav" role="group" aria-label="Featured projects navigation">
-          <button type="button" className="btn btn--signal u-press feat-nav-prev" onClick={() => slide(-1)}>
-            <ArrowIcon direction="left" className="btn-glyph" />
-            Previous<span className="sr-only"> projects</span>
-          </button>
-          <span className="feat-pos u-micro" aria-live="polite">
-            {pad(first + 1)}–{pad(second + 1)} / {pad(projects.length)}
-          </span>
-          <button type="button" className="btn btn--signal u-press feat-nav-next" onClick={() => slide(1)}>
-            Next<span className="sr-only"> projects</span>
-            <ArrowIcon className="btn-glyph" />
-          </button>
-        </div>
-      )}
+            <div className="feat-others">
+              <p id="feat-others-title" className="feat-others-title u-micro">
+                Other builds · swap the demo
+              </p>
+              <ul className="feat-others-list" aria-labelledby="feat-others-title">
+                {projects
+                  .filter((project) => project.id !== runProject.id)
+                  .map((project) => (
+                    <li key={project.id}>
+                      <button
+                        type="button"
+                        className="feat-other u-press"
+                        onClick={() => start(project)}
+                        onMouseEnter={() => preload(project)}
+                        onFocus={() => preload(project)}
+                      >
+                        <span className={`feat-other-thumb${project.fit === "contain" ? " is-contain" : ""}`}>
+                          <ProjectMedia project={project} decorative lazy />
+                        </span>
+                        <span className="feat-other-name">
+                          <span className="sr-only">Play the demo of </span>
+                          {project.short ?? project.name}
+                        </span>
+                        <span className="feat-other-play" aria-hidden="true">
+                          ▶
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          </div>
+        ) : (
+          <ul className="feat-grid" aria-label="Featured projects" ref={grid}>
+            {projects.map((project) => (
+              <li key={project.id} className="feat-cell" data-id={project.id}>
+                <FeaturedCard
+                  project={project}
+                  transition={morph}
+                  buttonRef={(el) => {
+                    buttons.current[project.id] = el;
+                  }}
+                  onPlay={() => start(project)}
+                  onPreload={() => preload(project)}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </LayoutGroup>
     </section>
   );
 }
 
-// One card: its picture, its pitch and facts, and its Play button. The demo itself plays in a
-// panel over a card (see FeaturedProjects), so the picture box keeps its size.
-function FeaturedCard({ project, index, total, phase, reduce, inert, buttonRef, onPress, onPreload }) {
-  const { pitch, facts = [], demo } = project.featured;
+// The project's outbound links: its repo or site, and the charity it was built for.
+function ProjectLinks({ project }) {
+  return (
+    <>
+      {project.url && (
+        <a className="btn btn--paper u-press" href={project.url} target="_blank" rel="noopener noreferrer">
+          {repoLabel(project.url)}
+          <span className="sr-only"> (opens in a new tab)</span>
+          <ExternalIcon className="btn-glyph" />
+        </a>
+      )}
+      {project.charity && (
+        <a className="btn btn--paper u-press" href={project.charity.url} target="_blank" rel="noopener noreferrer">
+          Visit charity
+          <span className="sr-only"> (opens in a new tab)</span>
+          <ExternalIcon className="btn-glyph" />
+        </a>
+      )}
+    </>
+  );
+}
+
+// One card on the grid: picture, category, name, pitch, Play demo and its links. It shares a layout id
+// with the info panel, so pressing Play grows the card into the panel.
+function FeaturedCard({ project, transition, buttonRef, onPlay, onPreload }) {
+  const { pitch, demo } = project.featured;
   const hasDemo = Boolean(DEMOS[demo]);
-  const labels = controlLabels(phase, reduce, project.name);
 
   return (
-    <article
+    <motion.article
+      layoutId={`feat-${project.id}`}
+      transition={transition}
       className="feat-card surface-paper"
       aria-labelledby={`feat-${project.id}`}
       data-category={project.categories[0]}
-      inert={inert ? "" : undefined}
     >
-      <div className={`feat-media${project.fit === "contain" ? " is-contain" : ""}${hasDemo ? " has-demo" : ""}`}>
+      <div className={`feat-media${project.fit === "contain" ? " is-contain" : ""}`}>
         {/* The vault's own plate, decorative here: the heading names the project. */}
         <ProjectMedia project={project} decorative lazy />
-        {hasDemo && <RoundControl phase={phase} reduce={reduce} title={project.name} onPress={onPress} onPreload={onPreload} />}
       </div>
 
       <div className="feat-body">
-        <header className="feat-head">
-          <span className="feat-idx u-micro">Featured {pad(index + 1)}/{pad(total)}</span>
-          <p className="feat-cat u-micro">{project.category}</p>
-        </header>
-
+        <p className="feat-cat u-micro">{project.category}</p>
         <h4 id={`feat-${project.id}`} className="feat-name">
           {project.name}
         </h4>
         <p className="feat-pitch">{pitch}</p>
 
+        <div className="feat-actions">
+          {hasDemo && (
+            <button ref={buttonRef} type="button" className="btn btn--signal u-press" onClick={onPlay} onMouseEnter={onPreload} onFocus={onPreload}>
+              <span aria-hidden="true">▶</span> Play demo
+              <span className="sr-only"> for {project.name}</span>
+            </button>
+          )}
+          <ProjectLinks project={project} />
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+// The playing card, grown to two rows: more about the project beside its demo.
+function FeaturedInfo({ project, phase, scene, count, transition, onOpenFile }) {
+  const { pitch, facts = [] } = project.featured;
+  const state = { playing: "▶ Playing", paused: "❚❚ Paused", ended: "■ Ended" }[phase];
+  return (
+    <motion.article
+      layoutId={`feat-${project.id}`}
+      transition={transition}
+      className="feat-card feat-info surface-paper"
+      aria-labelledby={`feat-info-${project.id}`}
+    >
+      <div className={`feat-media${project.fit === "contain" ? " is-contain" : ""}`}>
+        <ProjectMedia project={project} decorative />
+      </div>
+      <div className="feat-body">
+        <p className="feat-cat u-micro">{project.category}</p>
+        <h4 id={`feat-info-${project.id}`} className="feat-name">
+          {project.name}
+        </h4>
+        <p className="feat-state u-micro">
+          {state}
+          {count ? ` · scene ${Math.min(scene, count - 1) + 1} / ${count}` : ""}
+        </p>
+        <p className="feat-pitch">{pitch}</p>
+        <p className="feat-desc">{project.description}</p>
         <ul className="feat-facts" aria-label="Key facts">
           {facts.map((fact) => (
             <li key={fact}>{fact}</li>
           ))}
         </ul>
-
         <ul className="chip-list feat-tags" aria-label="Stack">
           {project.tags.map((tag) => (
             <li key={tag} className="chip">
@@ -269,30 +340,15 @@ function FeaturedCard({ project, index, total, phase, reduce, inert, buttonRef, 
             </li>
           ))}
         </ul>
-
         <div className="feat-actions">
-          {hasDemo && (
-            <button ref={buttonRef} type="button" className="btn btn--signal u-press" onClick={onPress} onMouseEnter={onPreload} onFocus={onPreload}>
-              {labels.text}
-              <span className="sr-only"> for {project.name}</span>
+          <ProjectLinks project={project} />
+          {onOpenFile && (
+            <button type="button" className="btn btn--paper u-press" onClick={() => onOpenFile(project.id)}>
+              Full file +<span className="sr-only"> for {project.name}</span>
             </button>
-          )}
-          {project.url && (
-            <a className="btn btn--paper u-press" href={project.url} target="_blank" rel="noopener noreferrer">
-              {repoLabel(project.url)}
-              <span className="sr-only"> (opens in a new tab)</span>
-              <ExternalIcon className="btn-glyph" />
-            </a>
-          )}
-          {project.charity && (
-            <a className="btn btn--paper u-press" href={project.charity.url} target="_blank" rel="noopener noreferrer">
-              Visit charity
-              <span className="sr-only"> (opens in a new tab)</span>
-              <ExternalIcon className="btn-glyph" />
-            </a>
           )}
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }

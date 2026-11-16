@@ -22,7 +22,7 @@ const playLocalMind = async () => {
   const card = screen.getByRole("article", { name: "LocalMind" });
   fireEvent.click(within(card).getByRole("button", { name: "Play demo for LocalMind" }));
   await screen.findByText(lmScenes[0].caption);
-  return card;
+  return screen.getByRole("region", { name: "LocalMind demo" });
 };
 
 test("with reduced motion and FX on, the loading card still plays", () => {
@@ -39,8 +39,8 @@ test("with FX off, the loading card does not play", () => {
 test("with reduced motion and FX on, a demo plays on its own", async () => {
   sessionStorage.setItem("hmd:booted", "1");
   render(<App />);
-  const card = await playLocalMind();
-  expect(within(card).getByRole("button", { name: "Pause the LocalMind demo" })).toBeInTheDocument();
+  const stage = await playLocalMind();
+  expect(within(stage).getByRole("button", { name: "Pause the LocalMind demo" })).toBeInTheDocument();
   expect(screen.getByRole("region", { name: "LocalMind demo" })).not.toHaveAttribute("data-reduced");
 });
 
@@ -48,7 +48,7 @@ test("with FX off, a demo is stepped through by hand", async () => {
   sessionStorage.setItem("hmd:booted", "1");
   localStorage.setItem("hmd:fx", "off");
   render(<App />);
-  const card = await playLocalMind();
-  expect(within(card).getByRole("button", { name: "Next scene of the LocalMind demo" })).toBeInTheDocument();
+  const stage = await playLocalMind();
+  expect(within(stage).getByRole("button", { name: "Next scene of the LocalMind demo" })).toBeInTheDocument();
   expect(screen.getByRole("region", { name: "LocalMind demo" })).toHaveAttribute("data-reduced", "true");
 });

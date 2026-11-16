@@ -25,94 +25,23 @@
   text-transform: uppercase;
 }
 
-.feat-note {
+.feat-now {
+  color: var(--text-accent);
   letter-spacing: var(--tr-micro);
 }
 
-/* Cards in a row share its height (align-items: stretch), so their buttons sit level.
-   The demo panel is inset 0 in its cell, so it covers the whole card. */
+/* The grid: three columns of cards on a wide screen, rows sharing their height so buttons sit level. */
 .feat-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
-  gap: var(--space-6) var(--space-5);
+  gap: var(--space-6) var(--space-6);
   margin-top: var(--space-6);
 }
 
 @media (min-width: 900px) {
   .feat-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* The carousel (900px and up, more than two projects): the viewport shows two cards. The cards are
-   reordered (order) so the visible pair comes first, which lets the carousel wrap round. The padding
-   leaves room for the cards' offset shadow and hover lift, which the viewport would otherwise clip.
-   The nav sits under the cards on the category tabs' grid: Previous over "All", the position over the
-   middle tab, Next over the last. */
-.feat-nav {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: center;
-  margin-bottom: var(--space-6);
-}
-
-@media (min-width: 1280px) {
-  .feat-nav {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-}
-
-.feat-nav .btn {
-  width: calc(100% - var(--space-4));
-  min-height: 64px;
-  justify-content: center;
-  gap: var(--space-3);
-  font-size: 1rem;
-}
-
-.feat-nav-prev {
-  grid-column: 1;
-}
-
-.feat-nav-next {
-  grid-column: -2;
-  justify-self: end;
-}
-
-.feat-pos {
-  grid-column: 2;
-  text-align: center;
-  letter-spacing: var(--tr-micro);
-  font-size: 1.5rem;
-}
-
-@media (min-width: 1280px) {
-  .feat-pos {
-    grid-column: 3;
-  }
-}
-
-.feat-viewport {
-  overflow: hidden;
-  margin: 0 calc(var(--space-5) * -1);
-  padding: var(--space-6) var(--space-5) var(--space-5);
-}
-
-@media (min-width: 900px) {
-  .feat-grid.is-carousel {
-    display: flex;
-    gap: var(--space-5);
-    margin-top: 0;
-  }
-
-  .feat-grid.is-carousel .feat-cell {
-    flex: 0 0 calc((100% - var(--space-5)) / 2);
-  }
-
-  /* Cards out of view are hidden, so their offset shadow does not show in the viewport's padding. */
-  .feat-grid.is-carousel .feat-cell[inert] {
-    visibility: hidden;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -155,11 +84,10 @@
   background: var(--surface);
 }
 
-/* Two columns (900px and up) make the card wide, so a 4:3 plate would push
-   the pitch and facts below the fold. A 16:9 plate keeps them in view. */
+/* On the three-column grid the plate is a 2:1 strip, so the pitch and buttons stay close. */
 @media (min-width: 900px) {
   .feat-media {
-    aspect-ratio: 16 / 9;
+    aspect-ratio: 2 / 1;
   }
 }
 
@@ -206,21 +134,6 @@
   gap: var(--space-4);
   min-width: 0;
   padding: var(--space-5);
-}
-
-.feat-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-3);
-}
-
-.feat-idx {
-  padding: 3px var(--space-2);
-  background: var(--line);
-  color: var(--surface);
-  letter-spacing: var(--tr-micro);
 }
 
 .feat-cat {
@@ -472,24 +385,190 @@
   animation: none;
 }
 
-/* A poster with a demo keeps the bottom band clear, as the panel's scenes do: the round control sits in
-   the band, so it never covers the picture. The box itself does not change size. */
-.feat-media.has-demo::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: var(--fdemo-band);
-  border-top: var(--bw-hair) solid var(--line);
-  background: var(--surface);
+/* ---------- the playing layout (owner's version) ----------
+   The pressed card grows into a two-row info panel and the stage takes the other two columns, both
+   rows; data-side says which side the panel is on. The stage is about one screen tall and the block is
+   never taller than the grid it replaced (--feat-lock); the other five builds sit in a strip underneath. */
+.feat-play {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-6);
 }
 
-.feat-media.has-demo > img,
-.feat-media.has-demo > .schematic {
+.feat-play-main {
+  scroll-margin-top: var(--space-2); /* the page already pads scrolling by the top bar */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+}
+
+.feat-info {
+  min-height: 0;
+}
+
+.feat-state {
+  justify-self: start;
+  align-self: flex-start;
+  padding: 4px var(--space-2);
+  background: var(--signal);
+  color: var(--paper);
+  letter-spacing: var(--tr-micro);
+}
+
+.feat-desc {
+  font-size: var(--fs-small);
+  line-height: 1.55;
+}
+
+.feat-stage {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  --fdemo-band: 60px;
+  --fdemo-strip: var(--strip-h);
+}
+
+/* In the page's flow, with its frame: no longer an overlay over a card. */
+.fdemo--stage {
+  position: relative;
+  inset: auto;
+  flex: 1 1 auto;
+  height: min(78svh, calc(100svh - var(--bar-h) - var(--fdemo-strip) - var(--space-5)));
+}
+
+.fdemo--stage .fdemo-band {
+  padding-right: calc(var(--hit) + var(--space-5) + 120px);
+}
+
+.fdemo-replay {
   position: absolute;
-  top: 0;
-  left: 0;
+  right: calc(var(--hit) + var(--space-5));
+  top: 50%;
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  transform: translateY(-50%);
+}
+
+.feat-others-title {
+  margin-bottom: var(--space-3);
+  letter-spacing: var(--tr-micro);
+}
+
+.feat-others-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.feat-other {
+  --press: var(--off-1);
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
   width: 100%;
-  height: calc(100% - var(--fdemo-band));
+  min-height: 64px;
+  padding: var(--space-2) var(--space-3);
+  border: var(--bw-rule) solid var(--line);
+  background: var(--surface);
+  color: var(--on-surface);
+  text-align: left;
+  --focus-bg: var(--signal);
+  --focus-fg: var(--paper);
+}
+
+.feat-other-thumb {
+  position: relative;
+  display: block;
+  height: 40px;
+  overflow: hidden;
+  border: var(--bw-hair) solid var(--line);
+}
+
+.feat-other-thumb img,
+.feat-other-thumb .schematic {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.feat-other-thumb.is-contain img {
+  object-fit: contain;
+}
+
+.feat-other-name {
+  font: 900 var(--fs-small) / 1.05 var(--font-grotesk);
+  font-variation-settings: "wdth" var(--wdth-wide);
+  text-transform: uppercase;
+}
+
+.feat-other-play {
+  color: var(--text-accent);
+  font-size: 0.75rem;
+}
+
+@media (min-width: 900px) {
+  /* The stage fits the screen under the top bar (less the status strip and a gap), and the block is
+     never taller than the grid it replaced (--feat-lock, less room for the strip of other builds). */
+  .feat-play {
+    --feat-others-h: 132px;
+  }
+
+  .feat-play-main {
+    height: min(
+      calc(var(--feat-lock, 100000px) - var(--feat-others-h)),
+      calc(100svh - var(--bar-h) - var(--strip-h) - var(--space-5))
+    );
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .feat-play[data-side="left"] .feat-info {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .feat-play[data-side="left"] .feat-stage {
+    grid-column: 2 / span 2;
+    grid-row: 1;
+  }
+
+  .feat-play[data-side="right"] .feat-info {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .feat-play[data-side="right"] .feat-stage {
+    grid-column: 1 / span 2;
+    grid-row: 1;
+  }
+
+  /* The panel scrolls inside itself if its copy runs longer than the stage. */
+  .feat-info {
+    overflow: auto;
+  }
+
+  .feat-info .feat-media {
+    aspect-ratio: 2 / 1;
+    flex: none;
+  }
+
+  .feat-stage {
+    height: 100%;
+  }
+
+  .fdemo--stage {
+    height: auto;
+  }
+
+  .feat-others-list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px), (max-height: 500px) {
+  .feat-stage {
+    --fdemo-strip: 0px;
+  }
 }

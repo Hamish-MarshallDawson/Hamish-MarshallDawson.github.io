@@ -14,7 +14,9 @@ import { useReducedMotionConfig } from "framer-motion";
 //   scenes:  [{ id, caption, ms }], exported by the demo. `ms` is how long the scene is shown.
 //   Demo:    the demo's default export, rendered with { scene, playing, reducedMotion }.
 //
-// The last scene is held for HOLD_MS more, then the panel fades back to the card.
+// The last scene is held for HOLD_MS more, then the panel fades back to the card. On the desktop
+// stage (`stage`) the panel is in the page's flow instead, stays on the last scene when the demo ends
+// and has a Replay button in its band; only its X closes it.
 
 export const HOLD_MS = 2000;
 
@@ -85,14 +87,14 @@ function bringIntoView(panel, reduce) {
   if (seen < Math.min(r.height, window.innerHeight) / 2) panel.scrollIntoView?.({ block: "center", behavior: reduce ? "auto" : "smooth" });
 }
 
-export function DemoPanel({ Demo, scenes = NO_SCENES, scene, phase, reduce, title, runKey, focusClose, onPress, onClose, onScene, onEnd, onPreload }) {
+export function DemoPanel({ Demo, scenes = NO_SCENES, scene, phase, reduce, title, runKey, focusClose, stage = false, onPress, onReplay, onClose, onScene, onEnd, onPreload }) {
   const [away, setAway] = useState(false);
   // `reduce` is FX off only; scrolling also respects the OS reduced-motion setting.
   const calm = useReducedMotionConfig();
   const panelRef = useRef(null);
   const closeRef = useRef(null);
   const count = scenes.length;
-  const show = phase === "playing" || phase === "paused";
+  const show = phase === "playing" || phase === "paused" || (stage && phase === "ended");
   const live = Boolean(Demo) && phase === "playing" && !reduce && !away;
   const shown = Math.min(scene, Math.max(0, count - 1));
   // The timer reads the latest callbacks without restarting when they change identity.
@@ -160,7 +162,7 @@ export function DemoPanel({ Demo, scenes = NO_SCENES, scene, phase, reduce, titl
   return (
     <section
       ref={panelRef}
-      className="fdemo-overlay"
+      className={`fdemo-overlay${stage ? " fdemo--stage" : ""}`}
       aria-label={`${title} demo`}
       data-show={show ? "true" : "false"}
       data-reduced={reduce ? "true" : undefined}
@@ -189,6 +191,11 @@ export function DemoPanel({ Demo, scenes = NO_SCENES, scene, phase, reduce, titl
               <li key={item.id} className={i === shown ? "is-current" : undefined} />
             ))}
           </ol>
+          {onReplay && (
+            <button type="button" className="btn btn--paper u-press fdemo-replay" onClick={onReplay}>
+              ↻ Replay<span className="sr-only"> the {title} demo</span>
+            </button>
+          )}
           <RoundControl phase={phase} reduce={reduce} title={title} onPress={onPress} onPreload={onPreload} />
         </div>
       </div>
