@@ -115,9 +115,14 @@ async function renderFeatured(list = projects) {
   await flush();
 }
 
+// The demo mounts once the card has grown into its panel (jsdom never reports the layout animation, so
+// the 400 ms fallback does it).
+const grow = () => act(() => jest.advanceTimersByTime(400));
+
 async function startLocal() {
   fireEvent.click(playCard("LocalMind"));
   await flush();
+  grow();
 }
 
 const info = (name) => screen.getByRole("article", { name });
@@ -334,6 +339,8 @@ test("the Play controls preload the demo on hover, so the first play has no wait
   await flush();
 
   fireEvent.click(playCard("LocalMind"));
+  expect(within(panel("LocalMind")).queryByTestId("local-demo")).toBeNull(); // still growing
+  grow();
   expect(demoOf(panel("LocalMind"), "local-demo")).toHaveAttribute("data-scene", "0");
 });
 
@@ -357,4 +364,25 @@ test("a card with a charity shows a Visit charity link to it", async () => {
   await renderFeatured([charityCard]);
   const link = within(screen.getByRole("article", { name: "Delta" })).getByRole("link", { name: /^Visit charity/ });
   expect(link).toHaveAttribute("href", "https://charity.example.org/");
+});
+
+test("with FX off the panel says the demo steps through, not that it plays", async () => {
+  render(
+    <MotionConfig reducedMotion="always">
+      <FeaturedProjects projects={projects} />
+    </MotionConfig>,
+  );
+  await flush();
+  await startLocal();
+  expect(info("LocalMind")).toHaveTextContent(/Step through · scene 1 \/ 3/);
+  expect(info("LocalMind")).not.toHaveTextContent(/Playing/);
+});
+
+test("a card with a charity shows the charity, not its repo; the playing panel shows both", async () => {
+  const charityCard = { ...projects[0], url: "https://github.com/x/y", charity: { name: "Charity", url: "https://charity.example.org/" } };
+  await renderFeatured([charityCard]);
+  expect(within(screen.getByRole("article", { name: "LocalMind" })).queryByRole("link", { name: /^Repo/ })).toBeNull();
+  await startLocal();
+  expect(within(info("LocalMind")).getByRole("link", { name: /^Repo/ })).toBeInTheDocument();
+  expect(within(info("LocalMind")).getByRole("link", { name: /^Visit charity/ })).toBeInTheDocument();
 });
