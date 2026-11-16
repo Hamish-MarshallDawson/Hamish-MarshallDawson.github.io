@@ -251,7 +251,7 @@ test("weighted highlights: the four anchors nearly always show, niche facts only
   const runs = 2000;
   const seen = {};
   for (let i = 0; i < runs; i += 1) pickHighlights(5).forEach(({ key }) => (seen[key] = (seen[key] || 0) + 1));
-  anchors.forEach((key) => expect(seen[key] / runs).toBeGreaterThan(0.9));
+  anchors.forEach((key) => expect(seen[key] / runs).toBeGreaterThan(0.97));
   expect((seen["PC builds"] || 0) / runs).toBeLessThan(0.1);
   expect(highlights.filter((item) => !item.weight)).toEqual([]);
   // Anchors keep their place at the front.
@@ -273,33 +273,44 @@ test("old section links still land on the renamed sections", () => {
   expect(parseHash("#redwall", SECTION_IDS, SECTION_ALIASES)).toEqual({ id: "reach-out", sub: null });
   expect(parseHash("#logs", SECTION_IDS, SECTION_ALIASES)).toEqual({ id: "work", sub: null });
   expect(parseHash("#field", SECTION_IDS, SECTION_ALIASES)).toEqual({ id: "volunteer", sub: null });
+  expect(parseHash("#offline", SECTION_IDS, SECTION_ALIASES)).toEqual({ id: "volunteer", sub: null });
   expect(parseHash("#vault/robotics", SECTION_IDS, SECTION_ALIASES)).toEqual({ id: "vault", sub: "robotics" });
 });
 
-test("the work log has a Where I've studied section: Heriot-Watt, then Alford Academy", () => {
+test("sections run Hero, Work, Projects, Education, Beyond the code, Let's talk", () => {
   render(<App />);
-  const work = document.getElementById("work");
-  expect(within(work).getByRole("heading", { level: 3, name: "Where I've studied." })).toBeInTheDocument();
-
-  const studies = within(work).getByRole("list", { name: "Where I've studied." });
-  const schools = within(studies).getAllByRole("heading", { level: 4 }).map((h) => h.textContent);
-  expect(schools).toEqual(["MEng Software Engineering", "Secondary school"]);
-  expect(within(studies).getByText("Head Prefect.")).toBeInTheDocument();
-  expect(within(studies).getByText(/Garioch Judo on Campus/)).toBeInTheDocument();
-  expect(within(studies).getByText(/2016 – 2022/)).toBeInTheDocument();
+  const ids = [...document.querySelectorAll("main > section[id]")].map((section) => section.id); // eslint-disable-line testing-library/no-node-access
+  expect(ids).toEqual(["core", "work", "vault", "study", "volunteer", "reach-out"]);
+  expect(SECTION_IDS).toEqual(ids);
 });
 
-test("the work log lists two contracts and a Hackathons block with both events, their status and links", () => {
+test("Where I've studied: the Heriot-Watt sheet, then Alford Academy on one line", () => {
+  render(<App />);
+  const study = document.getElementById("study"); // eslint-disable-line testing-library/no-node-access
+  expect(within(study).getByRole("heading", { level: 2, name: "Where I've studied." })).toBeInTheDocument();
+  expect(within(study).getByRole("heading", { level: 3, name: "MEng Software Engineering" })).toBeInTheDocument();
+  expect(within(study).getByRole("heading", { level: 3, name: /^Alford Academy · 2016 – 2022 · Head Prefect$/ })).toBeInTheDocument();
+  expect(within(study).getByText(/Garioch Judo on Campus/)).toBeInTheDocument();
+  expect(within(study).queryByText(/Education 0x01/)).not.toBeInTheDocument();
+  expect(within(study).queryByText(/Highlights \[/)).not.toBeInTheDocument();
+});
+
+test("Where I've worked lists two contracts with logos and no list headers", () => {
   render(<App />);
   const work = document.getElementById("work"); // eslint-disable-line testing-library/no-node-access
   expect(within(work).getByText("2 contracts on record")).toBeInTheDocument();
-  expect(within(work).getByText("2 hackathons")).toBeInTheDocument();
   expect(within(work).getByText(/Contract 0x02/)).toBeInTheDocument();
   expect(within(work).queryByText(/Contract 0x03/)).not.toBeInTheDocument();
+  expect(within(work).queryByText(/Objectives \[/)).not.toBeInTheDocument();
+  expect(work.querySelectorAll("img.contract-mark")).toHaveLength(2); // eslint-disable-line testing-library/no-node-access
+});
 
-  const events = within(work).getByRole("list", { name: "Where I've hacked." });
+test("the hackathons block lists both events, their status and links", () => {
+  render(<App />);
+  const study = document.getElementById("study"); // eslint-disable-line testing-library/no-node-access
+  expect(within(study).getByText("1 degree · 2 hackathons")).toBeInTheDocument();
+  const events = within(study).getByRole("list", { name: "Where I've hacked." });
   expect(within(events).getAllByRole("heading", { level: 4 }).map((h) => h.textContent)).toEqual(["HackTheBurgh XIII", "Code for Good"]);
-  expect(within(events).getAllByText("Attended")).toHaveLength(2);
   expect(within(events).getByText(/Hackathon 0x02/)).toHaveTextContent("University of Edinburgh CompSoc");
   expect(within(events).getByText(/Hackathon 0x01/)).toHaveTextContent("JPMorganChase");
   expect(within(events).getByText(/Sat 7 – Sun 8 Nov 2026 · Edinburgh · 24 hours/)).toBeInTheDocument();
@@ -307,7 +318,7 @@ test("the work log lists two contracts and a Hackathons block with both events, 
   expect(within(events).getAllByRole("listitem").length).toBeGreaterThanOrEqual(10);
   expect(within(events).getByText(/^Attended · 24 hours$/)).toBeInTheDocument();
   expect(within(events).getByText(/^Attended · 24 hours, no sleep$/)).toBeInTheDocument();
-  expect(within(work).queryByText(/^Upcoming/)).not.toBeInTheDocument();
+  expect(within(study).queryByText(/^Upcoming/)).not.toBeInTheDocument();
   within(events).getAllByRole("link", { name: /^See the project/ }).forEach((link) => expect(link).toHaveAttribute("href", "#vault"));
   expect(within(events).getByRole("link", { name: /^Visit charity/ })).toHaveAttribute("href", "https://westlothian50plusnetwork.co.uk/");
   expect(within(events).getAllByRole("link", { name: /^Repo/ }).map((link) => link.getAttribute("href"))).toEqual([
@@ -317,11 +328,20 @@ test("the work log lists two contracts and a Hackathons block with both events, 
   expect(within(events).getByRole("link", { name: /^hacktheburgh\.com/ })).toHaveAttribute("href", "https://hacktheburgh.com/");
 });
 
+test("the first screen has the tagline, CV, Email and a What I'm doing link to the work section", () => {
+  render(<App />);
+  const hero = document.getElementById("core"); // eslint-disable-line testing-library/no-node-access
+  expect(hero).toHaveTextContent(/Looking for graduate AI\/ML and software engineering roles starting in 2027\./);
+  expect(within(hero).getByRole("link", { name: /Download CV · PDF/ })).toHaveAttribute("href", "/cv.pdf");
+  expect(within(hero).getByRole("link", { name: /Email me/ })).toHaveAttribute("href", "mailto:hamishmarshalldawson@gmail.com");
+  expect(within(hero).getByRole("link", { name: /What I'm doing/ })).toHaveAttribute("href", "#work");
+});
+
 test("the contact section opens with a plain invitation to talk", () => {
   render(<App />);
   const reachOut = document.getElementById("reach-out");
   expect(within(reachOut).getByRole("heading", { level: 2, name: "Let's talk." })).toBeInTheDocument();
-  expect(within(reachOut).getByText(/fill out the form below/i)).toBeInTheDocument();
+  expect(within(reachOut).getByText(/graduate AI\/ML or software engineering roles from summer 2027/i)).toBeInTheDocument();
 });
 
 test("the contact form speaks plainly", () => {

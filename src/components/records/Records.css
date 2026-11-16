@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Records: service log (ink), field ops (paper), off-duty (ink).
+   Records: work (ink), education & hackathons (ink), beyond the code (paper).
    ========================================================================== */
 
 /* ---------- service log: contract sheets ---------- */
@@ -63,27 +63,14 @@
   display: block;
   width: auto;
   max-width: 100%;
-  height: clamp(96px, 10vw + 56px, 200px);
+  height: clamp(96px, 5vw + 68px, 140px);
   object-fit: contain;
   object-position: left center;
-}
-
-/* The organisation's name as a mono stamp at the foot of the head column, in the HUD's voice. */
-.contract-org {
-  margin-top: auto;
-  padding-top: var(--space-5);
-  font: 700 var(--fs-small) / 1.3 var(--font-mono);
-  letter-spacing: var(--tr-micro);
-  text-transform: uppercase;
 }
 
 .contract-objectives {
   grid-column: 6 / -1;
   min-width: 0;
-}
-
-.contract-objectives-title {
-  margin-bottom: var(--space-3);
 }
 
 .contract-objectives li {
@@ -117,30 +104,6 @@
   border-top: var(--bw-frame) solid var(--ink);
 }
 
-.contract-progress-bar {
-  display: block;
-  height: 22px;
-  padding: 3px;
-  border: var(--bw-rule) solid var(--ink);
-}
-
-.contract-progress-track {
-  display: block;
-  height: 100%;
-}
-
-/* Segmented fill: hard stops only, so it prints as discrete blocks. */
-.contract-progress-bar i {
-  display: block;
-  height: 100%;
-  transform-origin: 0 50%;
-  background: repeating-linear-gradient(90deg, var(--signal) 0 16px, transparent 16px 20px);
-}
-
-.contract-progress-value {
-  font-size: 1rem;
-}
-
 @media (max-width: 899px) {
   /* One track: twelve columns' worth of gaps alone would outgrow a phone. */
   .contract-body {
@@ -151,10 +114,6 @@
   .contract-head,
   .contract-objectives {
     grid-column: 1 / -1;
-  }
-
-  .contract-org {
-    display: none;
   }
 
   .contract-objectives li {
@@ -169,6 +128,60 @@
   .contract-progress-label {
     grid-column: 1 / -1;
   }
+}
+
+.contract-mark--small {
+  height: clamp(72px, 2vw + 56px, 96px);
+}
+
+/* Hackathons side by side on wide screens. */
+.contracts--pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+}
+
+.contracts--pair .contract-body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.contracts--pair .contract-head,
+.contracts--pair .contract-objectives {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1099px) {
+  .contracts--pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* A finished school: one line, its mark on a white plate (the bull is black). */
+.school-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-2) var(--space-5);
+  margin-top: calc(var(--space-8) * -1 + var(--space-6));
+  padding: var(--space-4) var(--space-5);
+  border: var(--bw-rule) solid var(--line);
+}
+
+.school-mark {
+  grid-row: span 2;
+  width: 52px;
+  height: 52px;
+  padding: 4px;
+  object-fit: contain;
+  background: var(--paper);
+}
+
+.school-name {
+  font: 700 var(--fs-h4) / 1.3 var(--font-grotesk);
+}
+
+.school-more {
+  font-size: var(--fs-small);
+  line-height: 1.5;
 }
 
 /* ---------- where I've studied ---------- */
@@ -231,14 +244,6 @@
 
 /* ---------- field ops ---------- */
 
-.field {
-  padding-top: 0;
-}
-
-.field-strip {
-  margin: 0 calc(var(--gutter) * -1) var(--section-pad);
-  border-top: 0;
-}
 
 /* Cards share row tracks through subgrid (li → reveal wrapper → article),
    so plates line up across a row even when one title wraps further. */
@@ -357,11 +362,11 @@
 
 /* ---------- off-duty: spaced-out wide type, plates in duotone ---------- */
 
-.offline .rcard article {
+.rgrid--after .rcard article {
   padding-left: var(--space-7);
 }
 
-.offline .rcard-meta {
+.rgrid--after .rcard-meta {
   position: absolute;
   top: 0;
   left: 0;
@@ -370,7 +375,7 @@
   transform: rotate(180deg);
 }
 
-.offline .rcard-title {
+.rgrid--after .rcard-title {
   margin-bottom: var(--space-4);
   font-size: clamp(1.25rem, 1rem + 0.9vw, 1.875rem);
   font-weight: 300;
@@ -379,19 +384,19 @@
   letter-spacing: 0.08em;
 }
 
-.offline .rcard-media img {
+.rgrid--after .rcard-media img {
   mix-blend-mode: screen;
   filter: grayscale(1) contrast(1.3) brightness(1.06);
 }
 
 @media (hover: hover) {
-  .offline .rcard:hover .rcard-media img {
+  .rgrid--after .rcard:hover .rcard-media img {
     mix-blend-mode: normal;
     filter: grayscale(1) contrast(1.16);
   }
 }
 
-.offline .rcard-copy {
+.rgrid--after .rcard-copy {
   font-size: var(--fs-small);
   line-height: 1.6;
 }

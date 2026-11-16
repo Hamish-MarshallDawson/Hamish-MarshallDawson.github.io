@@ -128,6 +128,14 @@ export function Contact({ cvRequest }) {
     );
   };
 
+  const [copied, setCopied] = useState(false);
+  // Clipboard can be refused (insecure context, permissions); the address is on screen either way.
+  const copyEmail = () =>
+    navigator.clipboard?.writeText(profile.email).then(
+      () => setCopied(true),
+      () => {}
+    );
+
   const formClass = ["rw-form", "surface-paper"];
   if (jolt) formClass.push(jolt % 2 ? "jolt-a" : "jolt-b");
 
@@ -147,11 +155,77 @@ export function Contact({ cvRequest }) {
           titleClass="sh-title--stamp"
           aside={["Exfil point", "Channel 05"]}
         >
-          If you&apos;d like to discuss my work further, or you&apos;re just into AI and ML in general, feel free to fill
-          out the form below — it comes straight to me.
+          Looking for graduate AI/ML or software engineering roles from summer 2027. Email is the quickest way to
+          reach me, and my CV is one click away.
         </SectionHeader>
 
         <div className="rw-grid">
+          <aside className="rw-uplinks" aria-labelledby="rw-uplinks-title">
+            <h3 id="rw-uplinks-title" className="rw-uplinks-title">
+              Direct links
+            </h3>
+            <ul>
+              <li className="rw-email">
+                <a className="rw-uplink" href={`mailto:${profile.email}`}>
+                  <MailIcon className="rw-uplink-icon" />
+                  <span className="rw-uplink-text">
+                    <b>Email</b>
+                    <span>{profile.email}</span>
+                  </span>
+                  <ArrowIcon className="rw-uplink-glyph" />
+                </a>
+                <button type="button" className="btn btn--paper u-press rw-copy" onClick={copyEmail}>
+                  {copied ? "Copied" : "Copy"}
+                  <span className="sr-only"> email address</span>
+                </button>
+              </li>
+              <li>
+                <a className="rw-uplink" href={profile.linkedin} target="_blank" rel="noopener noreferrer">
+                  <LinkedinIcon className="rw-uplink-icon" />
+                  <span className="rw-uplink-text">
+                    <b>LinkedIn</b>
+                    <span>in/hamish-marshall-dawson</span>
+                  </span>
+                  <span className="sr-only"> (opens in a new tab)</span>
+                  <ExternalIcon className="rw-uplink-glyph" />
+                </a>
+              </li>
+              <li>
+                <a className="rw-uplink" href={profile.github} target="_blank" rel="noopener noreferrer">
+                  <GithubIcon className="rw-uplink-icon" />
+                  <span className="rw-uplink-text">
+                    <b>GitHub</b>
+                    <span>@{profile.githubUser}</span>
+                  </span>
+                  <span className="sr-only"> (opens in a new tab)</span>
+                  <ExternalIcon className="rw-uplink-glyph" />
+                </a>
+              </li>
+              <li>
+                {profile.cv ? (
+                  <a className="rw-uplink" href={profile.cv} download>
+                    <CvIcon className="rw-uplink-icon" />
+                    <span className="rw-uplink-text">
+                      <b>CV</b>
+                      <span>PDF · download</span>
+                    </span>
+                    <ArrowIcon className="rw-uplink-glyph" direction="down" />
+                  </a>
+                ) : (
+                  <button type="button" className="rw-uplink" onClick={() => setChannel("cv")}>
+                    <CvIcon className="rw-uplink-icon" />
+                    <span className="rw-uplink-text">
+                      <b>CV</b>
+                      <span>On request · via the form</span>
+                    </span>
+                    <ArrowIcon className="rw-uplink-glyph" direction="left" />
+                  </button>
+                )}
+              </li>
+            </ul>
+            <p className="rw-sig u-micro">{profile.location}</p>
+          </aside>
+
           <form className={formClass.join(" ")} noValidate onSubmit={onSubmit} aria-labelledby="rw-form-title">
             <div className="rw-form-head surface-ink u-micro" aria-hidden="true">
               <span>New message · to Hamish</span>
@@ -247,68 +321,6 @@ export function Contact({ cvRequest }) {
                 `Your email app should have opened with the message ready to send. If it didn't, email me at ${profile.email}.`}
             </p>
           </form>
-
-          <aside className="rw-uplinks" aria-labelledby="rw-uplinks-title">
-            <h3 id="rw-uplinks-title" className="rw-uplinks-title">
-              Direct uplinks
-            </h3>
-            <ul>
-              <li>
-                <a className="rw-uplink" href={`mailto:${profile.email}`}>
-                  <MailIcon className="rw-uplink-icon" />
-                  <span className="rw-uplink-text">
-                    <b>Email</b>
-                    <span>{profile.email}</span>
-                  </span>
-                  <ArrowIcon className="rw-uplink-glyph" />
-                </a>
-              </li>
-              <li>
-                <a className="rw-uplink" href={profile.linkedin} target="_blank" rel="noopener noreferrer">
-                  <LinkedinIcon className="rw-uplink-icon" />
-                  <span className="rw-uplink-text">
-                    <b>LinkedIn</b>
-                    <span>in/hamish-marshall-dawson</span>
-                  </span>
-                  <span className="sr-only"> (opens in a new tab)</span>
-                  <ExternalIcon className="rw-uplink-glyph" />
-                </a>
-              </li>
-              <li>
-                <a className="rw-uplink" href={profile.github} target="_blank" rel="noopener noreferrer">
-                  <GithubIcon className="rw-uplink-icon" />
-                  <span className="rw-uplink-text">
-                    <b>GitHub</b>
-                    <span>@{profile.githubUser}</span>
-                  </span>
-                  <span className="sr-only"> (opens in a new tab)</span>
-                  <ExternalIcon className="rw-uplink-glyph" />
-                </a>
-              </li>
-              <li>
-                {profile.cv ? (
-                  <a className="rw-uplink" href={profile.cv} download>
-                    <CvIcon className="rw-uplink-icon" />
-                    <span className="rw-uplink-text">
-                      <b>CV</b>
-                      <span>Download PDF</span>
-                    </span>
-                    <ArrowIcon className="rw-uplink-glyph" direction="down" />
-                  </a>
-                ) : (
-                  <button type="button" className="rw-uplink" onClick={() => setChannel("cv")}>
-                    <CvIcon className="rw-uplink-icon" />
-                    <span className="rw-uplink-text">
-                      <b>CV</b>
-                      <span>On request · via the form</span>
-                    </span>
-                    <ArrowIcon className="rw-uplink-glyph" direction="left" />
-                  </button>
-                )}
-              </li>
-            </ul>
-            <p className="rw-sig u-micro">{profile.location}</p>
-          </aside>
         </div>
 
         <footer className="rw-footer cells u-micro">

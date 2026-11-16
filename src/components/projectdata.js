@@ -15,6 +15,12 @@ export const profile = {
   research: "AI trust × input latency",
   researchContext: "Teleoperated robotics",
   researchNote: "Accepted for publication at British HCI 2026.",
+  // The hero's first screen: the data sheet's Status and Seeking cells, and
+  // the tagline (its last words are set in the signal colour).
+  status: "Final-year MEng Software Engineering · Heriot-Watt · graduating June 2027",
+  seeking: "Graduate AI/ML and software engineering roles · from summer 2027",
+  tagline: "Looking for graduate AI/ML and software engineering roles",
+  taglineWhen: "starting in 2027",
   bio: "Final-year MEng student at Heriot-Watt, currently building AI pipelines at STMicroelectronics. A bit of robotics, perception, and getting a bunch of models to run on hardware that shouldn't fit them.",
   email: "hamishmarshalldawson@gmail.com",
   githubUser: "Hamish-MarshallDawson",
@@ -394,14 +400,14 @@ export const education = [
 
 // Quick-scan facts from the CV for the hero's ruled strip. Every page load
 // shows a different five (see pickHighlights), drawn by `weight`: the four
-// anchors (weight 100) nearly always show, the rest share the fifth slot and
+// anchors (weight 1000) nearly always show, the rest share the fifth slot and
 // niche ones (weight 1) turn up only now and then. Keep each one true and
 // short enough for a fifth of the row, and keep STMicroelectronics figure-free.
 export const highlights = [
-  { key: "Fault detection", value: "VLM pipeline · STMicro", weight: 100 },
-  { key: "Publication", value: "British HCI 2026", weight: 100 },
-  { key: "Dissertation", value: "89/100", weight: 100 },
-  { key: "University Prize", value: "Top grade in my year", weight: 100 },
+  { key: "Fault detection", value: "VLM pipeline · STMicro", weight: 1000 },
+  { key: "Publication", value: "British HCI 2026", weight: 1000 },
+  { key: "Dissertation", value: "89/100", weight: 1000 },
+  { key: "University Prize", value: "Top grade in my year", weight: 1000 },
   { key: "Degree", value: "On track for a First", weight: 4 },
   { key: "Code for Good", value: "JPMorganChase · Oct 2026", weight: 4 },
   { key: "HackTheBurgh", value: "Team lead · Nov 2026", weight: 4 },
