@@ -103,7 +103,7 @@ export const vaultProjects = [
       "A robotic arm that takes a spoken instruction and carries it out, multi-step commands included. OpenCV handles perception, a visual-action model drives manipulation, and an LLM with speech recognition sits on top. The whole pipeline runs locally, under 4GB of VRAM.",
     tags: ["VLA", "LLM", "ASR", "OpenCV", "Model training"],
     categories: ["research", "robotics", "ml"],
-    image: img("dissertation.png"),
+    image: img("dissertation.webp"),
     alt: "Overhead camera view of the arm's workspace, each detected object boxed and labelled with its target coordinates",
   },
   {
@@ -263,7 +263,7 @@ export const vaultProjects = [
     url: "https://github.com/CordlessGnu/F21caGames2",
     tags: ["LLM", "VLM", "Whisper", "Local models", "TTS"],
     categories: ["ml", "performance"],
-    image: img("minecraft.png"),
+    image: img("minecraft.webp"),
     alt: "Minecraft grass block",
     fit: "contain",
   },
@@ -276,7 +276,7 @@ export const vaultProjects = [
     url: "https://hamishmad.itch.io/bonin-loot",
     tags: ["C#", "Unity", "Procedural generation"],
     categories: ["performance"],
-    image: img("BoninLoot.png"),
+    image: img("BoninLoot.webp"),
     alt: "Bonin' Loot title art: a crowned skeleton on a treasure chest surrounded by coins and gold",
   },
 ];
