@@ -146,7 +146,9 @@ describe("PhoneFeatured", () => {
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: `▶ Play demo for ${projects[0].name}` }));
     });
+    expect(document.documentElement.style.overflow).toBe("hidden");
     fireEvent.keyDown(document, { key: "Escape" });
     expect(document.querySelector(".pfeat-stage")).toHaveAttribute("data-show", "false");
+    expect(document.documentElement.style.overflow).toBe("");
   });
 });

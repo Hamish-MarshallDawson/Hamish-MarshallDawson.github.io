@@ -121,18 +121,26 @@ export function PhoneFeatured({ projects }) {
   const onScene = useCallback((scene) => setRun((r) => (r ? { ...r, scene } : r)), []);
   const onEnd = useCallback(() => setRun((r) => (r ? { ...r, phase: "ended" } : r)), []);
 
+  // The stage is a modal layer: Esc closes it, and the page behind does not scroll.
   useEffect(() => {
     if (!showing) return undefined;
     const onKey = (e) => e.key === "Escape" && close();
+    const root = document.documentElement;
+    const was = [root.style.overflow, document.body.style.overflow];
+    root.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      [root.style.overflow, document.body.style.overflow] = was;
+      document.removeEventListener("keydown", onKey);
+    };
   }, [showing, close]);
 
   // Closing (X, Esc, or the demo ending) puts focus back on the card's Play button.
   const runId = runProject?.id;
   const wasShowing = useRef(false);
   useEffect(() => {
-    if (wasShowing.current && !showing && runId) buttons.current[runId]?.focus({ preventScroll: true });
+    if (wasShowing.current && !showing && runId) buttons.current[runId]?.focus(); // scrolls it into view if needed
     wasShowing.current = showing;
   }, [showing, runId]);
 

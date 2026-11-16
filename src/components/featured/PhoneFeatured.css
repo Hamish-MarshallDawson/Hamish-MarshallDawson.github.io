@@ -172,6 +172,7 @@
   flex-direction: column;
   background: var(--ink);
   overscroll-behavior: contain;
+  touch-action: none; /* no page scroll through the stage; the demos take no gestures */
 }
 
 .pfeat-stage[data-show="false"] {
@@ -211,11 +212,6 @@
   border-top: var(--bw-rule) solid var(--ink);
   background: var(--paper);
   color: var(--ink);
-}
-
-.pfeat-switch .pfeat-arrow {
-  width: 40px;
-  height: 40px;
 }
 
 .pfeat-switch-label {
