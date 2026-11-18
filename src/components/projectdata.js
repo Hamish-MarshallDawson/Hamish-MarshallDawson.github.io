@@ -6,7 +6,7 @@ const img = (file) => `${process.env.PUBLIC_URL}/projects/optimized/${file}`;
 export const profile = {
   name: "Hamish Marshall Dawson",
   role: "AI & Software Engineer",
-  age: 22,
+  tag: "MEng ’27",
   degree: "MEng Software Engineering · Final year",
   institution: "Heriot-Watt University",
   location: "Edinburgh, UK",
@@ -14,14 +14,15 @@ export const profile = {
   coords: "55.9533°N 3.1883°W",
   research: "AI trust × input latency",
   researchContext: "Teleoperated robotics",
-  researchNote: "Accepted for publication at British HCI 2026.",
+  researchNote: "First-author paper published at British HCI 2026.",
+  researchUrl: "https://doi.org/10.14236/ewic/BRITCHI26.44",
   // The hero's first screen: the data sheet's Status and Seeking cells, and
   // the tagline (its last words are set in the signal colour).
   status: "Final-year MEng Software Engineering · Heriot-Watt · graduating June 2027",
   seeking: "Graduate AI/ML and software engineering roles · from summer 2027",
   tagline: "Looking for graduate AI/ML and software engineering roles",
   taglineWhen: "starting in 2027",
-  bio: "Final-year MEng student at Heriot-Watt, currently building AI pipelines at STMicroelectronics. A bit of robotics, perception, and getting a bunch of models to run on hardware that shouldn't fit them.",
+  bio: "Final-year MEng Software Engineering student at Heriot-Watt, University Prize winner (highest grade in my year) and AI/ML Engineer Intern at STMicroelectronics. I build perception-to-control robotics, publish human-robot interaction research and run quantised local AI pipelines on constrained hardware.",
   email: "hamishmarshalldawson@gmail.com",
   githubUser: "Hamish-MarshallDawson",
   github: "https://github.com/Hamish-MarshallDawson",
@@ -66,87 +67,19 @@ export const categories = [
   },
 ];
 
-// Order is deliberate: Poseidon leads, then the dissertation and the HRI study,
-// then current builds, then coursework. The first category listed is the
+// Order is deliberate: the six featured projects come first, in the order the
+// Featured section shows them, then the dissertation, the HRI study and coursework. The first category listed is the
 // project's primary. `fit: "contain"` is for logos/illustrations that shouldn't
 // be cropped; `focus` is an object-position so crops keep the subject in frame.
 // A project with a `schematic` instead of an `image` gets a drawn diagram as its plate.
 export const vaultProjects = [
-  {
-    id: "poseidon",
-    repo: "Poseidon",
-    name: "Poseidon",
-    category: "HackTheBurgh · Team lead · Nov 2026",
-    description:
-      "Live ship tracking that flags ships going quiet while other ships in the same area keep reporting. It merges AISStream's worldwide feed with Digitraffic's Finnish one, so a ship heard twice is stored once, and gives an analyst a short list of candidates, a risk order for each ship with its reasons, a replay and a shared team workspace. A flag is a prompt to review, not an accusation. A route model trained on Danish Maritime Authority AIS estimates up to 24 hours ahead with 80% and 95% circles, and the go-dark ranking is weak and labelled so. I led the team of four at HackTheBurgh; each of us directed a coding agent in one repository.",
-    url: "https://github.com/Hamish-MarshallDawson/Poseidon",
-    tags: ["React", "MapLibre", "Python", "TimescaleDB", "LightGBM"],
-    categories: ["ml"],
-    featured: {
-      pitch: "Watches live ship tracking and flags ships that go quiet while others in the same area keep reporting. A flag is a prompt to review, not an accusation.",
-      facts: [
-        "Team lead of four, from brief to working demo in 24 hours",
-        "One evening replayed: 2,326 gaps, 654 candidates, 1,097 coverage gaps",
-        "Go-dark ranking is weak and labelled so: AUC 0.59 at 1 h, 0.63 at 6 h",
-      ],
-      demo: "poseidon",
-    },
-    image: img("poseidon.jpg"),
-    alt: "The Poseidon logo beside a tilted dark map of shipping around Denmark and the Baltic",
-  },
-  {
-    id: "dissertation",
-    repo: "Language-Commands-for-a-Robotic-arm-using-Object-Recognition-",
-    name: "Language based control for Robotic Arm Object Swapping",
-    category: "Dissertation · 89/100",
-    description:
-      "A robotic arm that takes a spoken instruction and carries it out, multi-step commands included. OpenCV handles perception, a visual-action model drives manipulation, and an LLM with speech recognition sits on top. The whole pipeline runs locally, under 4GB of VRAM.",
-    tags: ["VLA", "LLM", "ASR", "OpenCV", "Model training"],
-    categories: ["research", "robotics", "ml"],
-    image: img("dissertation.webp"),
-    alt: "Overhead camera view of the arm's workspace, each detected object boxed and labelled with its target coordinates",
-  },
-  {
-    id: "hri",
-    name: "Trust in Teleoperation Robotics Study",
-    category: "HRI research · British HCI 2026",
-    description:
-      "Research internship on how input latency changes an operator's trust in a teleoperated robot. I designed and ran a 12-participant study, built the Linux and ROS simulation environment used to test a TIAGo dual-arm robot under controlled delay, and presented at the EPSRC Executive Showcase. The paper has been accepted at British HCI 2026 and the work secured continuation funding.",
-    tags: ["ROS1/2", "User study", "Experimental design", "Publication"],
-    categories: ["robotics", "research", "performance"],
-    image: img("hri.jpg"),
-    alt: "A TIAGo robot swinging its arm over a taped-out table with Lego towers",
-  },
-  {
-    id: "localmind",
-    repo: "LocalMind",
-    name: "LocalMind",
-    category: "Personal · 2026 – ongoing",
-    description:
-      "A private vision-language assistant that lives on my own PC and answers from my phone. An always-on gateway on my Tailscale network wakes the GPU workstation with Wake-on-LAN when I message it, then lets it switch itself off again. It's a tool-using agent: RAG over my own documents, web search, voice in and out, and it can tailor a LaTeX CV to a job advert and compile it. Models, documents and chats stay on the machine.",
-    url: "https://github.com/Hamish-MarshallDawson/LocalMind",
-    tags: ["VLM", "Tool-using agent", "RAG", "Voice", "Tailscale", "Wake-on-LAN"],
-    categories: ["ml", "performance"],
-    featured: {
-      pitch: "A private assistant on my own PC that I can message from my phone. It wakes the GPU when I need it, searches my own documents and tailors a LaTeX CV to a job advert.",
-      facts: [
-        "Qwen3-VL 8B on a 16 GB GPU, with context sized from free VRAM",
-        "Knowledge base sections: shared CV material, private employer folders",
-        "The PC switches itself off after ten idle minutes",
-      ],
-      demo: "localmind",
-    },
-    image: img("localmind.svg"),
-    alt: "LocalMind mark: an LM monogram on a square plate",
-    fit: "contain",
-  },
   {
     id: "tensoroom",
     repo: "TensorRoom",
     name: "TensorRoom",
     category: "Collaborative · 2026 – ongoing",
     description:
-      "Redesign a real room by describing it. Diffusion, segmentation, and language models wired into one pipeline that edits the space you point it at, in real time.",
+      "Redesign a real room by describing it. Diffusion, segmentation, and language models wired into one pipeline that edits the space you point it at. 31 GB of models (Qwen-Image-2.1, Grounding DINO, SAM) fit in 16 GB of VRAM through FP8/NF4 quantisation and GPU time-sharing, and renders take 17–26 s behind a FastAPI worker.",
     url: "https://github.com/Hamish-MarshallDawson/TensorRoom",
     tags: [
       "Local models",
@@ -160,14 +93,62 @@ export const vaultProjects = [
     featured: {
       pitch: "Photograph a room, name the pieces you want to change and see them redrawn, with everything else left exactly as it was. It all runs on a local GPU.",
       facts: [
-        "Words in the request are matched to objects in the photo, each with a precise mask",
+        "31 GB of models in 16 GB of VRAM: FP8/NF4 quantisation, GPU time-sharing",
+        "Renders in 17–26 s behind a FastAPI worker, used from a phone",
         "Anyone shown in a photo is refused before anything is stored",
-        "Built to be used from a phone on the same Wi-Fi network",
       ],
       demo: "tensoroom",
     },
     image: img("tensoroom.png"),
     alt: "TensorRoom logo, a wireframe cube",
+    fit: "contain",
+  },
+  {
+    id: "bus",
+    repo: "Lothian-Api-Bus-Display",
+    name: "Lothian Bus Display",
+    category: "Open source · C++ · Completed 2026",
+    description:
+      "A bus board for Edinburgh: live Lothian departures on a 3.5-inch touchscreen, from a Raspberry Pi 5 running C++17. I replaced the vendor's paint library with my own graphics layer: a canvas over an RGB565 frame buffer, anti-aliased text from fonts baked at build time, rounded shapes and alpha blending. Departures, timetables and live bus positions come from the Lothian open data API. Tap a departure to follow the bus on an OpenStreetMap map, with its lateness worked out from where it is against the timetable. A snapshot mode renders any screen to PNG from test data, so the screens were built and tested without the hardware.",
+    url: "https://github.com/Hamish-MarshallDawson/Lothian-Api-Bus-Display",
+    tags: ["C++17", "Raspberry Pi 5", "SPI display", "Novus API", "OpenStreetMap", "Embedded"],
+    categories: ["performance", "robotics"],
+    featured: {
+      pitch: "Live Edinburgh bus times on a 3.5-inch touchscreen, run by my own C++ on a Raspberry Pi 5. Tap a bus to follow it on a map, or tap a route to hide it.",
+      facts: [
+        "C++17 with my own graphics layer: anti-aliased text and fonts baked at build time",
+        "Into or out of city, worked out from the operator's own timetables",
+        "RGB565 frame buffer, alpha blending; PNG snapshots test screens with no hardware",
+      ],
+      demo: "bus",
+    },
+    // A snapshot-mode render from city-centre test data, not a photo: the old photo showed a stop near home.
+    // The served copy is that 320x480 screen at 1:1 in a black bezel on a 1280x720 white plate, so a
+    // cover crop keeps the device whole in both the 16:9 and 4:3 boxes (source in assets-src/projects).
+    image: img("bus-board.png"),
+    alt: "The bus board: live departures from Princes Street, into city",
+  },
+  {
+    id: "localmind",
+    repo: "LocalMind",
+    name: "LocalMind",
+    category: "Personal · 2026 – ongoing",
+    description:
+      "A private vision-language assistant (Qwen3-VL 8B on a 16 GB RTX 5080) that lives on my own PC and answers from my phone. The front end runs on Proxmox behind Tailscale and wakes the GPU workstation with Wake-on-LAN when I message it, then lets it switch itself off again. It's a tool-using agent: RAG over my own documents, web search, voice in and out, and it can tailor a LaTeX CV to a job advert and compile it. Models, documents and chats stay on the machine.",
+    url: "https://github.com/Hamish-MarshallDawson/LocalMind",
+    tags: ["VLM", "Tool-using agent", "RAG", "Voice", "Tailscale", "Wake-on-LAN"],
+    categories: ["ml", "performance"],
+    featured: {
+      pitch: "A private assistant on my own PC that I can message from my phone. It wakes the GPU when I need it, searches my own documents and tailors a LaTeX CV to a job advert.",
+      facts: [
+        "Qwen3-VL 8B on a 16 GB RTX 5080, context sized from free VRAM",
+        "Front end on Proxmox behind Tailscale; Wake-on-LAN boots the GPU",
+        "The PC switches itself off after ten idle minutes",
+      ],
+      demo: "localmind",
+    },
+    image: img("localmind.svg"),
+    alt: "LocalMind mark: an LM monogram on a square plate",
     fit: "contain",
   },
   {
@@ -193,6 +174,28 @@ export const vaultProjects = [
     fit: "contain",
   },
   {
+    id: "poseidon",
+    repo: "Poseidon",
+    name: "Poseidon",
+    category: "HackTheBurgh · Team lead · Nov 2026",
+    description:
+      "Live ship tracking that flags ships going quiet while other ships in the same area keep reporting. It merges AISStream's worldwide feed with Digitraffic's Finnish one, so a ship heard twice is stored once, and gives an analyst a short list of candidates, a risk order for each ship with its reasons, a replay and a shared team workspace. A flag is a prompt to review, not an accusation. It won MLH Best Use of ElevenLabs and was a finalist in the G-Research, Hudson River Trading and Metaview challenges. A route model trained on Danish Maritime Authority AIS estimates up to 24 hours ahead with 80% and 95% circles, and the go-dark ranking is weak and labelled so. I led the team of four at HackTheBurgh; each of us directed a coding agent in one repository.",
+    url: "https://github.com/Hamish-MarshallDawson/Poseidon",
+    tags: ["React", "MapLibre", "Python", "TimescaleDB", "LightGBM"],
+    categories: ["ml"],
+    featured: {
+      pitch: "Watches live ship tracking and flags ships that go quiet while others in the same area keep reporting. A flag is a prompt to review, not an accusation.",
+      facts: [
+        "Team lead of four, from brief to working demo in 24 hours",
+        "One evening replayed: 2,326 gaps, 654 candidates, 1,097 coverage gaps",
+        "Won MLH Best Use of ElevenLabs; finalist for G-Research, HRT, Metaview",
+      ],
+      demo: "poseidon",
+    },
+    image: img("poseidon.jpg"),
+    alt: "The Poseidon logo beside a tilted dark map of shipping around Denmark and the Baltic",
+  },
+  {
     id: "code-for-good",
     name: "50+ Network impact platform",
     short: "50+ Network",
@@ -206,9 +209,9 @@ export const vaultProjects = [
     featured: {
       pitch: "A feedback and impact platform for a charity that supports people aged 50 and over. Members answer a short survey online, on paper or in a recorded conversation.",
       facts: [
-        "Built in under 24 hours, brief to demo",
-        "Lead front-end developer in a team of five strangers",
-        "Built for West Lothian 50+ Network, to the charity's own brief",
+        "46 unit, integration and acceptance test suites; Docker Compose on AWS EC2",
+        "Two databases, AES-256-GCM, HMAC phone look-ups, no figure from under 5 people",
+        "AI form transcription; WCAG 2.2 checks on 11 survey screens, 20+ staff routes",
       ],
       demo: "codeforgood",
     },
@@ -217,29 +220,27 @@ export const vaultProjects = [
     fit: "contain",
   },
   {
-    id: "bus",
-    repo: "Lothian-Api-Bus-Display",
-    name: "Lothian Bus Display",
-    category: "Open source · C++ · Completed 2026",
+    id: "dissertation",
+    repo: "Language-Commands-for-a-Robotic-arm-using-Object-Recognition-",
+    name: "Language based control for Robotic Arm Object Swapping",
+    category: "Dissertation · 89/100",
     description:
-      "A bus board for Edinburgh: live Lothian departures on a 3.5-inch touchscreen, from a Raspberry Pi 5 running C++17. I replaced the vendor's paint library with my own graphics layer: a canvas over an RGB565 frame buffer, anti-aliased text from fonts baked at build time, rounded shapes and alpha blending. Departures, timetables and live bus positions come from the Lothian open data API. Tap a departure to follow the bus on an OpenStreetMap map, with its lateness worked out from where it is against the timetable. A snapshot mode renders any screen to PNG from test data, so the screens were built and tested without the hardware.",
-    url: "https://github.com/Hamish-MarshallDawson/Lothian-Api-Bus-Display",
-    tags: ["C++17", "Raspberry Pi 5", "SPI display", "Novus API", "OpenStreetMap", "Embedded"],
-    categories: ["performance", "robotics"],
-    featured: {
-      pitch: "Live Edinburgh bus times on a 3.5-inch touchscreen, run by my own C++ on a Raspberry Pi 5. Tap a bus to follow it on a map, or tap a route to hide it.",
-      facts: [
-        "C++17 with my own graphics layer: anti-aliased text and fonts baked at build time",
-        "Into or out of city, worked out from the operator's own timetables",
-        "Researched and chose the Pi 5 and 3.5\" touch LCD myself, then wrote C++ to fit them",
-      ],
-      demo: "bus",
-    },
-    // A snapshot-mode render from city-centre test data, not a photo: the old photo showed a stop near home.
-    // The served copy is that 320x480 screen at 1:1 in a black bezel on a 1280x720 white plate, so a
-    // cover crop keeps the device whole in both the 16:9 and 4:3 boxes (source in assets-src/projects).
-    image: img("bus-board.png"),
-    alt: "The bus board: live departures from Princes Street, into city",
+      "A robotic arm that takes a spoken instruction and carries it out, multi-step commands included. OpenCV handles perception, a visual-action model drives manipulation, and an LLM with speech recognition sits on top. The whole pipeline runs locally, under 4GB of VRAM.",
+    tags: ["VLA", "LLM", "ASR", "OpenCV", "Model training"],
+    categories: ["research", "robotics", "ml"],
+    image: img("dissertation.webp"),
+    alt: "Overhead camera view of the arm's workspace, each detected object boxed and labelled with its target coordinates",
+  },
+  {
+    id: "hri",
+    name: "Trust in Teleoperation Robotics Study",
+    category: "HRI research · British HCI 2026",
+    description:
+      "Research internship on how input latency changes an operator's trust in a teleoperated robot. I designed and ran a 12-participant study, built the Linux and ROS simulation environment used to test a TIAGo dual-arm robot under controlled delay, and presented at the EPSRC Executive Showcase. It was a within-subjects study across five latency levels and two maze configurations, and the first-author paper is published at British HCI 2026 (DOI 10.14236/ewic/BRITCHI26.44). The work secured continuation funding.",
+    tags: ["ROS1/2", "User study", "Experimental design", "Publication"],
+    categories: ["robotics", "research", "performance"],
+    image: img("hri.jpg"),
+    alt: "A TIAGo robot swinging its arm over a taped-out table with Lego towers",
   },
   {
     id: "iteration-inc",
@@ -247,7 +248,7 @@ export const vaultProjects = [
     name: "Iteration Inc",
     category: "Team lead · 2024–2025",
     description:
-      "A deployed serverless smart care-home platform. I led a team of 8 engineers through build and release, and owned authentication, device settings and the energy-saving recommendations, with accessible design for older users as the priority. Marked at 76%.",
+      "A deployed serverless smart care-home platform. I led a team of 8 engineers through build and release, and owned authentication, device settings and the energy-saving recommendations, with accessible design for older users as the priority. Carer and resident user studies shaped the UX.",
     url: "https://iteration-inc.vercel.app/",
     tags: ["Serverless", "Authentication", "Accessibility", "Full-stack"],
     categories: ["ml"],
@@ -272,7 +273,7 @@ export const vaultProjects = [
     name: "Bonin' Loot",
     category: "Games programming coursework",
     description:
-      "A game built in C# and Unity for the Games Programming coursework: fully random levels, hundreds of item combinations and three boss fights. Published on itch.io and playable in the browser.",
+      "A game built in C# and Unity for the Games Programming coursework: procedurally generated levels, hundreds of item combinations and three boss fights. Published on itch.io and playable in the browser.",
     url: "https://hamishmad.itch.io/bonin-loot",
     tags: ["C#", "Unity", "Procedural generation"],
     categories: ["performance"],
@@ -294,23 +295,23 @@ export const experience = [
     ends: "2026-12",
     location: "Edinburgh",
     points: [
-      "Built an agentic vision-language-model pipeline that names unseen faults and routes known ones into existing classes, using CLIP with LoRA adapters.",
-      "Made its results testable and reproducible with fixed train/test splits and Bayesian-optimised parameter selection.",
-      "Took it from research prototype to a deployed service on Azure.",
-      "Set the AGENTS.md and SKILLS.md conventions for the GitHub Copilot rollout and co-delivered sessions for engineers outside the software teams.",
-      "Explained LoRA, quantisation, context windows and RAG in practical terms for non-specialist colleagues.",
+      "Raised fault-detection accuracy from 23% to 98% across 25 fault classes with an agentic vision-language-model pipeline that names unseen faults and routes known ones into existing classes, using CLIP routing and LoRA adapters.",
+      "Cut runtime on 10,000 images from 10 hours to 35 minutes (17×) by profiling each stage on an H100 and batching images by adapter, then deployed the service on Azure.",
+      "Extended GitHub Copilot adoption from 8 senior engineers to the head of validation in France and their managers, setting AGENTS.md and SKILLS.md conventions and drafting company-wide AI policy.",
+      "Compared LoRA, RAG, quantisation and few-shot prompting across local VLMs and LLMs, and extended the pipeline to cluster unknown faults as well as name them.",
+      "Built a data visualisation tool for a non-software team after meeting their senior engineers to pin down what they needed.",
     ],
   },
   {
     role: "Research Intern — Human-Robot Interaction",
     org: "Heriot-Watt University",
     mark: "robotarium.png",
-    period: "Summer 2025",
-    location: "Trust in Teleoperation Robotics",
+    period: "Jun 2025 – Aug 2025",
+    location: "Edinburgh · Supervised by Dr Theodoros Georgiou & Dr Marta Romeo",
     points: [
-      "Designed and ran a 12-participant study on how input latency affects trust in a teleoperated robot; the research has been accepted for publication at British HCI 2026.",
-      "De-risked real-world deployment of a TIAGo dual-arm robot by engineering a Linux and ROS simulation environment for controlled delay testing, validated across variable latency and network conditions.",
-      "Presented the findings at the EPSRC Executive Showcase, which secured continuation funding for further placements.",
+      "Ran a within-subjects study across five latency levels and two maze configurations, and wrote it up as a first-author paper (British HCI 2026, DOI 10.14236/ewic/BRITCHI26.44).",
+      "Made the delay injection controlled and repeatable, validated across variable latency and network conditions, to de-risk real-world deployment of the TIAGo.",
+      "Presented the work at the EPSRC Executive Showcase, ACM/IEEE HRI 2026 in Edinburgh and the UK Robotics Expo; the funding it won pays for further intern placements.",
     ],
   },
 ];
@@ -333,6 +334,7 @@ export const hackathons = [
       "Two live AIS feeds merged so a ship heard twice is stored once, every ship drawn on one GPU layer, and a replay of the stored history at up to 300× speed.",
       "Replayed over one evening's log of 1.65 million messages, the gap detector found 2,326 silences across 24,615 ships: 654 looked deliberate and 1,097 were coverage gaps.",
       "We trained route and go-dark models and published the results, weak ones included: the go-dark ranking scored an AUC of 0.59 at 1 hour and 0.63 at 6.",
+      "It won MLH Best Use of ElevenLabs, and we were finalists in the G-Research, Hudson River Trading and Metaview challenges.",
     ],
     links: [
       { label: "See the project", url: "#vault", internal: true },
@@ -353,8 +355,8 @@ export const hackathons = [
     points: [
       "A working feedback and impact platform for West Lothian 50+ Network, a charity that has to show its funders that walking groups and coffee mornings make older members less lonely. Shipped in 24 hours and deployed on AWS.",
       "I led the front end and the overnight build to the 9am deadline: eleven parallel coding agents working against Figma and Playwright, each with a scoped brief, and nothing merged until lint, type checks, tests and a person had passed it.",
-      "Privacy by design: names and phone numbers encrypted in a separate database from anything members told us, and no figure shown that rests on fewer than five people.",
-      "180 TypeScript modules and 46 test suites later, the technical judges singled out the engineering and our JPMC supervisors called it one of the most polished products they had seen. We did not win.",
+      "Privacy by design: names and phone numbers encrypted (AES-256-GCM, with HMAC phone look-ups) in a separate database from anything members told us, and no figure shown that rests on fewer than five people.",
+      "Backed by 46 unit, integration and acceptance test suites and a live Docker Compose deployment on AWS EC2, it had the technical judges praising the engineering and our JPMC supervisors calling it \"incredibly polished\".",
       "A team of five who met that morning. I stayed up for the whole thing, powered through, and had a great time.",
     ],
     links: [
@@ -379,22 +381,9 @@ export const education = [
     location: "Edinburgh",
     points: [
       "On track for First Class Honours.",
-      "University Prize winner — the highest grade across all courses in my year.",
-      "Dissertation, 89/100: an end-to-end robotic arm that swaps objects on spoken command, joining OpenCV perception, a visual-action model, an LLM and speech recognition into one perception-to-control pipeline.",
+      "University Prize winner, Summer 2026 — the highest grade across all courses in my year.",
+      "Year 4 Honours Dissertation, 89/100: a local perception-to-control pipeline in under 4 GB of VRAM that lets a robotic arm swap objects on spoken command, joining OpenCV, a visual-action model, an LLM and speech recognition.",
       "Coursework highlights: low-latency text-to-speech for real-time use in Minecraft, a predictive crop-planting model from soil data, and particle swarm optimisation with neural networks.",
-    ],
-  },
-  {
-    qualification: "Secondary school",
-    org: "Alford Academy",
-    mark: "alford-bull.png",
-    period: "2016 – 2022",
-    location: "Alford, Aberdeenshire",
-    points: [
-      "Head Prefect.",
-      "Head of Charity Work.",
-      "Head of Student Council.",
-      "Four years volunteering at Garioch Judo on Campus.",
     ],
   },
 ];
@@ -403,10 +392,10 @@ export const education = [
 // shows a different five (see pickHighlights), drawn by `weight`: the four
 // anchors (weight 1000) nearly always show, the rest share the fifth slot and
 // niche ones (weight 1) turn up only now and then. Keep each one true and
-// short enough for a fifth of the row, and keep STMicroelectronics figure-free.
+// short enough for a fifth of the row.
 export const highlights = [
-  { key: "Fault detection", value: "VLM pipeline · STMicro", weight: 1000 },
-  { key: "Publication", value: "British HCI 2026", weight: 1000 },
+  { key: "Fault detection", value: "23% → 98% across 25 classes", weight: 1000 },
+  { key: "First-author paper", value: "British HCI 2026", weight: 1000 },
   { key: "Dissertation", value: "89/100", weight: 1000 },
   { key: "University Prize", value: "Top grade in my year", weight: 1000 },
   { key: "Degree", value: "On track for a First", weight: 4 },
@@ -416,11 +405,11 @@ export const highlights = [
   { key: "EPSRC showcase", value: "Funding continued", weight: 3 },
   { key: "Team lead", value: "8 engineers shipped", weight: 3 },
   { key: "Local pipeline", value: "Under 4GB of VRAM", weight: 3 },
+  { key: "H100 runtime", value: "10 h → 35 min (17×)", weight: 3 },
   { key: "Racing team", value: "15+ partnerships", weight: 2 },
   { key: "Class rep", value: "Rep of the Year", weight: 2 },
   { key: "LocalMind", value: "Wakes on request", weight: 2 },
   { key: "Judo", value: "Brown belt", weight: 1 },
-  { key: "Alford Academy", value: "Head Prefect", weight: 1 },
   { key: "Garioch Judo", value: "4 years volunteering", weight: 1 },
   { key: "Photography", value: "10+ years", weight: 1 },
   { key: "PC builds", value: "5+ and counting", weight: 1 },
@@ -440,7 +429,7 @@ export function pickHighlights(count = 5, pool = highlights, random = Math.rando
 
 // The toolkit ledger under the work log.
 export const toolkit = [
-  { key: "Languages", items: ["Python", "C++", "C", "C#", "Java", "SQL", "JavaScript"] },
+  { key: "Languages", items: ["Python", "TypeScript", "JavaScript", "C++ (C++17)", "C", "C#", "Java", "SQL"] },
   {
     key: "AI / ML",
     items: [
@@ -455,11 +444,19 @@ export const toolkit = [
       "RAG",
       "Quantisation",
       "Bayesian optimisation",
+      "CLIP",
+      "Qwen3-VL",
+      "Grounding DINO",
+      "SAM",
+      "Whisper",
+      "LightGBM",
+      "QLoRA",
+      "FP8 / NF4 quantisation",
     ],
   },
   {
     key: "Systems & tools",
-    items: ["Linux", "Git", "Docker", "PostgreSQL", "ROS1/ROS2", "Proxmox", "Tailscale", "Vercel", "Unity"],
+    items: ["Linux", "Git", "Docker", "PostgreSQL", "ROS1/ROS2", "Proxmox", "Tailscale", "Vercel", "Unity", "FastAPI", "React / Next.js", "TimescaleDB", "AWS EC2", "Azure (H100)", "Cloudflare Workers", "GitHub Actions CI/CD"],
   },
   {
     key: "Agents & workflow",
@@ -503,7 +500,7 @@ export const extracurricular = [
     period: "Sept 2023 – present",
     badge: "Class Rep of the Year",
     description:
-      "Rebuilt how course feedback reaches academic staff, turning recurring complaints into agreed changes and improving course delivery across the school. Recognised with Class Rep of the Month and Class Rep of the Year.",
+      "Rebuilt how course feedback reaches academic staff, turning recurring complaints into agreed changes and improving course delivery across the school. Recognised with Class Rep of the Month and Class Rep of the Year, nominated again for 2025–2026. I have also presented to hundreds of younger computing students on placements and the graduate job market.",
     image: img("ClassRepoftheyear.jpg"),
     alt: "On stage at the student awards holding the Class Rep of the Year trophy",
     focus: "50% 28%",
@@ -511,20 +508,23 @@ export const extracurricular = [
   {
     role: "Branding and Media Manager",
     org: "Heriot-Watt Racing — Formula Student",
-    period: "Sept 2023 – present",
+    period: "Sept 2023 – Sept 2025",
     badge: "15+ partnerships",
     description:
-      "Two seasons translating what a multi-disciplinary engineering team's car could actually do into something sponsors would back — over 15 external partnerships secured. Now strengthening the software department's continuity with a restructured recruitment pipeline and documented handovers for outgoing students.",
+      "Two seasons translating what a multi-disciplinary engineering team's car could actually do into something sponsors would back — over 15 external partnerships secured. Restructured the software department's recruitment pipeline and documented handovers so the function ran on after I stepped down.",
     image: img("hw-racing.jpg"),
     alt: "With Heriot-Watt Racing teammates beside the Formula Student car in the pit lane",
     focus: "50% 24%",
   },
+  {
+    role: "Volunteer Judo Coach",
+    org: "Garioch Judo on Campus",
+    period: "Four years",
+    // No photo yet: RecordCard drops the picture box when `image` is unset.
+    description: "Coached judo as a volunteer at Garioch Judo on Campus.",
+  },
 ];
 
-const monthStart = (ym) => {
-  const [year, month] = ym.split("-").map(Number);
-  return new Date(year, month - 1, 1);
-};
 const monthEnd = (ym) => {
   const [year, month] = ym.split("-").map(Number);
   return new Date(year, month, 1);
@@ -533,12 +533,4 @@ const monthEnd = (ym) => {
 // A role is active until the end of its `ends` month.
 export function isActiveRole(job, now = new Date()) {
   return Boolean(job.ends) && now < monthEnd(job.ends);
-}
-
-// Whole-percent progress through an active role, or null without dates.
-export function roleProgress(job, now = new Date()) {
-  if (!job.starts || !job.ends) return null;
-  const start = monthStart(job.starts).getTime();
-  const end = monthEnd(job.ends).getTime();
-  return Math.round(Math.min(1, Math.max(0, (now.getTime() - start) / (end - start))) * 100);
 }

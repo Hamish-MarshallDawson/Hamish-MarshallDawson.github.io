@@ -270,11 +270,13 @@ function RecordCard({ index, image, alt, focus, meta, title, org, badge, stat, c
       <article>
         <p className="rcard-meta u-micro">{meta}</p>
         <h3 className="rcard-title">{title}</h3>
-        <div className="rcard-media">
-          <img src={image} alt={alt} loading="lazy" decoding="async" style={focus ? { objectPosition: focus } : undefined} />
-          {badge && <span className="rcard-badge u-micro">{badge}</span>}
-          {stat && <span className="rcard-stat">{stat}</span>}
-        </div>
+        {image && (
+          <div className="rcard-media">
+            <img src={image} alt={alt} loading="lazy" decoding="async" style={focus ? { objectPosition: focus } : undefined} />
+            {badge && <span className="rcard-badge u-micro">{badge}</span>}
+            {stat && <span className="rcard-stat">{stat}</span>}
+          </div>
+        )}
         {org && <p className="rcard-org">{org}</p>}
         <p className="rcard-copy">{children}</p>
       </article>

@@ -13,15 +13,12 @@ import "./GlobalHUD.css";
 
 const snap = [0.7, 0, 0.2, 1];
 
-// The uplinks. With no CV file configured the CV uplink opens Reach out
-// with a CV request instead of pointing at nothing.
-function buildUplinks(onRequestCv) {
+// The uplinks; the CV is always a direct download.
+function buildUplinks() {
   return [
     { id: "github", title: "GitHub", detail: "Source repositories", href: profile.github, Icon: GithubIcon, external: true },
     { id: "linkedin", title: "LinkedIn", detail: "Professional record", href: profile.linkedin, Icon: LinkedinIcon, external: true },
-    profile.cv
-      ? { id: "cv", title: "CV", detail: "PDF", href: profile.cv, Icon: CvIcon, download: true }
-      : { id: "cv", title: "CV", detail: "On request", href: "#reach-out", Icon: CvIcon, onActivate: onRequestCv },
+    { id: "cv", title: "CV", detail: "PDF", href: profile.cv, Icon: CvIcon, download: true },
   ];
 }
 
@@ -32,15 +29,14 @@ function buildStatus() {
     core: "Top of file",
     vault: `${vaultProjects.length} files`,
     work: active ? `Active [${active}/${experience.length}]` : `${experience.length} entries`,
-    study: `${education.length} schools · ${hackathons.length} hackathons`,
+    study: `${education.length} degree · ${hackathons.length} hackathons`,
     volunteer: `${extracurricular.length + personal.length} records`,
     "reach-out": "Open",
   };
 }
 
-function Uplink({ link, className, onActivate, children }) {
+function Uplink({ link, className, children }) {
   const { title, detail, href, external, download } = link;
-  const activate = onActivate ?? link.onActivate;
   return (
     <a
       className={className}
@@ -49,14 +45,6 @@ function Uplink({ link, className, onActivate, children }) {
       rel={external ? "noopener noreferrer" : undefined}
       download={download ? "" : undefined}
       aria-label={`${title}: ${detail}${external ? " (opens in a new tab)" : ""}`}
-      onClick={
-        activate
-          ? (event) => {
-              event.preventDefault();
-              activate();
-            }
-          : undefined
-      }
     >
       {children}
     </a>
@@ -286,11 +274,7 @@ function IndexPanel({ active, navigate, uplinks, fx, onToggleFx, onClose, return
             <ul aria-label="Links">
               {uplinks.map((link) => (
                 <li key={link.id}>
-                  <Uplink
-                    link={link}
-                    className="index-link"
-                    onActivate={link.onActivate && (() => closeThen(link.onActivate))}
-                  >
+                  <Uplink link={link} className="index-link">
                     <link.Icon className="index-link-icon" />
                     <span className="index-link-title">{link.title}</span>
                     <span className="u-micro index-link-detail">{link.detail}</span>
@@ -491,12 +475,12 @@ function SectionStamp({ active }) {
   );
 }
 
-export function GlobalHUD({ active, navigate, onRequestCv, fx, onToggleFx, colour, onPickColour }) {
+export function GlobalHUD({ active, navigate, fx, onToggleFx, colour, onPickColour }) {
   // At most one header panel is open; opening the other swaps them.
   const [panel, setPanel] = useState(null);
   const indexRef = useRef(null);
   const colourRef = useRef(null);
-  const uplinks = buildUplinks(onRequestCv);
+  const uplinks = buildUplinks();
   const closePanel = useCallback(() => setPanel(null), []);
   const toggle = useCallback((name) => setPanel((open) => (open === name ? null : name)), []);
 
@@ -526,7 +510,7 @@ export function GlobalHUD({ active, navigate, onRequestCv, fx, onToggleFx, colou
         )}
       </AnimatePresence>
       <StatusStrip uplinks={uplinks} fx={fx} onToggleFx={onToggleFx} />
-      <PhoneBar onRequestCv={onRequestCv} />
+      <PhoneBar />
       <SectionStamp active={active} />
     </>
   );

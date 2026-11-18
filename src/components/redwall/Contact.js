@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useReducedMotionConfig } from "framer-motion";
 import { profile } from "../projectdata";
 import { ArrowIcon, CvIcon, ExternalIcon, GithubIcon, LinkedinIcon, MailIcon } from "../shared/Icons";
@@ -10,7 +10,6 @@ const CHANNELS = [
   { id: "role", label: "Role / hiring" },
   { id: "research", label: "Research" },
   { id: "collab", label: "Collaboration" },
-  { id: "cv", label: "CV request" },
   { id: "other", label: "Other" },
 ];
 
@@ -57,7 +56,7 @@ function Field({ id, label, hint, error, multiline, inputRef, ...props }) {
 // ready, a log notes progress, the title's hard shadow drops further off it
 // and each burst of keystrokes jolts the panel. Sending hands the message
 // to the visitor's own email app; the site is static, so nothing is stored.
-export function Contact({ cvRequest }) {
+export function Contact() {
   const reduce = useReducedMotionConfig();
   const [fields, setFields] = useState({ name: "", email: "", message: "" });
   const [channel, setChannel] = useState("role");
@@ -68,11 +67,6 @@ export function Contact({ cvRequest }) {
   const lastJolt = useRef(0);
   const logged = useRef(new Set());
   const inputRefs = { name: useRef(null), email: useRef(null), message: useRef(null) };
-
-  // A CV request from the HUD arrives as a bumped counter.
-  useEffect(() => {
-    if (cvRequest) setChannel("cv");
-  }, [cvRequest]);
 
   const typed = fields.name.length + fields.email.length + fields.message.length;
   const intrusion = Math.min(1, typed / 240);
@@ -153,7 +147,7 @@ export function Contact({ cvRequest }) {
           title="Let's talk."
           titleId="rw-title"
           titleClass="sh-title--stamp"
-          aside={["Exfil point", "Channel 05"]}
+          aside={["Get in touch", "Channel 05"]}
         >
           Looking for graduate AI/ML or software engineering roles from summer 2027. Email is the quickest way to
           reach me, and my CV is one click away.
@@ -202,25 +196,14 @@ export function Contact({ cvRequest }) {
                 </a>
               </li>
               <li>
-                {profile.cv ? (
-                  <a className="rw-uplink" href={profile.cv} download>
-                    <CvIcon className="rw-uplink-icon" />
-                    <span className="rw-uplink-text">
-                      <b>CV</b>
-                      <span>PDF · download</span>
-                    </span>
-                    <ArrowIcon className="rw-uplink-glyph" direction="down" />
-                  </a>
-                ) : (
-                  <button type="button" className="rw-uplink" onClick={() => setChannel("cv")}>
-                    <CvIcon className="rw-uplink-icon" />
-                    <span className="rw-uplink-text">
-                      <b>CV</b>
-                      <span>On request · via the form</span>
-                    </span>
-                    <ArrowIcon className="rw-uplink-glyph" direction="left" />
-                  </button>
-                )}
+                <a className="rw-uplink" href={profile.cv} download>
+                  <CvIcon className="rw-uplink-icon" />
+                  <span className="rw-uplink-text">
+                    <b>CV</b>
+                    <span>PDF · download</span>
+                  </span>
+                  <ArrowIcon className="rw-uplink-glyph" direction="down" />
+                </a>
               </li>
             </ul>
             <p className="rw-sig u-micro">{profile.location}</p>
@@ -279,11 +262,6 @@ export function Contact({ cvRequest }) {
                     </label>
                   ))}
                 </div>
-                {channel === "cv" && !profile.cv && (
-                  <p className="rw-cv-note u-micro">
-                    Leave a quick note and I&apos;ll email my CV back to you as a PDF.
-                  </p>
-                )}
               </fieldset>
 
               <Field
@@ -311,6 +289,15 @@ export function Contact({ cvRequest }) {
               <button type="submit" className="btn btn--signal u-press rw-send">
                 Send message <span className="rw-send-glyph" aria-hidden="true">▸</span>
               </button>
+              {sent && (
+                <span className="rw-fallback u-micro">
+                  {profile.email}
+                  <button type="button" className="btn btn--paper u-press rw-copy" onClick={copyEmail}>
+                    {copied ? "Copied" : "Copy"}
+                    <span className="sr-only"> email address</span>
+                  </button>
+                </span>
+              )}
               <p className="rw-note u-micro">
                 Opens your email app with the message ready to send. Nothing is stored on this site.
               </p>

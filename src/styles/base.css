@@ -164,6 +164,11 @@ button {
   visibility: hidden;
 }
 
+.tw-ghost::before,
+.tw-live::before {
+  content: attr(data-text); /* parents are aria-hidden; the alt-text form is dropped whole by older browsers */
+}
+
 .tw-live {
   position: absolute;
   inset: 0;

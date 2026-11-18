@@ -248,7 +248,7 @@ test("picking a colour replays the loading card in it, then repaints the page", 
 });
 
 test("weighted highlights: the four anchors nearly always show, niche facts only sometimes", () => {
-  const anchors = ["Fault detection", "Publication", "Dissertation", "University Prize"];
+  const anchors = ["Fault detection", "First-author paper", "Dissertation", "University Prize"];
   const runs = 2000;
   const seen = {};
   for (let i = 0; i < runs; i += 1) pickHighlights(5).forEach(({ key }) => (seen[key] = (seen[key] || 0) + 1));
@@ -285,14 +285,12 @@ test("sections run Hero, Work, Projects, Education, Beyond the code, Let's talk"
   expect(SECTION_IDS).toEqual(ids);
 });
 
-test("Where I've studied: the Heriot-Watt sheet, then Alford Academy on one line", () => {
+test("Where I've studied: the Heriot-Watt sheet, and no school entry", () => {
   render(<App />);
   const study = document.getElementById("study"); // eslint-disable-line testing-library/no-node-access
   expect(within(study).getByRole("heading", { level: 2, name: "Where I've studied." })).toBeInTheDocument();
   expect(within(study).getByRole("heading", { level: 3, name: "MEng Software Engineering" })).toBeInTheDocument();
-  expect(within(study).getByRole("heading", { level: 3, name: /^Alford Academy · 2016 – 2022 · Head Prefect$/ })).toBeInTheDocument();
-  expect(within(study).getByText(/Garioch Judo on Campus/)).toBeInTheDocument();
-  expect(within(study).queryByText(/Education 0x01/)).not.toBeInTheDocument();
+  expect(within(study).queryByText(/Alford Academy/)).not.toBeInTheDocument();
   expect(within(study).queryByText(/Highlights \[/)).not.toBeInTheDocument();
 });
 
@@ -356,20 +354,20 @@ test("the contact form speaks plainly", () => {
   expect(reachOut.textContent).not.toMatch(/ident|payload|transmit|firewall|intercept/i);
 });
 
-test("the featured block shows Poseidon, LocalMind, TensorRoom, Gyminit, Code for Good and the bus display; all have a demo", () => {
+test("the featured block shows TensorRoom, the bus display, LocalMind, Gyminit, Poseidon and Code for Good; all have a demo", () => {
   render(<App />);
   const grid = screen.getByRole("list", { name: "Featured projects" });
   const cards = within(grid).getAllByRole("article");
   expect(cards.map((card) => within(card).getByRole("heading", { level: 4 }).textContent)).toEqual([
-    "Poseidon",
-    "LocalMind",
     "TensorRoom",
-    "Gyminit",
-    "50+ Network impact platform",
     "Lothian Bus Display",
+    "LocalMind",
+    "Gyminit",
+    "Poseidon",
+    "50+ Network impact platform",
   ]);
   expect(within(grid).getAllByRole("button", { name: /^play demo/i })).toHaveLength(6);
-  expect(within(cards[4]).getByRole("link", { name: /^Visit charity/ })).toHaveAttribute("href", "https://westlothian50plusnetwork.co.uk/");
+  expect(within(cards[5]).getByRole("link", { name: /^Visit charity/ })).toHaveAttribute("href", "https://westlothian50plusnetwork.co.uk/");
 });
 
 test("Play demo opens LocalMind on the stage beside its info panel", async () => {

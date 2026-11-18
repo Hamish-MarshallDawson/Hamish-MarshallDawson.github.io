@@ -40,7 +40,6 @@ function jumpToTop() {
 function App() {
   const [booted, setBooted] = useState(() => !shouldBoot());
   const [fx, setFx] = useState(readFx);
-  const [cvRequest, setCvRequest] = useState(0);
 
   // A colour change is a refresh. The loading card replays in the new colour
   // (`repaint` while it's up, `run` keys each card) and, once it hides the
@@ -76,11 +75,6 @@ function App() {
 
   const toggleFx = useCallback(() => setFx((on) => !on), []);
 
-  const requestCv = useCallback(() => {
-    setCvRequest((n) => n + 1);
-    navigate("reach-out");
-  }, [navigate]);
-
   // Swap to the pending colour and reset the page. Runs once per pick —
   // whichever comes first of "the card now covers the page" and "the card
   // was skipped". Returns whether it did anything.
@@ -91,7 +85,6 @@ function App() {
     applyColour(entry);
     setColour(entry);
     jumpToTop();
-    setCvRequest(0);
     setGeneration((n) => n + 1);
     return true;
   }, []);
@@ -133,7 +126,6 @@ function App() {
       <GlobalHUD
         active={active}
         navigate={navigate}
-        onRequestCv={requestCv}
         fx={fx}
         onToggleFx={toggleFx}
         colour={colour}
@@ -146,7 +138,7 @@ function App() {
         <AIResearchVault />
         <Study />
         <BeyondCode />
-        <Contact cvRequest={cvRequest} />
+        <Contact />
       </main>
 
       <GlitchTransition mode={mode} />

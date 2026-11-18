@@ -1,16 +1,11 @@
 import { useEffect, useRef } from "react";
-import {
-  animate,
-  motion,
-  useMotionValue,
-  useReducedMotionConfig,
-  useTransform,
-} from "framer-motion";
+import { animate, useMotionValue, useMotionValueEvent, useReducedMotionConfig, useTransform } from "framer-motion";
 
 // Types `text` out once `start` flips true. The character count is a motion
 // value, so typing doesn't re-render React. Screen readers get the full string
 // from the sr-only copy; the ghost copy reserves the final size so the layout
-// doesn't shift while it types.
+// doesn't shift while it types. Ghost and live text are CSS generated content
+// (data-text), so they stay out of textContent and the page text holds it once.
 export function Typewriter({
   text,
   start = true,
@@ -24,6 +19,11 @@ export function Typewriter({
   const reduce = useReducedMotionConfig();
   const count = useMotionValue(0);
   const shown = useTransform(count, (value) => text.slice(0, Math.round(value)));
+  const liveRef = useRef(null);
+  const setLive = (value) => {
+    if (liveRef.current) liveRef.current.dataset.text = value;
+  };
+  useMotionValueEvent(shown, "change", setLive);
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
 
@@ -33,6 +33,7 @@ export function Typewriter({
       return undefined;
     }
     if (reduce) {
+      setLive(text);
       count.set(text.length);
       onDoneRef.current?.();
       return undefined;
@@ -49,15 +50,8 @@ export function Typewriter({
   return (
     <span className={`tw${block ? " tw--block" : ""}${className ? ` ${className}` : ""}`}>
       <span className="sr-only">{text}</span>
-      <span className="tw-ghost" aria-hidden="true">
-        {text}
-      </span>
-      <span className="tw-live" aria-hidden="true">
-        {/* With reduced motion the text is simply there. Setting the motion
-            value once from the effect isn't enough: it can land before
-            framer has subscribed the span to its child value, and the only
-            update is lost. */}
-        {reduce && start ? <span>{text}</span> : <motion.span>{shown}</motion.span>}
+      <span className="tw-ghost" aria-hidden="true" data-text={text} />
+      <span className="tw-live" aria-hidden="true" ref={liveRef} data-text="">
         {caret && <span className="caret" />}
       </span>
     </span>

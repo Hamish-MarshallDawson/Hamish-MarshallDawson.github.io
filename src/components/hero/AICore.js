@@ -11,7 +11,7 @@ const OPEN = "inset(0% 0% 0% 0%)";
 
 // The portrait as a print plate: image_2a10f9 in greyscale, screened onto
 // signal blue, in a heavy frame on a hard shadow. A white RAW-style label
-// box and an outline pill (name and age) sit over its corners.
+// box and an outline pill (name and course tag) sit over its corners.
 export function AICore({ live, shadow }) {
   const reduce = useReducedMotionConfig();
   const [missing, setMissing] = useState(false);
@@ -40,7 +40,7 @@ export function AICore({ live, shadow }) {
       </div>
 
       <span className="core-pill pill" aria-hidden="true">
-        Hamish <span className="core-pill-tag">⊕ {profile.age}</span>
+        Hamish {profile.tag && <span className="core-pill-tag">⊕ {profile.tag}</span>}
       </span>
 
       <figcaption className="core-label u-micro" aria-hidden="true">

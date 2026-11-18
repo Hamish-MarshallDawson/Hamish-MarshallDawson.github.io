@@ -30,11 +30,11 @@ test("every featured demo names a loader in DEMOS", () => {
   featured.filter((project) => project.featured.demo).forEach((project) => expect(Object.keys(DEMOS)).toContain(project.featured.demo));
 });
 
-test("STMicroelectronics is described without figures, on the record and in the hero facts", () => {
+test("STMicroelectronics carries MASTER's figures, on the record and in the hero facts", () => {
   const st = experience.find((job) => job.org === "STMicroelectronics");
   expect(st.points).toHaveLength(5);
-  st.points.forEach((point) => expect(point).not.toMatch(/\d+%|senior engineers|\b\d+ (fault|classes)/));
-  expect(JSON.stringify(highlights)).not.toMatch(/98%|23%|8 senior/);
+  expect(st.points[0]).toMatch(/23% to 98%/);
+  expect(JSON.stringify(highlights)).toMatch(/23% → 98%/);
 });
 
 test("coding agents come up at most once per project, and TensorRoom is spelled right", () => {
